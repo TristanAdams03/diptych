@@ -44,12 +44,13 @@ F resolve(HMODULE m, const char* name) {
 void load_real() {
     const std::wstring path = g_pathFn.load()();
     if (path.empty()) {
-        log_line("forwarder: no system directory; real dinput8.dll unavailable");
+        log_line("forwarder: no system directory; real dinput8.dll unavailable for this session (not retried)");
         return;
     }
     HMODULE m = LoadLibraryW(path.c_str());
     if (!m) {
-        log_line("forwarder: LoadLibraryW(" + narrow(path) + ") failed, error " + std::to_string(GetLastError()));
+        log_line("forwarder: LoadLibraryW(" + narrow(path) + ") failed, error " + std::to_string(GetLastError()) +
+                 "; real dinput8.dll unavailable for this session (not retried)");
         return;
     }
     HMODULE self = nullptr;
@@ -57,7 +58,7 @@ void load_real() {
                        reinterpret_cast<LPCWSTR>(&load_real), &self);
     if (m == self) {  // the loader handed us back ourselves: forwarding would recurse forever
         FreeLibrary(m);
-        log_line("forwarder: " + narrow(path) + " resolved to this proxy; real dinput8.dll unavailable");
+        log_line("forwarder: " + narrow(path) + " resolved to this proxy; real dinput8.dll unavailable for this session (not retried)");
         return;
     }
     g_real.create = resolve<DI8CreateFn>(m, "DirectInput8Create");
@@ -86,7 +87,7 @@ extern "C" HRESULT WINAPI DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, R
                                              LPUNKNOWN punkOuter) {
     if (auto fn = real().create) return fn(hinst, dwVersion, riidltf, ppvOut, punkOuter);
     if (ppvOut) *ppvOut = nullptr;
-    diptych::win::log_line("DirectInput8Create: real dinput8.dll unavailable, returning DIERR_NOTINITIALIZED");
+    diptych::win::log_line("DirectInput8Create: real dinput8.dll unavailable for this session, returning DIERR_NOTINITIALIZED");
     return diptych::win::kDierrNotInitialized;
 }
 

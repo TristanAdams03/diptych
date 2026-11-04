@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <mutex>
 
+#include "core/log_file_cap.h"
+
 namespace diptych::win {
 
 namespace {
@@ -13,6 +15,7 @@ struct Logger {
     std::mutex fileMu;
     HANDLE file = INVALID_HANDLE_VALUE;
     bool fileTried = false;
+    core::LogFileCap cap;  // 1 MiB per session, then one marker line
 };
 
 // Leaked, as in ttw-dualscreen: DLL_PROCESS_DETACH runs no destructor and frees nothing.
@@ -46,9 +49,11 @@ void log_line(std::string_view msg) {
     {
         std::lock_guard<std::mutex> lk(L.fileMu);
         if (L.file != INVALID_HANDLE_VALUE) {
-            std::string out = line + "\r\n";
-            DWORD written = 0;
-            WriteFile(L.file, out.data(), static_cast<DWORD>(out.size()), &written, nullptr);
+            const std::string out = L.cap.next(line);
+            if (!out.empty()) {
+                DWORD written = 0;
+                WriteFile(L.file, out.data(), static_cast<DWORD>(out.size()), &written, nullptr);
+            }
         }
     }
     L.ring.add(std::move(line));
@@ -72,7 +77,11 @@ void enable_file_log() {
     path.resize(slash == std::wstring::npos ? 0 : slash + 1);
     path += L"diptych_kh1.log";
 
-    HANDLE h = CreateFileW(path.c_str(), FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_ALWAYS,
+    // One previous session is kept as diptych_kh1.log.1; this session starts a fresh file.
+    // Failures (no old log, read-only folder) are ignored: the ring still records everything.
+    const std::wstring old = path + L".1";
+    MoveFileExW(path.c_str(), old.c_str(), MOVEFILE_REPLACE_EXISTING);
+    HANDLE h = CreateFileW(path.c_str(), GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS,
                            FILE_ATTRIBUTE_NORMAL, nullptr);
     if (h != INVALID_HANDLE_VALUE) L.file = h;  // never closed: the logger is leaked
 }

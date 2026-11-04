@@ -10,7 +10,6 @@ static int seh_filter(unsigned long code) {
         case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
         case EXCEPTION_DATATYPE_MISALIGNMENT:
         case EXCEPTION_IN_PAGE_ERROR:
-        case EXCEPTION_GUARD_PAGE:
             return EXCEPTION_EXECUTE_HANDLER;
         default:
             return EXCEPTION_CONTINUE_SEARCH;

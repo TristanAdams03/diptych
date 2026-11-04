@@ -63,3 +63,50 @@ TEST_CASE("log_ring: keeps the last 500 lines in order") {
     CHECK(three[2] == "line 1233");
     CHECK(r.last(0).empty());
 }
+
+#include "core/log_file_cap.h"
+
+TEST_CASE("log_file_cap: default cap is 1 MiB") {
+    CHECK(LogFileCap::kDefaultCap == 1024u * 1024u);
+}
+
+TEST_CASE("log_file_cap: one final marker line at the cap, nothing after it") {
+    const size_t cap = 200;
+    LogFileCap c(cap);
+    std::string file;
+    int markers = 0;
+    size_t writesAfterMarker = 0;
+    for (int i = 0; i < 100; ++i) {
+        std::string out = c.next("line number " + std::to_string(i));
+        if (markers > 0 && !out.empty()) ++writesAfterMarker;
+        if (out.find(LogFileCap::kMarker) != std::string::npos) ++markers;
+        file += out;
+    }
+    CHECK(markers == 1);
+    CHECK(writesAfterMarker == 0);
+    CHECK(c.capped());
+    CHECK(file.size() <= cap);
+    CHECK(c.written() == file.size());
+    // The marker is the last line of the file.
+    const std::string tail = std::string(LogFileCap::kMarker) + "\r\n";
+    REQUIRE(file.size() >= tail.size());
+    CHECK(file.compare(file.size() - tail.size(), tail.size(), tail) == 0);
+    // Lines before it are whole, CRLF-terminated.
+    CHECK(file.rfind("line number 0\r\n", 0) == 0);
+    CHECK(c.next("more").empty());
+}
+
+TEST_CASE("log_file_cap: lines that fit are written verbatim with CRLF") {
+    LogFileCap c(1024);
+    CHECK(c.next("hello") == "hello\r\n");
+    CHECK(c.written() == 7);
+    CHECK_FALSE(c.capped());
+}
+
+TEST_CASE("log_file_cap: a single oversized line trips the cap immediately") {
+    LogFileCap c(64);
+    std::string out = c.next(std::string(1000, 'x'));
+    CHECK(out == std::string(LogFileCap::kMarker) + "\r\n");
+    CHECK(c.capped());
+    CHECK(c.next("y").empty());
+}
