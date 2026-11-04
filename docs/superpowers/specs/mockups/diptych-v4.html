@@ -1,0 +1,101 @@
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap">
+<style>
+  .v4 { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; }
+  .cap { text-align:center; color:var(--text-secondary); font-size:13px; margin-top:8px; }
+  .d { --bg:#151412; --s1:#1e1c19; --s2:#26231f; --ink:#f2ece1; --mut:#a39a8b; --brass:#c9a45c; --line:#3a352e;
+    width:520px; height:453px; border-radius:12px; overflow:hidden; position:relative; background:var(--bg); color:var(--ink);
+    font-family:'Manrope',system-ui,sans-serif; box-shadow:0 0 0 6px #111, 0 0 0 7px #333; }
+  .bar { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--line); }
+  .mark { display:flex; gap:2px; align-items:center; }
+  .mark i { display:block; width:9px; height:16px; border:1.6px solid var(--brass); border-radius:2px; }
+  .mark b { display:block; width:2px; height:8px; background:var(--brass); border-radius:1px; }
+  .word { font-family:'Fraunces',serif; font-weight:700; font-size:18px; letter-spacing:.2px; }
+  .say { font-size:9px; color:var(--mut); margin-left:-6px; margin-top:4px; }
+  .tabs { display:flex; gap:14px; margin-left:auto; font-size:11.5px; color:var(--mut); }
+  .tabs span.on { color:var(--ink); border-bottom:2px solid var(--brass); padding-bottom:2px; }
+  .gear { color:var(--mut); font-size:14px; }
+  .status { padding:6px 14px; font-size:10.5px; color:var(--mut); display:flex; gap:12px; }
+  .status .ok { color:#9fd49a; } .status .warn { color:#e8b75d; }
+  .shelf { display:flex; gap:12px; padding:6px 14px 0; align-items:flex-end; }
+  .cov { width:112px; flex:none; border-radius:8px; overflow:hidden; position:relative; background:var(--s2); border:1px solid var(--line); }
+  .cov img { display:block; width:100%; aspect-ratio:2/3; object-fit:cover; }
+  .cov.sel { width:132px; outline:2px solid var(--brass); outline-offset:2px; }
+  .cov .split { display:flex; aspect-ratio:2/3; }
+  .cov .split img { width:50%; aspect-ratio:auto; height:100%; object-fit:cover; }
+  .cov .split .hinge { width:2px; background:var(--brass); }
+  .rib { position:absolute; left:0; right:0; bottom:0; padding:4px 6px; font-size:9.5px; font-weight:700; letter-spacing:.8px;
+    background:linear-gradient(0deg, rgba(10,9,8,.92), rgba(10,9,8,.55)); }
+  .rib.ready { color:var(--brass); } .rib.setup { color:#e8b75d; } .rib.soon { color:var(--mut); }
+  .dim { opacity:.5; }
+  .info { margin:10px 14px 0; padding:9px 12px; border-radius:10px; background:var(--s1); border:1px solid var(--line); display:flex; gap:12px; align-items:center; }
+  .info .t { font-family:'Fraunces',serif; font-size:15px; font-weight:700; }
+  .info .s { font-size:10.5px; color:var(--mut); margin-top:2px; }
+  .cta { margin-left:auto; padding:7px 14px; border-radius:999px; background:var(--brass); color:#1a1611; font-weight:700; font-size:11.5px; white-space:nowrap; }
+  .cta.o { background:transparent; color:var(--ink); border:1px solid var(--line); }
+  /* fold-out detail */
+  .fold { display:flex; height:calc(100% - 41px); }
+  .leaf { flex:1; position:relative; }
+  .leaf.l { flex:0 0 44%; overflow:hidden; border-right:2px solid var(--brass); }
+  .leaf.l img.hero { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:saturate(.9) brightness(.72); }
+  .leaf.l .logo { position:absolute; left:12px; right:12px; bottom:58px; }
+  .leaf.l .logo img { max-width:100%; max-height:70px; }
+  .leaf.l .meta { position:absolute; left:12px; right:12px; bottom:12px; font-size:10px; color:#e9e1d1; }
+  .tag { display:inline-block; font-size:9.5px; font-weight:700; letter-spacing:.8px; padding:2px 8px; border-radius:4px; border:1px solid #e8b75d; color:#e8b75d; margin-bottom:5px; }
+  .leaf.r { padding:12px; display:flex; flex-direction:column; gap:8px; overflow:hidden; }
+  .blk { background:var(--s1); border:1px solid var(--line); border-radius:10px; padding:8px 10px; font-size:10.5px; color:var(--mut); }
+  .blk h4 { margin:0 0 4px; font-family:'Fraunces',serif; font-size:12.5px; color:var(--ink); font-weight:700; }
+  .ck { display:flex; gap:6px; margin:2px 0; color:var(--ink); }
+  .ck .n { width:14px; height:14px; border-radius:50%; border:1px solid var(--line); font-size:9px; display:flex; align-items:center; justify-content:center; flex:none; }
+  .ck .n.done { background:var(--brass); color:#1a1611; border-color:var(--brass); }
+  .ww { display:flex; gap:4px; align-items:center; margin-top:4px; }
+  .ww div { border:1px solid var(--line); border-radius:4px; padding:3px 5px; font-size:9px; color:var(--ink); background:var(--s2); }
+  .ww b { width:2px; height:20px; background:var(--brass); }
+</style>
+
+<h2>Diptych v4: its own identity, with Steam artwork</h2>
+<p class="subtitle">Nothing here is taken from DualScreen Launcher: a warm charcoal-and-brass gallery look, a serif wordmark with a two-panel hinge mark, a cover shelf across the top instead of a side rail, and a two-leaf "fold-out" details page. Covers are Steam's own artwork, fetched live (the TTW cover is Fallout 3 and New Vegas side by side).</p>
+
+<div class="v4">
+  <div>
+    <div class="d">
+      <div class="bar"><div class="mark"><i></i><b></b><i></i></div><span class="word">Diptych</span><span class="say">DIP-tick</span>
+        <div class="tabs"><span class="on">Shelf</span><span>Device</span><span>Guide</span></div><span class="gear">⚙</span></div>
+      <div class="status"><span>1 of 3 ready</span><span class="ok">● GameNative 1.3.0</span><span class="warn">● Focus Lock off</span></div>
+      <div class="shelf">
+        <div class="cov"><div class="split">
+          <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/22370/library_600x900.jpg" alt="Fallout 3"><span class="hinge"></span>
+          <img src="https://cdn.cloudflare.steamstatic.com/steam/apps/22380/library_600x900.jpg" alt="New Vegas"></div>
+          <div class="rib ready">✓ READY</div></div>
+        <div class="cov sel"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/2552430/library_600x900.jpg" alt="KH 1.5+2.5"><div class="rib setup">SET UP · KH1</div></div>
+        <div class="cov dim"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/2552430/library_600x900.jpg" alt="KH 1.5+2.5"><div class="rib soon">SOON · KH2</div></div>
+      </div>
+      <div class="info"><div><div class="t">Kingdom Hearts Final Mix</div><div class="s">Map with chests · quick magic & items · party HP</div></div><span class="cta">Set up</span></div>
+    </div>
+    <div class="cap">The shelf: covers across the top, the selected game's line underneath</div>
+  </div>
+
+  <div>
+    <div class="d">
+      <div class="bar"><div class="mark"><i></i><b></b><i></i></div><span class="word">Diptych</span>
+        <div class="tabs"><span class="on">Shelf</span><span>Device</span><span>Guide</span></div><span class="gear">⚙</span></div>
+      <div class="fold">
+        <div class="leaf l">
+          <img class="hero" src="https://cdn.cloudflare.steamstatic.com/steam/apps/2552430/library_hero.jpg" alt="">
+          <div class="logo"><img src="https://cdn.cloudflare.steamstatic.com/steam/apps/2552430/logo.png" alt="KH logo"></div>
+          <div class="meta"><span class="tag">NEEDS SETUP</span><br>Kingdom Hearts Final Mix<br>Steam 1.0.0.2 · GameNative 1.3.0+</div>
+        </div>
+        <div class="leaf r">
+          <div class="blk"><h4>Before you play</h4>
+            <div class="ck"><span class="n done">✓</span>Mod downloaded (0.2.0)</div>
+            <div class="ck"><span class="n">2</span>In GameNative: KH 1.5+2.5 → Mods → Import</div>
+            <div class="ck"><span class="n">3</span>Start KH1 once; Diptych ticks this off</div></div>
+          <div class="blk"><h4>What goes where</h4>
+            <div class="ww"><div>Top · the game</div><b></b><div>Bottom · map, magic, items, party</div></div></div>
+          <div class="blk"><h4>Mod check</h4>Every launch, Diptych and the mod compare versions. A mismatch is shown, never guessed around.</div>
+          <div style="display:flex;gap:8px;margin-top:auto"><span class="cta">Show me how</span><span class="cta o">Changelog</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="cap">The fold-out: art on the left leaf, setup on the right, hinged in brass</div>
+  </div>
+</div>

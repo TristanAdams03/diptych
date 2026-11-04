@@ -1,0 +1,95 @@
+<style>
+  .kh-wrap { display:flex; gap:28px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+  .kh-notes { max-width:420px; color:var(--text-secondary); font-size:14px; line-height:1.5; }
+  .kh-notes b { color:var(--text-primary); }
+  /* Thor bottom screen 1240x1080 → ~1.15:1 */
+  .kh { width:520px; height:453px; position:relative; overflow:hidden; border-radius:10px;
+    background:radial-gradient(120% 90% at 30% 10%, #1b2f63 0%, #0b1533 55%, #070d22 100%);
+    color:#eef3ff; font-family:'Trebuchet MS','Segoe UI',sans-serif; box-shadow:0 0 0 6px #111, 0 0 0 7px #333; }
+  .kh .panel { background:linear-gradient(180deg, rgba(76,122,214,.55), rgba(30,58,128,.55));
+    border:2px solid rgba(220,235,255,.85); border-radius:10px; box-shadow:inset 0 0 8px rgba(255,255,255,.18); }
+  .kh-top { position:absolute; left:10px; right:10px; top:8px; padding:6px 10px; display:flex; flex-direction:column; gap:2px; }
+  .kh-top .where { font-weight:700; letter-spacing:.5px; font-size:14px; }
+  .kh-top .next { font-size:13px; color:#ffe58a; }
+  .kh-map { position:absolute; left:10px; top:68px; width:300px; height:330px; }
+  .room { position:absolute; padding:4px 6px; font-size:11px; line-height:1.2; text-align:center;
+    background:rgba(18,34,78,.9); border:1.5px solid rgba(190,210,255,.7); border-radius:6px; }
+  .room .ch { display:block; font-size:10px; color:#ffd36b; }
+  .room.here { background:rgba(70,150,255,.95); border-color:#fff; box-shadow:0 0 10px #8fc3ff; }
+  .room.next { border-color:#ffe58a; box-shadow:0 0 10px rgba(255,229,138,.9); }
+  .link { position:absolute; background:rgba(190,210,255,.6); }
+  .kh-side { position:absolute; right:10px; top:68px; width:192px; display:flex; flex-direction:column; gap:8px; }
+  .party { padding:6px 8px; font-size:11px; display:flex; flex-direction:column; gap:4px; }
+  .pm { display:flex; align-items:center; gap:5px; }
+  .pm span:first-child { width:42px; }
+  .bar { flex:1; height:6px; border-radius:3px; background:rgba(0,0,0,.45); position:relative; overflow:hidden; }
+  .bar i { position:absolute; left:0; top:0; bottom:0; }
+  .hp i { background:linear-gradient(90deg,#3fe36b,#b6ff6b); }
+  .mp i { background:linear-gradient(90deg,#3d7dff,#7fd1ff); }
+  .grid { padding:6px; display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+  .grid .t { grid-column:1/3; font-size:11px; letter-spacing:1px; color:#cfe0ff; }
+  .btn { background:linear-gradient(180deg,#2e5fc7,#183a86); border:1.5px solid #d8e6ff; border-radius:7px;
+    font-size:12px; padding:6px 4px; text-align:center; }
+  .btn small { display:block; font-size:10px; color:#cfe0ff; }
+  .kh-tabs { position:absolute; left:10px; right:10px; bottom:8px; height:34px; display:flex; }
+  .kh-tabs span { flex:1; display:flex; align-items:center; justify-content:center; font-size:12px; letter-spacing:1px; }
+  .kh-tabs span.on { background:rgba(110,170,255,.35); border-radius:7px; }
+</style>
+
+<h2>KH1 bottom screen: a first guess to react to (v2)</h2>
+<p class="subtitle">Drawn at the Thor's bottom-screen shape. Everything here is my guess at what you described: where to go next, where the chests are, and magic and items without the command menu. The style is placeholder KH1-blue; the real one would borrow the game's look.</p>
+
+<div class="kh-wrap">
+  <div class="kh">
+    <div class="kh-top panel">
+      <div class="where">TRAVERSE TOWN · SECOND DISTRICT</div>
+      <div class="next">▶ Next: head to the Hotel and talk to Leon <span style="color:#cfe0ff">(tap to hide spoilers)</span></div>
+    </div>
+
+    <div class="kh-map panel">
+      <!-- links -->
+      <div class="link" style="left:70px;top:50px;width:4px;height:60px"></div>
+      <div class="link" style="left:142px;top:130px;width:18px;height:4px"></div>
+      <div class="link" style="left:212px;top:96px;width:4px;height:22px"></div>
+      <div class="link" style="left:70px;top:146px;width:4px;height:54px"></div>
+      <div class="link" style="left:212px;top:154px;width:4px;height:46px"></div>
+      <div class="link" style="left:122px;top:218px;width:38px;height:4px"></div>
+      <!-- rooms -->
+      <div class="room" style="left:22px;top:14px;width:100px">1st District<span class="ch">✦ 2 / 4 chests</span></div>
+      <div class="room" style="left:160px;top:60px;width:110px">Accessory Shop<span class="ch">✦ 0 / 1</span></div>
+      <div class="room here" style="left:22px;top:110px;width:120px">2nd District ◉ you<span class="ch">✦ 1 / 3 chests</span></div>
+      <div class="room next" style="left:160px;top:118px;width:110px">Hotel ← next<span class="ch">✦ 0 / 2</span></div>
+      <div class="room" style="left:22px;top:200px;width:100px">3rd District<span class="ch">✦ 0 / 3</span></div>
+      <div class="room" style="left:160px;top:200px;width:110px">Alleyway<span class="ch">✦ 1 / 1 ✓</span></div>
+      <div class="room" style="left:22px;top:272px;width:248px;opacity:.55">Mystical House · Secret Waterway<span class="ch">locked for now</span></div>
+    </div>
+
+    <div class="kh-side">
+      <div class="panel party">
+        <div class="pm"><span>SORA</span><span class="bar hp"><i style="width:72%"></i></span></div>
+        <div class="pm"><span></span><span class="bar mp"><i style="width:60%"></i></span></div>
+        <div class="pm"><span>DONALD</span><span class="bar hp"><i style="width:40%"></i></span></div>
+        <div class="pm"><span>GOOFY</span><span class="bar hp"><i style="width:90%"></i></span></div>
+      </div>
+      <div class="panel grid">
+        <div class="t">MAGIC · tap to cast</div>
+        <div class="btn">Fire</div><div class="btn">Blizzard</div>
+        <div class="btn">Thunder</div><div class="btn">Cure</div>
+      </div>
+      <div class="panel grid">
+        <div class="t">ITEMS · tap to use</div>
+        <div class="btn">Potion<small>×6</small></div><div class="btn">Hi-Potion<small>×2</small></div>
+        <div class="btn">Ether<small>×3</small></div><div class="btn">Elixir<small>×1</small></div>
+      </div>
+    </div>
+
+    <div class="kh-tabs panel"><span class="on">MAP</span><span>MAGIC & ITEMS</span><span>PARTY</span><span>JOURNAL</span></div>
+  </div>
+
+  <div class="kh-notes">
+    <p><b>Map:</b> each world as a diagram of its rooms. The room you're in is lit up, the next place to go glows gold, and every room shows how many chests you've opened there.</p>
+    <p><b>Next:</b> one line telling you where to go, worked out from the game's story progress. It can be hidden if you don't want spoilers.</p>
+    <p><b>Magic and items:</b> tap to cast or use mid-fight. No L1 juggling, no command-menu scrolling.</p>
+    <p><b>Party:</b> HP and MP for Sora, Donald and Goofy stay pinned beside the map, so you know when to Cure.</p>
+  </div>
+</div>
