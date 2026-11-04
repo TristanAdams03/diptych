@@ -45,6 +45,8 @@ class MainActivity : ComponentActivity() {
                 log = log,
                 focusOn = focusOn.value,
                 onFetchModLog = { client.fetchModLog() },
+                onTestJump = { client.testPress(0x20, 150) },
+                onTestCast = { client.testPress(0x14, 300) },
                 onToggleFocus = {
                     focusMode?.toggle()
                     focusOn.value = focusMode?.enabled ?: false

@@ -95,6 +95,12 @@ class SpikeClient(
     /** `kh1.log` (works on any build); the reply's lines land in [SpikeUi.modLog]. */
     fun fetchModLog(): String? = command("kh1.log")
 
+    /** `kh1.pressInput` with a PS2-style mask in byte 1 (B 0x20, LB 0x04 + Y 0x10 = 0x14). */
+    fun testPress(mask: Int, durationMs: Int): String? = command(
+        "kh1.pressInput",
+        JsonObject(mapOf("byteIndex" to JsonPrimitive(1), "mask" to JsonPrimitive(mask), "durationMs" to JsonPrimitive(durationMs))),
+    )
+
     private suspend fun connectLoop() {
         var backoff = BACKOFF_START_MS
         while (scope.isActive) {

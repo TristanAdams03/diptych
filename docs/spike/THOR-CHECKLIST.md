@@ -12,7 +12,7 @@ STALLED is not proof that the game's frame loop is running or frozen.
 
 ## Steps
 
-1. From the release, download `Diptych-KH1-mod-v0.0.1-kh1-spike.zip` and `Diptych-v0.0.1-kh1-spike.apk`.
+1. From the release, download `Diptych-KH1-mod-v0.0.3-kh1-spike.zip` and `Diptych-v0.0.3-kh1-spike.apk`.
 2. Open GameNative. Open the page for KH 1.5+2.5.
 3. Tap Mods, then Import.
 4. Pick the zip.
@@ -32,10 +32,14 @@ STALLED is not proof that the game's frame loop is running or frozen.
     - If they don't: GameNative → Mods → remove the mod. Nothing else changes.
     - Then tell Claude.
 14. Tap the bottom screen 5 times. Check the game keeps running.
-15. Tap **Fetch mod log**. (The game folder is private on Android, so this is the only way to get the log.)
-16. Tap **Copy report**.
-17. Paste both to Claude.
-18. Optional: try **Focus mode** and say what it does.
+15. Stand Sora somewhere safe, with no menu open.
+16. Tap **Test press B**. Write down what Sora does (on the PC it was a jump).
+17. Tap **Test press LB+Y**. Write down what happens (on the PC it cast the LB+Y shortcut spell).
+    - If a "choose a party member" list opens, pick anyone or back out as usual.
+18. Tap **Fetch mod log**. (The game folder is private on Android, so this is the only way to get the log.)
+19. Tap **Copy report**.
+20. Paste both to Claude.
+21. Optional: try **Focus mode** and say what it does.
 
 ## Uninstall
 

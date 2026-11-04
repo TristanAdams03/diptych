@@ -47,6 +47,8 @@ fun SpikeScreen(
     log: List<String>,
     focusOn: Boolean,
     onFetchModLog: () -> Unit,
+    onTestJump: () -> Unit,
+    onTestCast: () -> Unit,
     onToggleFocus: () -> Unit,
     onCopyReport: () -> Unit,
 ) {
@@ -80,6 +82,8 @@ fun SpikeScreen(
         ) {
             SpikeButton("Copy report", onCopyReport)
             SpikeButton("Fetch mod log", onFetchModLog)
+            SpikeButton("Test press B", onTestJump)
+            SpikeButton("Test press LB+Y", onTestCast)
             SpikeButton("Focus mode ${if (focusOn) "on" else "off"}", onToggleFocus)
         }
         Line("last result: ${ui.lastResult ?: "-"}")

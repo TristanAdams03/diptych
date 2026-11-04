@@ -21,7 +21,7 @@ If KH1 won't start or the controls die: delete `dinput8.dll` from the game folde
 4. Walk to 3 different rooms and 2 different worlds. Claude checks that `world` and `room` change, and which of `world` and `worldAlt` is right.
 5. Take some damage. Claude checks the HP numbers.
 6. Hold L1. Then press each face button. Then each shoulder button. Claude records `inputBytes` for each.
-7. Claude tries `press` with the masks found in the last step, aiming to cast shortcut 1. Tell Claude what Sora does.
+7. Claude tries `press` (byte 1, PS2-style mask, sent through the XInput hook), aiming to cast shortcut 1. Tell Claude what Sora does.
 8. Open the menu. Claude tries `press`. It should say `not safe now`.
 9. Quit KH1. Delete `dinput8.dll`. Start KH1 again and check it starts normally.
 
