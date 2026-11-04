@@ -1,7 +1,7 @@
 # Diptych KH1 probe client (Windows PowerShell 5.1, no modules).
 # Connects to the KH1 mod on ws://127.0.0.1:<Port>, sends hello then one request, and prints each
 # JSON reply on its own line. No Origin header is sent (the mod rejects any Origin).
-# Exit codes: 0 ok, 1 connection failure or 5 s timeout, 2 bad arguments.
+# Exit codes: 0 ok, 1 connection failure, 5 s timeout or bad arguments (PowerShell parameter validation).
 #
 # From WSL:
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w tools/probe/probe.ps1)" -Command state

@@ -118,7 +118,7 @@ async def test_unsupported_commands():
         r = await rpc(ws, cmd("kh1.log", {}))
         assert r["ok"] is True
         assert r["data"]["lines"][0] == "diptych_kh1 0.0.1-spike loaded"
-        assert "unsupported" in r["data"]["lines"][1]
+        assert "not supported" in r["data"]["lines"][1]
 
 
 async def test_log_pinned_startup_lines_first():
@@ -209,6 +209,10 @@ async def test_press_unsafe_refused_matches_fixture():
     ({"byteIndex": 0, "mask": 1, "durationMs": 15}, "out of range"),
     ({"byteIndex": 0, "mask": 1, "durationMs": 1001}, "out of range"),
     ({"byteIndex": 0, "mask": 1}, "bad command"),
+    ({"byteIndex": 9, "mask": "x", "durationMs": 100}, "out of range"),  # per-field order
+    ({"byteIndex": "x", "mask": 999, "durationMs": 100}, "bad command"),
+    ({"byteIndex": 0, "mask": 999, "durationMs": "x"}, "out of range"),
+    ({"byteIndex": 0, "mask": 1, "durationMs": 5.5}, "bad command"),
     ({"byteIndex": "0", "mask": 1, "durationMs": 100}, "bad command"),
 ])
 async def test_press_arg_validation(args, err):
@@ -281,8 +285,8 @@ async def test_pong_echoes_only_integer_t():
     async with server, connect(url) as ws:
         assert await rpc(ws, {"type": "ping", "t": 5}) == {"type": "pong", "t": 5}
         for t in ("x", 1.5, True, None, [1]):
-            assert await rpc(ws, {"type": "ping", "t": t}) == {"type": "pong"}
-        assert await rpc(ws, {"type": "ping"}) == {"type": "pong"}
+            assert await rpc(ws, {"type": "ping", "t": t}) == {"type": "pong", "t": 0}
+        assert await rpc(ws, {"type": "ping"}) == {"type": "pong", "t": 0}
 
 
 async def test_origin_and_host_rejected():
@@ -305,3 +309,55 @@ async def test_origin_and_host_rejected():
         assert b" 403 " in await raw("evil.example:7970")
         assert b" 101 " in await raw(f"127.0.0.1:{port}")
         assert b" 101 " in await raw(f"localhost:{port}")
+
+
+async def test_probe_per_field_order():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        r = await rpc(ws, cmd("kh1.probe", {"offset": -1, "length": "x"}))
+        assert r["error"] == "out of range"
+        r = await rpc(ws, cmd("kh1.probe", {"offset": "x", "length": 999}))
+        assert r["error"] == "bad command"
+
+
+async def test_busy_checked_before_not_safe_now():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        press = cmd("kh1.pressInput", {"byteIndex": 0, "mask": 16, "durationMs": 1000})
+        assert (await rpc(ws, press))["ok"] is True
+        server.mock.unsafe = True
+        assert (await rpc(ws, press))["error"] == "busy"
+        server.mock.press = None
+        assert (await rpc(ws, press))["error"] == "not safe now"
+
+
+async def test_subscribe_defaults_and_topics():
+    server, url = await start()
+    async with server:
+        async with connect(url) as ws:  # default 5 Hz
+            await ws.send(json.dumps({"type": "subscribe", "topics": ["kh1.spike"]}))
+            assert 4 <= len(await collect_states(ws, 1.0)) <= 6
+        async with connect(url) as ws:  # float rate accepted and clamped
+            await ws.send(json.dumps({"type": "subscribe", "topics": ["kh1.spike"], "rateHz": 99.5}))
+            assert 8 <= len(await collect_states(ws, 1.0)) <= 12
+        async with connect(url) as ws:  # wrong / missing topics: no stream
+            for m in ({"type": "subscribe", "topics": ["other"]}, {"type": "subscribe"}):
+                await ws.send(json.dumps(m))
+                assert await collect_states(ws, 0.5) == []
+            await ws.send(json.dumps({"type": "subscribe", "topics": ["kh1.spike"]}))
+            assert await collect_states(ws, 0.5)
+            await ws.send(json.dumps({"type": "subscribe", "topics": []}))  # unsubscribes
+            await collect_states(ws, 0.3)
+            assert await collect_states(ws, 0.5) == []
+
+
+async def test_log_wording_unsupported_and_press_line():
+    server, url = await start(unsupported=True)
+    async with server, connect(url) as ws:
+        r = await rpc(ws, cmd("kh1.log", {}))
+        assert "build egs-1.0.0.10 not supported" in r["data"]["lines"]
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await rpc(ws, fixture("command_press.json"))
+        r = await rpc(ws, cmd("kh1.log", {}))
+        assert "press start byte 0 mask 16 for 100 ms" in r["data"]["lines"]
