@@ -1,0 +1,24 @@
+name: mod
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure (x64)
+        run: cmake -S mods/kh1 -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure -V
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build and test
+        run: cmake -S mods/kh1 -B b && cmake --build b && ctest --test-dir b --output-on-failure -V
