@@ -150,12 +150,15 @@ TEST_CASE("press_refused_when_unsafe") {
             p.tick(m, t);
             if (m.writes.size() != before) lastWriteTick = static_cast<size_t>(t - 1000);
         }
-        CHECK(m.writes.size() == 30);
-        CHECK(lastWriteTick == 29);
-        for (auto& w : m.writes) {
-            CHECK(w.first == kInputOffset + 2);
-            CHECK(w.second == 0x11);  // ORed into the existing byte
+        // 30 press writes, then one release write on the tick that ends the press.
+        REQUIRE(m.writes.size() == 31);
+        CHECK(lastWriteTick == 30);
+        for (size_t i = 0; i < 30; ++i) {
+            CHECK(m.writes[i].first == kInputOffset + 2);
+            CHECK(m.writes[i].second == 0x11);  // ORed into the existing byte
         }
+        CHECK(m.writes[30].first == kInputOffset + 2);
+        CHECK(m.writes[30].second == 0x01);  // the mask cleared, the game's own bit kept
         CHECK_FALSE(p.active());
         // The scheduler is free again.
         CHECK(run(m, true, "kh1.pressInput", press_args(0, 1, 16), p)["ok"] == true);
@@ -174,7 +177,27 @@ TEST_CASE("press_refused_when_unsafe") {
         CHECK(m.writes.size() == 2);
         m.set(kMenuOffset, 1);
         p.tick(m, 2);
-        CHECK(m.writes.size() == 2);
+        REQUIRE(m.writes.size() == 3);  // no more presses; one release write
+        CHECK(m.writes[2].second == 0x00);
+        CHECK_FALSE(p.active());
+    }
+    SUBCASE("no release write when the game changed the byte since the last press write") {
+        FakeMemory m;
+        CHECK(run(m, true, "kh1.pressInput", press_args(0, 16, 20), p)["ok"] == true);
+        for (int t = 0; t < 20; ++t) p.tick(m, t);
+        CHECK(m.writes.size() == 20);
+        m.set(kInputOffset, 0x40);  // the game rewrote its input block
+        p.tick(m, 20);
+        CHECK(m.writes.size() == 20);
+        CHECK(m.mem[kInputOffset] == 0x40);
+        CHECK_FALSE(p.active());
+    }
+    SUBCASE("no release write when nothing was written") {
+        FakeMemory m;
+        CHECK(run(m, true, "kh1.pressInput", press_args(0, 16, 100), p)["ok"] == true);
+        m.set(kMenuOffset, 1);
+        p.tick(m, 0);
+        CHECK(m.writes.empty());
         CHECK_FALSE(p.active());
     }
     SUBCASE("an unreadable input byte ends the press, presses stay enabled") {
@@ -221,9 +244,10 @@ TEST_CASE("press log lines") {
     p.start(1, 0x20, 16);
     for (int t = 0; t < 20; ++t) p.tick(m, t);
     auto lines = p.take_log();
-    REQUIRE(lines.size() == 2);
+    REQUIRE(lines.size() == 3);
     CHECK(lines[0].find("press start") != std::string::npos);
-    CHECK(lines[1].find("press end") != std::string::npos);
+    CHECK(lines[1].find("press release") != std::string::npos);
+    CHECK(lines[2].find("press end") != std::string::npos);
     CHECK(p.take_log().empty());
 }
 

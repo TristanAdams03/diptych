@@ -17,6 +17,7 @@ void PressScheduler::start(int byteIndex, uint8_t mask, int durationMs) {
     durationMs_ = durationMs;
     startMs_.reset();
     writes_ = 0;
+    lastWritten_.reset();
     log_.push_back("press start byte " + std::to_string(byteIndex) + " mask " + std::to_string(mask) + " for " +
                    std::to_string(durationMs) + " ms");
 }
@@ -27,11 +28,41 @@ void PressScheduler::end_(const std::string& why) {
     log_.push_back("press end (" + why + ") after " + std::to_string(writes_) + " writes");
 }
 
+void PressScheduler::release_(IMemory& mem) {
+    if (!lastWritten_) return;
+    const uint8_t last = *lastWritten_;
+    lastWritten_.reset();
+    const uintptr_t off = kInputOffset + static_cast<uintptr_t>(byteIndex_);
+    std::optional<uint8_t> cur;
+    try {
+        cur = mem.u8(off);
+    } catch (...) {
+    }
+    if (!cur || *cur != last) return;  // unreadable, or the game rewrote it: leave it alone
+    bool ok = false;
+    try {
+        ok = mem.write_u8(off, static_cast<uint8_t>(*cur & ~mask_));
+    } catch (...) {
+    }
+    if (!ok) {
+        writesDisabled_ = true;
+        log_.push_back("press release write faulted, presses disabled for this session");
+        return;
+    }
+    log_.push_back("press release: cleared mask from the input byte");
+}
+
 void PressScheduler::tick(IMemory& mem, int64_t nowMs) {
     if (!active_) return;
     if (!startMs_) startMs_ = nowMs;
-    if (nowMs - *startMs_ >= durationMs_) return end_("done");
-    if (!safe_now(mem)) return end_("aborted: not safe now");
+    if (nowMs - *startMs_ >= durationMs_) {
+        release_(mem);
+        return end_("done");
+    }
+    if (!safe_now(mem)) {
+        release_(mem);
+        return end_("aborted: not safe now");
+    }
     const uintptr_t off = kInputOffset + static_cast<uintptr_t>(byteIndex_);
     std::optional<uint8_t> cur;
     try {
@@ -39,15 +70,18 @@ void PressScheduler::tick(IMemory& mem, int64_t nowMs) {
     } catch (...) {
     }
     if (!cur) return end_("aborted: input byte unreadable");
+    const uint8_t v = static_cast<uint8_t>(*cur | mask_);
     bool ok = false;
     try {
-        ok = mem.write_u8(off, static_cast<uint8_t>(*cur | mask_));
+        ok = mem.write_u8(off, v);
     } catch (...) {
     }
     if (!ok) {
         writesDisabled_ = true;
+        lastWritten_.reset();
         return end_("aborted: write faulted, presses disabled for this session");
     }
+    lastWritten_ = v;
     ++writes_;
 }
 

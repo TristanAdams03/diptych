@@ -145,17 +145,20 @@ TEST_CASE("runtime_end_to_end") {
     CHECK(res["error"] == "unknown command");
 
     r.halt();
-    REQUIRE_FALSE(r.mem.writes.empty());
-    for (auto& wr : r.mem.writes) {
-        CHECK(wr.first == core::kInputOffset);
-        CHECK(wr.second == 0x10);
+    REQUIRE(r.mem.writes.size() >= 2);
+    for (size_t i = 0; i < r.mem.writes.size(); ++i) {
+        CHECK(r.mem.writes[i].first == core::kInputOffset);
+        // Press writes OR the mask in; the last write releases it (FakeMemory never rewrites the byte).
+        CHECK(r.mem.writes[i].second == (i + 1 == r.mem.writes.size() ? 0x00 : 0x10));
     }
-    bool started = false, ended = false;
+    bool started = false, released = false, ended = false;
     for (auto& l : r.ring.last(500)) {
         started |= l.find("press start") != std::string::npos;
+        released |= l.find("press release") != std::string::npos;
         ended |= l.find("press end (done)") != std::string::npos;
     }
     CHECK(started);
+    CHECK(released);
     CHECK(ended);
 }
 

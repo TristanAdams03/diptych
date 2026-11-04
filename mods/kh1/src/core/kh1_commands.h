@@ -17,6 +17,9 @@ namespace diptych::core {
 // tick ORs `mask` into the byte at kInputOffset + byteIndex. The press window starts at the first
 // tick after start() and lasts durationMs. A tick that finds the game unsafe (safe_now false) or
 // fails to read the byte ends the press; a failed write also disables presses for the session.
+// When a press ends for "done" or "not safe now", if the byte still holds the last value written,
+// one more write clears `mask` from it, so the button is not left held if the game does not
+// rewrite its input block every frame. If the game has changed the byte since, it is left alone.
 class PressScheduler {
 public:
     void start(int byteIndex, uint8_t mask, int durationMs);
@@ -28,6 +31,7 @@ public:
 
 private:
     void end_(const std::string& why);
+    void release_(IMemory& mem);
     bool active_ = false;
     bool writesDisabled_ = false;
     int byteIndex_ = 0;
@@ -35,6 +39,7 @@ private:
     int durationMs_ = 0;
     std::optional<int64_t> startMs_;
     int writes_ = 0;
+    std::optional<uint8_t> lastWritten_;
     std::vector<std::string> log_;
 };
 
