@@ -15,6 +15,30 @@ jobs:
         run: cmake --build build --config Release
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure -V
+      - name: Check dinput8.dll (x64, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build/Release/dinput8.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          $names = "DirectInput8Create", "DllCanUnloadNow", "DllGetClassObject", "DllRegisterServer", "DllUnregisterServer", "GetdfDIJoystick"
+          $out -split "`n" | Select-String -Pattern ("machine|DLL characteristics|" + ($names -join "|")) | ForEach-Object { Write-Host $_.Line.Trim() }
+          if ($out -notmatch "8664 machine \(x64\)") { throw "DLL is not x64" }
+          foreach ($name in $names) {
+            # an exports-table row: ordinal, hint, RVA, then exactly the undecorated name
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diptych-kh1-dinput8
+          path: build/Release/dinput8.dll
+          if-no-files-found: error
 
   linux:
     runs-on: ubuntu-latest
