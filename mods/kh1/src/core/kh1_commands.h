@@ -49,8 +49,13 @@ inline constexpr size_t kLogLines = 200;
 // "unknown command"; kh1.log always succeeds with the pinned lines of `log`, then its last 200 others (none if null);
 // !supported -> "unsupported build"; missing/non-integer args -> "bad command"; out-of-range args
 // or a faulted probe read -> "out of range"; a press while one runs -> "busy"; a press when
-// !safe_now or after a write fault -> "not safe now". Exceptions become "internal error".
+// !safe_now, after a write fault, or when a safety-gate reader (menu, cutscene, Gummi, the input
+// byte) is disabled -> "not safe now". Exceptions become "internal error".
+// `gate` is the memory the press ticks use (the runtime's DisablingMemory); the press safety
+// check runs on it so a reader that faulted earlier refuses the press up front. Null -> `mem`.
+// Probes always read `mem`, so a faulting probe never turns off a state reader.
 std::string run_kh1_command(IMemory& mem, bool supported, const std::string& id, const std::string& name,
-                            const nlohmann::json& args, PressScheduler& press, const LogRing* log = nullptr);
+                            const nlohmann::json& args, PressScheduler& press, const LogRing* log = nullptr,
+                            IMemory* gate = nullptr);
 
 }  // namespace diptych::core

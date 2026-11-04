@@ -126,12 +126,19 @@ proto::CommandResult probe(IMemory& mem, const json& args) {
     return {true, "", json{{"offset", offset}, {"hex", to_hex(*b)}}};
 }
 
-proto::CommandResult press_input(IMemory& mem, const json& args, PressScheduler& press) {
+proto::CommandResult press_input(IMemory& gate, const json& args, PressScheduler& press) {
     const int64_t byteIndex = int_arg(args, "byteIndex", 0, 3);
     const int64_t mask = int_arg(args, "mask", 0, 255);
     const int64_t durationMs = int_arg(args, "durationMs", 16, 1000);
     if (press.active()) throw Fail{"busy"};
-    if (press.writes_disabled() || !safe_now(mem)) throw Fail{"not safe now"};
+    if (press.writes_disabled() || !safe_now(gate)) throw Fail{"not safe now"};
+    // The first tick reads this byte through the same gate; if that reader is off, say so now.
+    std::optional<uint8_t> in;
+    try {
+        in = gate.u8(kInputOffset + static_cast<uintptr_t>(byteIndex));
+    } catch (...) {
+    }
+    if (!in) throw Fail{"not safe now"};
     press.start(static_cast<int>(byteIndex), static_cast<uint8_t>(mask), static_cast<int>(durationMs));
     return {true, "", nullptr};
 }
@@ -147,7 +154,7 @@ proto::CommandResult log_lines(const LogRing* log) {
 }  // namespace
 
 std::string run_kh1_command(IMemory& mem, bool supported, const std::string& id, const std::string& name,
-                            const json& args, PressScheduler& press, const LogRing* log) {
+                            const json& args, PressScheduler& press, const LogRing* log, IMemory* gate) {
     proto::CommandResult r;
     try {
         const bool isProbe = name == "kh1.probe", isPress = name == "kh1.pressInput", isLog = name == "kh1.log";
@@ -157,7 +164,7 @@ std::string run_kh1_command(IMemory& mem, bool supported, const std::string& id,
             r = log_lines(log);
         } else {
             if (!supported) throw Fail{"unsupported build"};
-            r = isProbe ? probe(mem, args) : press_input(mem, args, press);
+            r = isProbe ? probe(mem, args) : press_input(gate ? *gate : mem, args, press);
         }
     } catch (const Fail& f) {
         r = {false, f.error, nullptr};

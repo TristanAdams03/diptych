@@ -200,7 +200,7 @@ TEST_CASE("press_refused_when_unsafe") {
         CHECK(m.writes.empty());
         CHECK_FALSE(p.active());
     }
-    SUBCASE("an unreadable input byte ends the press, presses stay enabled") {
+    SUBCASE("an unreadable input byte ends the press without the write-fault disable") {
         FakeMemory m;
         CHECK(run(m, true, "kh1.pressInput", press_args(1, 16, 100), p)["ok"] == true);
         m.faults.insert(kInputOffset + 1);
@@ -219,6 +219,36 @@ TEST_CASE("press_refused_when_unsafe") {
         CHECK(p.writes_disabled());
         m.writeFaults.clear();
         check_err(run(m, true, "kh1.pressInput", press_args(0, 16, 100), p), "not safe now");
+    }
+}
+
+TEST_CASE("pressInput refuses once a safety-gate reader is disabled") {
+    // Minor 4: the press ticks read through a DisablingMemory. After one transient fault the reader
+    // stays off, so every later press would abort on its first tick; the command must say so.
+    PressScheduler p;
+    SUBCASE("menu reader") {
+        FakeMemory m;
+        DisablingMemory g(m);
+        m.faults.insert(kMenuOffset);
+        CHECK_FALSE(safe_now(g));  // the transient fault turns the reader off
+        m.faults.clear();
+        check_err(json::parse(run_kh1_command(m, true, "c1", "kh1.pressInput", press_args(0, 16, 100), p, nullptr, &g)),
+                  "not safe now");
+        CHECK_FALSE(p.active());
+        // Raw memory alone has recovered; without the gate the press would be accepted.
+        CHECK(run(m, true, "kh1.pressInput", press_args(0, 16, 100), p)["ok"] == true);
+    }
+    SUBCASE("input byte reader") {
+        FakeMemory m;
+        DisablingMemory g(m);
+        m.faults.insert(kInputOffset + 1);
+        CHECK_FALSE(g.u8(kInputOffset + 1).has_value());
+        m.faults.clear();
+        check_err(json::parse(run_kh1_command(m, true, "c1", "kh1.pressInput", press_args(1, 16, 100), p, nullptr, &g)),
+                  "not safe now");
+        CHECK_FALSE(p.active());
+        CHECK(json::parse(run_kh1_command(m, true, "c1", "kh1.pressInput", press_args(0, 16, 100), p, nullptr, &g))["ok"] ==
+              true);
     }
 }
 

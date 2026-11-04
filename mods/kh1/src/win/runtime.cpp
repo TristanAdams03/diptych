@@ -125,9 +125,10 @@ void Runtime::commands_(int64_t now) {
     server::PendingCommand cmd;
     while (windowUsed_ < kCommandsPerWindow && server_.pollCommand(cmd)) {
         ++windowUsed_;
-        // Probes and press checks read raw memory: a faulting probe must not turn off a state reader.
+        // Probes read raw memory: a faulting probe must not turn off a state reader. The press
+        // safety check reads guarded_, like the press ticks, so a disabled gate reader refuses it.
         std::string reply =
-            core::run_kh1_command(*o_.mem, supported_(), cmd.id, cmd.name, cmd.args, press_, o_.ring);
+            core::run_kh1_command(*o_.mem, supported_(), cmd.id, cmd.name, cmd.args, press_, o_.ring, &guarded_);
         flush_press_log_();
         if (cmd.name != "kh1.log") {
             const bool ok = reply.find("\"ok\":true") != std::string::npos;
