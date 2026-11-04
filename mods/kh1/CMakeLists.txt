@@ -61,7 +61,8 @@ if(NOT EXISTS "${FIXTURES_DIR}/hello.json")
   message(FATAL_ERROR "protocol fixtures not found at FIXTURES_DIR=${FIXTURES_DIR}")
 endif()
 enable_testing()
-add_executable(kh1_tests tests/main.cpp tests/test_net.cpp tests/test_envelope.cpp tests/test_gates.cpp)
+add_executable(kh1_tests tests/main.cpp tests/test_net.cpp tests/test_envelope.cpp tests/test_gates.cpp
+  tests/test_kh1_fields.cpp tests/test_kh1_commands.cpp)
 target_compile_definitions(kh1_tests PRIVATE FIXTURES_DIR="${FIXTURES_DIR}")
 target_link_libraries(kh1_tests PRIVATE kh1_core doctest::doctest)
 kh1_warnings(kh1_tests)
@@ -78,8 +79,9 @@ if(WIN32)
 endif()
 
 if(WIN32)
-  # Windows layer: forwarder, SEH guard, module reader, file log. DllMain lives only in the DLL.
-  add_library(kh1_win STATIC src/win/forwarder.cpp src/win/log.cpp src/win/module_reader.cpp src/win/seh.cpp)
+  # Windows layer: forwarder, SEH guard, module reader/memory, file log, runtime. DllMain lives only in the DLL.
+  add_library(kh1_win STATIC src/win/forwarder.cpp src/win/log.cpp src/win/memory.cpp src/win/module_reader.cpp
+    src/win/runtime.cpp src/win/seh.cpp)
   target_compile_definitions(kh1_win PUBLIC ${KH1_WIN_DEFS})
   target_link_libraries(kh1_win PUBLIC kh1_core)
   kh1_warnings(kh1_win)
@@ -90,9 +92,17 @@ if(WIN32)
   target_link_libraries(dinput8 PRIVATE kh1_win)
   kh1_warnings(dinput8)
 
-  add_executable(kh1_win_tests tests/test_forwarder_win.cpp)
+  add_executable(kh1_win_tests tests/test_forwarder_win.cpp tests/test_memory_win.cpp)
   target_link_libraries(kh1_win_tests PRIVATE kh1_win doctest::doctest)
   kh1_warnings(kh1_win_tests)
   add_test(NAME kh1_win_tests COMMAND kh1_win_tests)
   set_tests_properties(kh1_win_tests PROPERTIES TIMEOUT 60)
+
+  # The runtime end to end: real WsServer and loop, FakeMemory for the game.
+  add_executable(kh1_runtime_tests tests/test_runtime_win.cpp)
+  target_compile_definitions(kh1_runtime_tests PRIVATE FIXTURES_DIR="${FIXTURES_DIR}")
+  target_link_libraries(kh1_runtime_tests PRIVATE kh1_win doctest::doctest)
+  kh1_warnings(kh1_runtime_tests)
+  add_test(NAME kh1_runtime_tests COMMAND kh1_runtime_tests)
+  set_tests_properties(kh1_runtime_tests PROPERTIES TIMEOUT 60)
 endif()

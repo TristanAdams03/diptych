@@ -36,4 +36,13 @@ bool seh_copy(const void* src, void* dst, size_t n) {
     }
 }
 
+bool seh_write_byte(void* addr, unsigned char v) {
+    __try {
+        *static_cast<volatile unsigned char*>(addr) = v;
+        return true;
+    } __except (seh_filter(GetExceptionCode())) {
+        return false;
+    }
+}
+
 }  // namespace diptych::win

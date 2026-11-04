@@ -40,8 +40,8 @@ attach can still be diagnosed from the app.
 | `soraHp` | int\|null | Sora's current HP |
 | `soraHpMax` | int\|null | Sora's max HP |
 | `inMenu` | bool\|null | `menu` value != 0 |
-| `inCutscene` | bool\|null | `inCutscene` value != 0 |
-| `inGummi` | bool\|null | `inGummi` value > 0 |
+| `inCutscene` | bool\|null | any of the 4 bytes at `inCutscene` != 0 |
+| `inGummi` | bool\|null | `inGummi` u32 != 0 |
 | `inputBytes` | string\|null | the 4 bytes at `0x23407B4`, lowercase hex (8 chars) |
 
 A field is `null` when unsupported or when its reader faulted (that reader is then off for the session).
@@ -52,7 +52,8 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
   A read that faults or is outside the module image fails with `out of range`.
 - `kh1.pressInput` `args:{byteIndex:0..3, mask:0..255, durationMs:16..1000}` -> ok `data:null`. ORs `mask` into
   byte `byteIndex` of the input block for `durationMs`. The only game-memory write in M0; refused with `not safe now`
-  in a menu, cutscene or Gummi, and with `unsupported build` on an unsupported build.
+  in a menu, cutscene or Gummi, and with `unsupported build` on an unsupported build. The mod re-checks those
+  flags on every write tick and ends the press early if any becomes set (or a read fails).
 - `kh1.log` `args:{}` -> ok `data:{lines:[string]}`. Recent mod log lines. Works on any build.
 - Every failed `result` has `ok:false`, `error:<string below>`, `data:null`.
 
@@ -106,5 +107,8 @@ Sources: `SteamGlobal` = `KH1-LUA-LIBRARY/scripts/io_packages/SteamGlobal_1_0_0_
 | inGummi | `0x5075A8` | u32 | `lib` `is_in_gummi_garage`: `ReadInt(inGummi) > 0` |
 | inputAddress | `0x23407B4` | 4 bytes | `lib` `get_inputs`: `ReadArray(inputAddress, 4)` |
 
-Notes: the mod's `inMenu` / `inCutscene` use "value != 0" on the byte read; the spike exists to check that against the real game.
+Notes: the mod reads `menu` as a byte and `inCutscene` and `inGummi` as 4 bytes, each "non-zero = set" (the scripts
+disagree on the `inCutscene` width and on `> 0` vs `!= 0` for `inGummi`; reading all 4 bytes is the conservative choice
+for the safety gate). It logs the raw 4-byte `inCutscene` value and the bytes `maxHP-1 .. maxHP+3` whenever they change,
+so the spike can settle both widths against the real game.
 `inGummi` comment in `SteamGlobal`: "differs to cover a change on linux systems".

@@ -13,4 +13,8 @@ bool seh_read_byte(const void* addr, unsigned char* out);
 // Copies n bytes from src to dst. Returns false if any read faults (dst is then partial).
 bool seh_copy(const void* src, void* dst, size_t n);
 
+// Stores one byte at addr. Returns false if the write raises an access violation or another
+// hardware fault (e.g. a read-only page).
+bool seh_write_byte(void* addr, unsigned char v);
+
 }  // namespace diptych::win
