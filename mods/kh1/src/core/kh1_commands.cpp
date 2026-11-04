@@ -104,8 +104,10 @@ proto::CommandResult press_input(IMemory& mem, const json& args, PressScheduler&
 
 proto::CommandResult log_lines(const LogRing* log) {
     json lines = json::array();
-    if (log)
+    if (log) {
+        for (auto& l : log->pinned()) lines.push_back(std::move(l));
         for (auto& l : log->last(kLogLines)) lines.push_back(std::move(l));
+    }
     return {true, "", json{{"lines", std::move(lines)}}};
 }
 }  // namespace

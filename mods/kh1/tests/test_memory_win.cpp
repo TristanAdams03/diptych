@@ -4,6 +4,7 @@
 #include <windows.h>
 
 #include "win/memory.h"
+#include "win/seh.h"
 
 using diptych::win::WinMemory;
 
@@ -75,4 +76,30 @@ TEST_CASE("win_memory_for_module") {
     WinMemory none(nullptr, 0);
     CHECK_FALSE(none.u8(0).has_value());
     CHECK_FALSE(none.write_u8(0, 0));
+}
+
+TEST_CASE("win_memory_guard_page_is_a_fault_not_a_crash") {
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    const size_t page = si.dwPageSize;
+    auto* p = static_cast<unsigned char*>(VirtualAlloc(nullptr, 2 * page, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
+    REQUIRE(p != nullptr);
+    p[0] = 0x42;
+    p[page] = 0x43;
+    DWORD old = 0;
+    REQUIRE(VirtualProtect(p, 2 * page, PAGE_READWRITE | PAGE_GUARD, &old));
+    WinMemory m(p, 2 * page);
+    // The first touch of each guard page raises STATUS_GUARD_PAGE_VIOLATION: reported as a fault.
+    CHECK_FALSE(m.bytes(0, 4).has_value());
+    CHECK_FALSE(m.write_u8(page, 1));
+    // The OS clears the guard bit on that first touch, so the pages are ordinary afterwards.
+    CHECK(m.u8(0) == 0x42);
+    CHECK(m.u8(page) == 0x43);
+    // The single-byte path handles it too.
+    REQUIRE(VirtualProtect(p, page, PAGE_READWRITE | PAGE_GUARD, &old));
+    unsigned char b = 0;
+    CHECK_FALSE(diptych::win::seh_read_byte(p, &b));
+    CHECK(diptych::win::seh_read_byte(p, &b));
+    CHECK(b == 0x42);
+    VirtualFree(p, 0, MEM_RELEASE);
 }

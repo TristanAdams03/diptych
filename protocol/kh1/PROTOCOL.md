@@ -103,7 +103,7 @@ Sources: `SteamGlobal` = `KH1-LUA-LIBRARY/scripts/io_packages/SteamGlobal_1_0_0_
 | soraHp | `0x2D5CC4C` | u8 | `KH-1FM-AP-LUA/1fmAPHandleDeathlink.lua`: `ReadByte(soraHP[game_version])` |
 | maxHP (soraHpMax) | `0x2DE9366` | width unconfirmed (assume u8) | only sibling reads found: `ReadByte(maxHP + off)` for stats, `ReadByte(maxHP - 0x1)`; no direct `ReadX(maxHP)` |
 | menu | `0x232DFA0` | u8 | `KH1-RANDOMIZER` `1fmFastCamera.lua` and `KH1-CROWDCONTROL`: `ReadByte(menu)` (0 = no menu) |
-| inCutscene | `0x23AB2D0` | u8 (flag bits) | `lib`/`modules/text_boxes.lua`: `ReadByte(inCutscene)`, bit 0 = window syscalls off, bit 1 (`0x02`) = event active; `modules/spawn_enemy.lua` also uses `ReadInt(inCutscene) ~= 0` |
+| inCutscene | `0x23AB2D0` | the mod reads 4 bytes, true if any is non-zero (scripts disagree: u8 flag bits / u32) | `lib`/`modules/text_boxes.lua`: `ReadByte(inCutscene)`, bit 0 = window syscalls off, bit 1 (`0x02`) = event active; `modules/spawn_enemy.lua` also uses `ReadInt(inCutscene) ~= 0` |
 | inGummi | `0x5075A8` | u32 | `lib` `is_in_gummi_garage`: `ReadInt(inGummi) > 0` |
 | inputAddress | `0x23407B4` | 4 bytes | `lib` `get_inputs`: `ReadArray(inputAddress, 4)` |
 

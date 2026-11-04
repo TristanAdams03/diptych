@@ -25,6 +25,13 @@ void Runtime::log_(const std::string& s) {
     if (o_.log) o_.log(s);
 }
 
+void Runtime::log_pinned_(const std::string& s) {
+    if (o_.logPinned)
+        o_.logPinned(s);
+    else
+        log_(s);
+}
+
 proto::Info Runtime::info_() const {
     return {kPluginVersion, "kh1", core::build_name(build_), supported_()};
 }
@@ -76,7 +83,7 @@ void Runtime::classify_(int64_t now) {
     if (!classifiedOnce_ || b != build_) {
         classifiedOnce_ = true;
         build_ = b;
-        log_(std::string("build ") + core::build_name(b) + (supported_() ? " supported" : " not supported"));
+        log_pinned_(std::string("build ") + core::build_name(b) + (supported_() ? " supported" : " not supported"));
         if (serverUp_) {
             const proto::Info info = info_();
             server_.setInfo(info);
@@ -85,7 +92,7 @@ void Runtime::classify_(int64_t now) {
     }
     if (b != core::Build::Unknown || now >= o_.classifyForMs) {
         classifying_ = false;
-        log_(std::string("build classification final: ") + core::build_name(b));
+        log_pinned_(std::string("build classification final: ") + core::build_name(b));
     }
 }
 
@@ -94,13 +101,19 @@ void Runtime::serve_(int64_t now) {
     nextServerTry_ = now + o_.serverRetryMs;
     if (server_.start(o_.bind, o_.port, info_())) {
         serverUp_ = true;
-        log_("server listening on " + o_.bind + ":" + std::to_string(server_.port()));
+        log_pinned_("server listening on " + o_.bind + ":" + std::to_string(server_.port()));
         return;
     }
     // Log the first failure and then about once a minute.
-    if (serverFailures_++ % 12 == 0)
-        log_("server could not listen on " + o_.bind + ":" + std::to_string(o_.port) + "; retrying every " +
-             std::to_string(o_.serverRetryMs / 1000) + " s");
+    if (serverFailures_ % 12 == 0) {
+        const auto line = "server could not listen on " + o_.bind + ":" + std::to_string(o_.port) + "; retrying every " +
+             std::to_string(o_.serverRetryMs / 1000) + " s";
+        if (serverFailures_ == 0)
+            log_pinned_(line);  // the first failure is a startup line too
+        else
+            log_(line);
+    }
+    ++serverFailures_;
 }
 
 void Runtime::commands_(int64_t now) {

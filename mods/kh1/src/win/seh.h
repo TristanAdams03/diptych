@@ -6,6 +6,9 @@
 
 namespace diptych::win {
 
+// All three return false on an access violation, in-page error, misalignment, bounds fault or
+// guard-page hit (PAGE_GUARD); any other exception propagates.
+
 // Copies one byte from addr into *out. Returns false (leaving *out unchanged) if the read
 // raises an access violation or another hardware fault.
 bool seh_read_byte(const void* addr, unsigned char* out);

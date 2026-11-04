@@ -36,7 +36,7 @@ std::string narrow(std::wstring_view w) {
     return s;
 }
 
-void log_line(std::string_view msg) {
+void log_line(std::string_view msg, bool pin) {
     SYSTEMTIME t;
     GetLocalTime(&t);
     char prefix[48];
@@ -56,7 +56,7 @@ void log_line(std::string_view msg) {
             }
         }
     }
-    L.ring.add(std::move(line));
+    L.ring.add(std::move(line), pin);
 }
 
 void enable_file_log() {

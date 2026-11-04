@@ -56,6 +56,7 @@ struct RunningRuntime {
             return build.load();
         };
         o.log = [this](const std::string& s) { ring.add(s); };
+        o.logPinned = [this](const std::string& s) { ring.add(s, true); };
         o.ring = &ring;
         o.classifyEveryMs = 20;
         o.classifyForMs = classifyForMs;
@@ -166,7 +167,7 @@ TEST_CASE("runtime_stops_classifying_after_the_window") {
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
     CHECK(r.classifyCalls.load() == calls);
     bool final = false;
-    for (auto& l : r.ring.last(500)) final |= l == "build classification final: unknown";
+    for (auto& l : r.ring.pinned()) final |= l == "build classification final: unknown";
     CHECK(final);
 }
 

@@ -41,7 +41,7 @@ private:
 inline constexpr size_t kLogLines = 200;
 
 // Runs one command and returns the complete `result` frame. Order of checks: unknown name ->
-// "unknown command"; kh1.log always succeeds with the last 200 lines of `log` (none if null);
+// "unknown command"; kh1.log always succeeds with the pinned lines of `log`, then its last 200 others (none if null);
 // !supported -> "unsupported build"; missing/non-integer args -> "bad command"; out-of-range args
 // or a faulted probe read -> "out of range"; a press while one runs -> "busy"; a press when
 // !safe_now or after a write fault -> "not safe now". Exceptions become "internal error".

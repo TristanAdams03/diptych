@@ -4,6 +4,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "core/log_ring.h"
 #include "core/process_gate.h"
@@ -109,4 +110,18 @@ TEST_CASE("log_file_cap: a single oversized line trips the cap immediately") {
     CHECK(out == std::string(LogFileCap::kMarker) + "\r\n");
     CHECK(c.capped());
     CHECK(c.next("y").empty());
+}
+
+TEST_CASE("log_ring: pinned lines are kept apart and bounded") {
+    LogRing r;
+    r.add("a", true);
+    for (int i = 0; i < 600; ++i) r.add("x" + std::to_string(i));
+    CHECK(r.pinned() == std::vector<std::string>{"a"});
+    CHECK(r.last(1) == std::vector<std::string>{"x599"});
+    CHECK(r.last(1000).size() == LogRing::kCapacity);  // pinned lines are not in last()
+    for (size_t i = 0; i < LogRing::kMaxPinned + 10; ++i) r.add("p" + std::to_string(i), true);
+    const auto pins = r.pinned();
+    REQUIRE(pins.size() == LogRing::kMaxPinned);
+    CHECK(pins[0] == "a");  // the earliest pins are kept: they are the startup lines
+    CHECK(r.last(1) == std::vector<std::string>{"p" + std::to_string(LogRing::kMaxPinned + 9)});  // overflow pins fall back to the ring
 }

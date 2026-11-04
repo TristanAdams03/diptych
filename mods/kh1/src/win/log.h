@@ -10,7 +10,8 @@ namespace diptych::win {
 core::LogRing& log_ring();
 
 // Adds a timestamped line to the ring and, once enabled, appends it to diptych_kh1.log.
-void log_line(std::string_view msg);
+// pin: a startup line that kh1.log must always return (see core::LogRing::add).
+void log_line(std::string_view msg, bool pin = false);
 
 // Rotates diptych_kh1.log beside this DLL to diptych_kh1.log.1 and opens a fresh one, capped at
 // 1 MiB per session (then one "log size cap reached" line; the ring continues). Only called in the KH1 process, so other

@@ -24,6 +24,9 @@ struct RuntimeOptions {
     core::IMemory* mem = nullptr;           // the game image; required
     std::function<core::Build()> classify;  // reads the version bytes; required
     std::function<void(const std::string&)> log;  // any thread (the server's event log uses it too)
+    // Startup lines kh1.log must always return (build, server listening, classification final).
+    // Falls back to `log` when empty.
+    std::function<void(const std::string&)> logPinned;
     const core::LogRing* ring = nullptr;    // what kh1.log returns
     // Ruling O: classify every classifyEveryMs until the build is recognised or classifyForMs pass.
     int classifyEveryMs = 500;
@@ -56,6 +59,7 @@ private:
     void commands_(int64_t now);
     void state_(int64_t now);
     void log_(const std::string& s);
+    void log_pinned_(const std::string& s);
     void flush_press_log_();
     bool supported_() const { return build_ == core::Build::Steam1002; }
     proto::Info info_() const;
