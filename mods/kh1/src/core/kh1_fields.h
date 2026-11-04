@@ -19,7 +19,7 @@ inline constexpr uintptr_t kWorldOffset = 0x233FE94;     // u8
 inline constexpr uintptr_t kRoomOffset = 0x233FE8C;      // u8
 inline constexpr uintptr_t kWorldAltOffset = 0x233FE84;  // u8 (Archipelago world_address)
 inline constexpr uintptr_t kSoraHpOffset = 0x2D5CC4C;    // u8
-inline constexpr uintptr_t kSoraHpMaxOffset = 0x2DE9366; // width unconfirmed: read as u8
+inline constexpr uintptr_t kSoraHpMaxOffset = 0x2D5CC50; // confirmed on PC 2026-11-04: soraHP+4 in the battle block (HP, maxHP, MP, maxMP as u32); read low byte
 inline constexpr uintptr_t kMenuOffset = 0x232DFA0;      // u8, 0 = no menu
 inline constexpr uintptr_t kCutsceneOffset = 0x23AB2D0;  // read 4 bytes, any non-zero = cutscene
 inline constexpr uintptr_t kGummiOffset = 0x5075A8;      // u32, non-zero = Gummi

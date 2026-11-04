@@ -101,7 +101,7 @@ Sources: `SteamGlobal` = `KH1-LUA-LIBRARY/scripts/io_packages/SteamGlobal_1_0_0_
 | room | `0x233FE8C` | u8 | `lib` `get_room`: `ReadByte(room)` |
 | worldAlt | `0x233FE84` | u8 | `KH-1FM-AP-LUA/1fmAPConnector.lua` `read_world`: `ReadByte(world_address[game_version])`, `world_address = {0x2340E5C, 0x233FE84}`, `game_version` 2 = Steam |
 | soraHp | `0x2D5CC4C` | u8 | `KH-1FM-AP-LUA/1fmAPHandleDeathlink.lua`: `ReadByte(soraHP[game_version])` |
-| maxHP (soraHpMax) | `0x2DE9366` | width unconfirmed (assume u8) | only sibling reads found: `ReadByte(maxHP + off)` for stats, `ReadByte(maxHP - 0x1)`; no direct `ReadX(maxHP)` |
+| maxHP (soraHpMax) | `0x2D5CC50` | u8 (low byte of a u32) | **confirmed on PC 2026-11-04** (Steam 1.0.0.2): `soraHP + 4` in the battle block `HP, maxHP, MP, maxMP` (u32 each). Read 55/57/5/5 at HP 55/57. The library's `maxHP` `0x2DE9366` is in a stats copy (`level, HP, ?` at `0x2DE9364`) whose HP byte tracks *current* HP, so it is not max HP |
 | menu | `0x232DFA0` | u8 | `KH1-RANDOMIZER` `1fmFastCamera.lua` and `KH1-CROWDCONTROL`: `ReadByte(menu)` (0 = no menu) |
 | inCutscene | `0x23AB2D0` | the mod reads 4 bytes, true if any is non-zero (scripts disagree: u8 flag bits / u32) | `lib`/`modules/text_boxes.lua`: `ReadByte(inCutscene)`, bit 0 = window syscalls off, bit 1 (`0x02`) = event active; `modules/spawn_enemy.lua` also uses `ReadInt(inCutscene) ~= 0` |
 | inGummi | `0x5075A8` | u32 | `lib` `is_in_gummi_garage`: `ReadInt(inGummi) > 0` |

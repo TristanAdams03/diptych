@@ -18,7 +18,7 @@ ALLOWED_HOSTS = {"127.0.0.1", "localhost"}
 STARTUP_LINES = ["diptych_kh1 0.0.1-spike loaded"]
 # Fake memory: known state addresses hold the values the mock reports; the first
 # 16 MiB (the "code" region) is a deterministic pattern; the rest reads as zero.
-FAKE_BYTES = {0x233FE94: 3, 0x233FE8C: 2, 0x233FE84: 3, 0x2D5CC4C: 52, 0x2DE9366: 60}
+FAKE_BYTES = {0x233FE94: 3, 0x233FE8C: 2, 0x233FE84: 3, 0x2D5CC4C: 52, 0x2D5CC50: 60}
 
 
 def fake_byte(off):

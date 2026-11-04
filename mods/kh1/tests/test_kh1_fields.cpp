@@ -39,7 +39,7 @@ TEST_CASE("offsets: PROTOCOL.md address table (Steam 1.0.0.2)") {
     CHECK(kRoomOffset == 0x233FE8C);
     CHECK(kWorldAltOffset == 0x233FE84);
     CHECK(kSoraHpOffset == 0x2D5CC4C);
-    CHECK(kSoraHpMaxOffset == 0x2DE9366);
+    CHECK(kSoraHpMaxOffset == 0x2D5CC50);
     CHECK(kMenuOffset == 0x232DFA0);
     CHECK(kCutsceneOffset == 0x23AB2D0);
     CHECK(kGummiOffset == 0x5075A8);
