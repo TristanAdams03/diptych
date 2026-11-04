@@ -160,7 +160,7 @@ class Mock:
         try:
             while True:
                 await asyncio.sleep(1.0 / rate)
-                if not self.stalled():  # simulates a frozen game main loop
+                if not self.stalled():  # simulates the mod/process freezing (not the game main loop)
                     await ws.send(json.dumps(self.state()))
         except ConnectionClosed:
             pass
@@ -236,7 +236,7 @@ async def main():
     p.add_argument("--unsupported", action="store_true")
     p.add_argument("--unsafe", action="store_true")
     p.add_argument("--stall-after", type=float, default=None,
-                   help="stop sending state frames this many seconds after start (pongs continue)")
+                   help="stop sending state frames this many seconds after start (pongs continue); simulates the mod or whole process freezing, not the game main loop")
     p.add_argument("--host", default="127.0.0.1", help=argparse.SUPPRESS)  # test-only escape hatch
     a = p.parse_args()
     server = await serve(a.port, a.unsupported, a.unsafe, a.host, a.stall_after)

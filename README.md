@@ -13,4 +13,6 @@ Design doc: [docs/superpowers/specs/2026-11-03-diptych-design.md](docs/superpowe
 
 Protocol: [protocol/kh1/PROTOCOL.md](protocol/kh1/PROTOCOL.md)
 
+Spike checklists: [PC](docs/spike/PC-CHECKLIST.md), [Thor](docs/spike/THOR-CHECKLIST.md)
+
 Licence: GPL-3.0-or-later.
