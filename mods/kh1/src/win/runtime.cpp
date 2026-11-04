@@ -59,6 +59,8 @@ void Runtime::go_inert_() noexcept {
         log_pinned_("runtime stopped after an unexpected error; the mod is inert for this session");
     } catch (...) {
     }
+    // Let go of any injected buttons: the hook stays installed, and nothing else would clear them.
+    if (o_.inject) o_.inject->clear();
     try {
         server_.stop();
     } catch (...) {

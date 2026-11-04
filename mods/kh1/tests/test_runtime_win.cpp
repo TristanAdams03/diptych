@@ -245,6 +245,31 @@ TEST_CASE("runtime_goes_inert_when_a_step_throws") {
     CHECK(inertLines == 1);
 }
 
+TEST_CASE("runtime_releases_injected_buttons_when_it_goes_inert_mid_press") {
+    RunningRuntime r;
+    r.build = core::Build::Steam1002;
+    TestClient c(r.rt->port());
+    REQUIRE(c.handshake());
+    const auto tHook = std::chrono::steady_clock::now();
+    while (r.hookInstalls.load() == 0 && std::chrono::steady_clock::now() - tHook < std::chrono::seconds(2))
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    REQUIRE(r.hookInstalls.load() == 1);
+    REQUIRE(c.sendFrame(0x1, command("p", "kh1.pressInput", {{"byteIndex", 1}, {"mask", 64}, {"durationMs", 1000}})));
+    json res = next_of_type(c, "result");
+    REQUIRE(res["ok"] == true);
+    const auto t0 = std::chrono::steady_clock::now();
+    while (!r.inject.active() && std::chrono::steady_clock::now() - t0 < std::chrono::seconds(2))
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    REQUIRE(r.inject.active());  // the press is being injected
+
+    r.boom = true;  // the next step throws mid-press
+    while (!r.runReturned.load() && std::chrono::steady_clock::now() - t0 < std::chrono::seconds(4))
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    REQUIRE(r.runReturned.load());
+    CHECK(r.rt->inert());
+    CHECK_FALSE(r.inject.active());  // no buttons left held for the rest of the session
+}
+
 TEST_CASE("runtime_stops_classifying_after_the_window") {
     RunningRuntime r(200);  // classify every 20 ms for 200 ms, build stays unknown
     std::this_thread::sleep_for(std::chrono::milliseconds(600));
