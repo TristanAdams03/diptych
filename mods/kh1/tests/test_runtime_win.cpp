@@ -224,7 +224,13 @@ TEST_CASE("runtime_goes_inert_when_a_step_throws") {
     TestClient c(r.rt->port());
     REQUIRE(c.handshake());
     REQUIRE(c.sendFrame(0x1, R"({"type":"subscribe","topics":["kh1.spike"],"rateHz":10})"));
-    json st = next_of_type(c, "state");
+    // The first frames can predate classification (build is set after the runtime starts), so wait
+    // for one that shows memory being read.
+    json st;
+    for (int i = 0; i < 50; ++i) {
+        st = next_of_type(c, "state");
+        if (st.is_null() || (st["data"].contains("world") && st["data"]["world"] == 3)) break;
+    }
     REQUIRE(st["data"]["world"] == 3);  // memory is being read
 
     r.boom = true;  // the next step throws
