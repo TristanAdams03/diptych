@@ -6,7 +6,9 @@
 # From WSL:
 #   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(wslpath -w tools/probe/probe.ps1)" -Command state
 #   ... -Command probe -Offset 0x233FE94 -Length 4
-#   ... -Command press -ByteIndex 0 -Mask 16 -DurationMs 100
+#   ... -Command press -ByteIndex 1 -Mask 64 -DurationMs 100   (A / cross: jump; XInput pad 0 must be connected)
+#   pressInput masks use the PS2 layout: byte 1 LT 1, RT 2, LB 4, RB 8, Y 16, B 32, A 64, X 128;
+#   byte 0 select 1, L3 2, R3 4, up 16, right 32, down 64, left 128 (start 8 is refused).
 #   ... -Command log
 param(
     [Parameter(Mandatory = $true)][ValidateSet('state', 'probe', 'press', 'log')][string]$Command,

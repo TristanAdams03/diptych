@@ -203,7 +203,11 @@ async def test_press_unsafe_refused_matches_fixture():
 
 
 @pytest.mark.parametrize("args,err", [
-    ({"byteIndex": 32, "mask": 1, "durationMs": 100}, "out of range"),
+    ({"byteIndex": 2, "mask": 1, "durationMs": 100}, "out of range"),
+    ({"byteIndex": 31, "mask": 1, "durationMs": 100}, "out of range"),
+    ({"byteIndex": 0, "mask": 8, "durationMs": 100}, "out of range"),  # start
+    ({"byteIndex": 0, "mask": 0x18, "durationMs": 100}, "out of range"),
+    ({"byteIndex": 0, "mask": 8, "durationMs": "x"}, "out of range"),  # mapping checked before duration
     ({"byteIndex": -1, "mask": 1, "durationMs": 100}, "out of range"),
     ({"byteIndex": 0, "mask": 256, "durationMs": 100}, "out of range"),
     ({"byteIndex": 0, "mask": 1, "durationMs": 15}, "out of range"),
@@ -375,3 +379,11 @@ async def test_stall_after_stops_states_but_keeps_pongs():
         assert await rpc(ws, {"type": "ping", "t": 9}) == {"type": "pong", "t": 9}
         log = await rpc(ws, cmd("kh1.log", {}))
         assert log["ok"] is True
+
+
+@pytest.mark.parametrize("bi,mask", [(1, 0x40), (1, 0xFF), (0, 0x10), (0, 0xF7), (1, 0)])
+async def test_press_accepts_mapped_masks(bi, mask):
+    server, url = await start()
+    async with server, connect(url) as ws:
+        r = await rpc(ws, cmd("kh1.pressInput", {"byteIndex": bi, "mask": mask, "durationMs": 16}))
+        assert r["ok"] is True

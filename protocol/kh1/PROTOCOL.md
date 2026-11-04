@@ -50,10 +50,37 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
 
 - `kh1.probe` `args:{offset:int, length:1..256}` -> ok `data:{offset:int, hex:string}`. Reads `length` bytes at module base + `offset`.
   A read that faults or is outside the module image fails with `out of range`.
-- `kh1.pressInput` `args:{byteIndex:0..31, mask:0..255, durationMs:16..1000}` -> ok `data:null`. ORs `mask` into
-  byte `byteIndex` of the input block for `durationMs`. The only game-memory write in M0; refused with `not safe now`
-  in a menu, cutscene or Gummi, and with `unsupported build` on an unsupported build. The mod re-checks those
-  flags on every write tick and ends the press early if any becomes set (or a read fails).
+- `kh1.pressInput` `args:{byteIndex:0..1, mask:0..255, durationMs:16..1000}` -> ok `data:null`. Holds the buttons in
+  `mask` (PS2 bit layout of input byte `byteIndex`) on controller 0 for `durationMs`, injected through a hook of
+  `XInputGetState` (XINPUT1_4.dll ordinal 2) in the game's import table. No game memory is written. Refused with
+  `not safe now` in a menu, cutscene or Gummi, when a safety-gate reader is off, or when the hook could not be installed
+  (see `kh1.log`); with `unsupported build` on an unsupported build. The mod re-checks those flags every tick (~1 kHz)
+  and ends the press early if any becomes set (or a read fails). If no controller is connected nothing is injected
+  (logged once). Mapping:
+
+  | byteIndex | bit | PS2 | XInput |
+  |-----------|-----|-----|--------|
+  | 1 | `0x01` | L2 | `bLeftTrigger` = 255 |
+  | 1 | `0x02` | R2 | `bRightTrigger` = 255 |
+  | 1 | `0x04` | L1 | `LEFT_SHOULDER` |
+  | 1 | `0x08` | R1 | `RIGHT_SHOULDER` |
+  | 1 | `0x10` | triangle | `Y` |
+  | 1 | `0x20` | circle | `B` |
+  | 1 | `0x40` | cross | `A` |
+  | 1 | `0x80` | square | `X` |
+  | 0 | `0x01` | select | `BACK` |
+  | 0 | `0x02` | L3 | `LEFT_THUMB` |
+  | 0 | `0x04` | R3 | `RIGHT_THUMB` |
+  | 0 | `0x08` | start | refused: `out of range` (opens the pause menu) |
+  | 0 | `0x10` | up | `DPAD_UP` |
+  | 0 | `0x20` | right | `DPAD_RIGHT` |
+  | 0 | `0x40` | down | `DPAD_DOWN` |
+  | 0 | `0x80` | left | `DPAD_LEFT` |
+
+  Any other `byteIndex`, or a byte-0 mask with `0x08`, is `out of range`. While the injection changes, the hook
+  also changes `dwPacketNumber` so games that skip unchanged packets see it. The earlier path (ORing `mask` into the
+  input block at `0x23407B4`) is proven not to work: on PC the bytes held the bits but the game never acted; that
+  block is a derived copy.
 - `kh1.log` `args:{}` -> ok `data:{lines:[string]}`. Recent mod log lines. Works on any build.
 - Every failed `result` has `ok:false`, `error:<string below>`, `data:null`.
 
@@ -73,8 +100,8 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
 | `bad command` | `command` without a string `id` and string `name`, `args` missing/not an object/over 64 KB, or `args` invalid for the command |
 | `unknown command` | `name` is not one of the three commands |
 | `unsupported build` | any command except `kh1.log` on an unsupported build |
-| `out of range` | an argument is outside its range, or a probe read faulted |
-| `not safe now` | `kh1.pressInput` in a menu, cutscene or Gummi |
+| `out of range` | an argument is outside its range (including pressInput start), or a probe read faulted |
+| `not safe now` | `kh1.pressInput` in a menu, cutscene or Gummi, or without the XInput hook |
 | `busy` | the command queue is full, or an input press is already running |
 | `internal error` | a C++ exception escaped the command, or a failure carried no error string |
 
