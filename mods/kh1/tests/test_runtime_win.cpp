@@ -130,14 +130,15 @@ TEST_CASE("runtime_end_to_end") {
     res = next_of_type(c, "result");
     CHECK(res == json::parse(fixture("result_probe.json")));
 
-    REQUIRE(c.sendFrame(0x1, command("p1", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 50}})));
+    // 1000 ms (the maximum) so the second press surely lands while the first runs, even on a slow loop.
+    REQUIRE(c.sendFrame(0x1, command("p1", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 1000}})));
     res = next_of_type(c, "result");
     CHECK(res["id"] == "p1");
     CHECK(res["ok"] == true);
     REQUIRE(c.sendFrame(0x1, command("p2", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 50}})));
     res = next_of_type(c, "result");
     CHECK(res["error"] == "busy");
-    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1300));
 
     REQUIRE(c.sendFrame(0x1, command("x", "kh1.nope", json::object())));
     res = next_of_type(c, "result");
