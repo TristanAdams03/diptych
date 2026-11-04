@@ -43,10 +43,12 @@ struct RunningRuntime {
     FakeMemory mem;
     std::atomic<bool> boom{false};      // makes onStep throw (Important 3)
     std::atomic<bool> runReturned{false};
+    std::atomic<int> steps{0};
     std::unique_ptr<win::Runtime> rt;
     std::thread th;
 
-    explicit RunningRuntime(int classifyForMs = 30000, std::string moduleId = {}) {
+    explicit RunningRuntime(int classifyForMs = 30000, std::string moduleId = {},
+                            const std::function<void(win::RuntimeOptions&)>& tweak = {}) {
         mem.set(core::kWorldOffset, 3);
         mem.set(core::kRoomOffset, 2);
         mem.set(core::kWorldAltOffset, 3);
@@ -66,8 +68,10 @@ struct RunningRuntime {
         o.classifyForMs = classifyForMs;
         o.moduleId = std::move(moduleId);
         o.onStep = [this](int64_t) {
+            ++steps;
             if (boom.load()) throw std::runtime_error("injected");
         };
+        if (tweak) tweak(o);
         rt = std::make_unique<win::Runtime>(std::move(o));
         th = std::thread([this] {
             rt->run(stop);
@@ -220,6 +224,28 @@ TEST_CASE("runtime_logs_the_module_id_next_to_the_final_classification") {
     for (auto& l : r.ring.pinned())
         found |= l == "build classification final: unknown (pe TimeDateStamp 0x12345678 SizeOfImage 0x3000000)";
     CHECK(found);
+}
+
+TEST_CASE("runtime_idles_slower_without_a_press") {
+    // A 50 ms idle sleep: over 500 ms at most ~10 steps. (1 ms sleeps would give 30+ even at the
+    // default 15.6 ms timer resolution.) Then a press switches to the 1 ms active sleep.
+    RunningRuntime r(30000, {}, [](win::RuntimeOptions& o) { o.idleSleepMs = 50; });
+    r.build = core::Build::Steam1002;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    int s0 = r.steps.load();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    const int idle = r.steps.load() - s0;
+    CHECK(idle >= 3);
+    CHECK(idle <= 14);
+
+    TestClient c(r.rt->port());
+    REQUIRE(c.handshake());
+    REQUIRE(c.sendFrame(0x1, command("p", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 1000}})));
+    json res = next_of_type(c, "result");
+    REQUIRE(res["ok"] == true);
+    s0 = r.steps.load();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    CHECK(r.steps.load() - s0 > 15);  // the active rate during the press (~30 even at 15.6 ms)
 }
 
 TEST_CASE("runtime_stops_classifying_once_recognised") {

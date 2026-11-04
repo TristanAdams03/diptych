@@ -42,7 +42,9 @@ void Runtime::run(const std::atomic<bool>& stop) {
         const auto t0 = Clock::now();
         while (!stop.load() && !inert_.load()) {
             step(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - t0).count());
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            // A press accepted in this step is active already, so its first tick comes 1 ms later.
+            const int ms = press_.active() ? o_.activeSleepMs : o_.idleSleepMs;
+            std::this_thread::sleep_for(std::chrono::milliseconds(std::max(ms, 1)));
         }
     } catch (...) {
         go_inert_();

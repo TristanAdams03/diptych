@@ -1,6 +1,6 @@
 #pragma once
 // The KH1 runtime: owns the WebSocket server and, on one thread, re-classifies the build, ticks
-// the press scheduler at ~1 kHz, runs queued commands (at most 8 per 100 ms) and sends kh1.spike
+// the press scheduler at ~1 kHz while a press runs (~100 Hz otherwise), runs queued commands (at most 8 per 100 ms) and sends kh1.spike
 // state at the subscribed rate (<= 10 Hz). The thread never takes the loader lock and never waits
 // on the network thread (WsServer calls only take a mutex briefly).
 #include <atomic>
@@ -36,6 +36,10 @@ struct RuntimeOptions {
     int classifyForMs = 30000;
     int serverRetryMs = 5000;  // if the port is taken, try again this often
     int tickReportMs = 60000;  // how often the measured loop rate is logged
+    // Loop sleep: activeSleepMs while a press is active (1 ms press ticks), idleSleepMs otherwise,
+    // so the thread is not waking 1000 times a second all session on a battery handheld.
+    int activeSleepMs = 1;
+    int idleSleepMs = 10;
     // Tests only: called at the start of every step(); a throw here exercises the run() guard.
     std::function<void(int64_t)> onStep;
 };
@@ -51,9 +55,10 @@ public:
     Runtime(const Runtime&) = delete;
     Runtime& operator=(const Runtime&) = delete;
 
-    // Loops step() with a 1 ms sleep until stop is set (forever in the game). Never throws: if
-    // anything escapes step(), it logs one line, stops the server and returns, and the runtime
-    // stays inert (no memory access, no serving) from then on.
+    // Loops step() until stop is set (forever in the game), sleeping 1 ms while a press is active
+    // and 10 ms otherwise (RuntimeOptions). Never throws: if anything escapes step(), it logs one
+    // line, stops the server and returns, and the runtime stays inert (no memory access, no
+    // serving) from then on.
     void run(const std::atomic<bool>& stop);
     bool inert() const { return inert_.load(); }  // any thread
     // One iteration at nowMs (ms since the runtime started). Runtime thread only.

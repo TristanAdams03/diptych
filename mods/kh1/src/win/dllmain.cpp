@@ -41,7 +41,8 @@ void runtime_body() {
     win::enable_file_log();
     win::log_line(std::string("diptych_kh1 ") + win::kPluginVersion + " loaded", true);
 
-    // Ask for 1 ms timer resolution so the 1 kHz press tick is not stuck at the default 15.6 ms.
+    // Ask for 1 ms timer resolution so the 1 kHz press tick (and the 10 ms idle sleep) is not
+    // stuck at the default 15.6 ms.
     // winmm is resolved here, never in DllMain; the real loop rate is logged once a minute. Only the
     // copy already loaded or the one in System32: a winmm.dll proxy in the game folder is never loaded.
     HMODULE winmm = GetModuleHandleW(L"winmm.dll");
