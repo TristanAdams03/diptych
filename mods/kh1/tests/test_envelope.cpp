@@ -1,5 +1,6 @@
 #include <doctest/doctest.h>
 
+#include <chrono>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -265,4 +266,33 @@ TEST_CASE("command args over 64 KB serialized -> bad command") {
     CHECK(in.route == Route::MainThread);
     CHECK(in.commandArgs.dump().size() == 64 * 1024);
     checkFailedResult(classifyOnThread(frame(64 * 1024 + 1), steam()), "c1", "bad command");
+}
+
+// The depth check must stay linear: nlohmann's callback parser rescans the parent container on
+// every close, so an array of ~350k empty objects took ~45 s and froze the select loop.
+TEST_CASE("~1 MiB array of empty objects classifies in under 1 s") {
+    std::string frame = R"({"type":"ping","t":[)";
+    while (frame.size() < (1u << 20) - 8) frame += "{},";
+    frame += "{}]}";
+    REQUIRE(frame.size() <= (1u << 20));
+    auto t0 = std::chrono::steady_clock::now();
+    Inbound in = classifyOnThread(frame, steam());
+    auto dt = std::chrono::steady_clock::now() - t0;
+    CHECK(json::parse(in.reply) == json{{"type", "pong"}, {"t", 0}});
+    CHECK(dt < std::chrono::seconds(1));
+}
+
+TEST_CASE("brackets inside strings do not count toward depth") {
+    const std::string br(40, '[');
+    // Plain, after an escaped quote, and after an escaped backslash: all still inside the string.
+    const std::string cases[] = {"\"" + br + "\"", "\"\\\"" + br + "\"", "\"\\\\\"",
+                                 "\"\\\\" + br + "\""};
+    for (const std::string& t : cases) {
+        CAPTURE(t);
+        Inbound in = classifyOnThread(R"({"type":"ping","t":)" + t + "}", steam());
+        CHECK(json::parse(in.reply) == json{{"type", "pong"}, {"t", 0}});
+    }
+    // A key full of brackets, then real nesting at exactly 32 levels.
+    Inbound in = classifyOnThread(R"({"type":"ping",")" + br + R"(":)" + nested(31) + "}", steam());
+    CHECK(json::parse(in.reply)["type"] == "pong");
 }

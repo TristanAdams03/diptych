@@ -65,6 +65,7 @@ target_compile_definitions(kh1_tests PRIVATE FIXTURES_DIR="${FIXTURES_DIR}")
 target_link_libraries(kh1_tests PRIVATE kh1_core doctest::doctest)
 kh1_warnings(kh1_tests)
 add_test(NAME kh1_tests COMMAND kh1_tests)
+set_tests_properties(kh1_tests PROPERTIES TIMEOUT 60)
 
 if(WIN32)
   add_executable(kh1_server_tests tests/test_server_win.cpp)

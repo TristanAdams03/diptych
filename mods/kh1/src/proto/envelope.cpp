@@ -15,15 +15,27 @@ namespace {
 constexpr int kMaxDepth = 32;                // nested objects/arrays per frame
 constexpr size_t kMaxArgsBytes = 64 * 1024;  // serialized command args
 
-struct TooDeep {};
-
-// nlohmann reports a container start at the number of containers around it, so a start at
-// kMaxDepth would open level kMaxDepth + 1.
-bool depthGuard(int depth, json::parse_event_t event, json&) {
-    if ((event == json::parse_event_t::object_start || event == json::parse_event_t::array_start) &&
-        depth >= kMaxDepth)
-        throw TooDeep{};
-    return true;
+// One O(n) pass over the raw text, before parsing: true if objects/arrays nest deeper than
+// kMaxDepth (the frame object is level 1). String contents, escapes included, are skipped.
+// (A parser callback would also work, but nlohmann's callback parser is O(n^2) on wide input.)
+// Malformed text is left to json::parse, which rejects it iteratively.
+bool tooDeep(std::string_view text) {
+    int depth = 0;
+    bool inString = false, escaped = false;
+    for (const char c : text) {
+        if (inString) {
+            if (escaped) escaped = false;
+            else if (c == '\\') escaped = true;
+            else if (c == '"') inString = false;
+        } else if (c == '"') {
+            inString = true;
+        } else if (c == '[' || c == '{') {
+            if (++depth > kMaxDepth) return true;
+        } else if (c == ']' || c == '}') {
+            --depth;
+        }
+    }
+    return false;
 }
 
 std::string dump(const json& j) { return j.dump(-1, ' ', false, json::error_handler_t::replace); }
@@ -111,10 +123,9 @@ std::string error_json(const std::string& message) { return dump(json{{"type", "
 
 Inbound classify(std::string_view text, const Info& info, Subscription& sub) {
     try {
-        json j = json::parse(text.begin(), text.end(), depthGuard);
+        if (tooDeep(text)) return netReply(error_json("invalid json"));
+        json j = json::parse(text.begin(), text.end());
         return classifyParsed(j, info, sub);
-    } catch (const TooDeep&) {
-        return netReply(error_json("invalid json"));
     } catch (const json::parse_error&) {
         return netReply(error_json("invalid json"));
     } catch (...) {
