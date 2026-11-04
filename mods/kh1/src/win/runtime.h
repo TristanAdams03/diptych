@@ -40,6 +40,11 @@ struct RuntimeOptions {
     // so the thread is not waking 1000 times a second all session on a battery handheld.
     int activeSleepMs = 1;
     int idleSleepMs = 10;
+    // The XInputGetState hook (Ruling W). Called once, on this thread, the first time the build is
+    // supported; returns whether it installed and sets `line` to the log line. When it succeeds the
+    // press scheduler drives `inject`; otherwise (or when either is null) presses get "not safe now".
+    std::function<bool(std::string& line)> installInputHook;
+    core::InjectState* inject = nullptr;
     // Tests only: called at the start of every step(); a throw here exercises the run() guard.
     std::function<void(int64_t)> onStep;
 };
@@ -74,6 +79,7 @@ private:
     void log_(const std::string& s);
     void log_pinned_(const std::string& s);
     void flush_press_log_();
+    void hook_();
     void go_inert_() noexcept;
     bool supported_() const { return build_ == core::Build::Steam1002; }
     proto::Info info_() const;
@@ -88,6 +94,7 @@ private:
     core::Build build_ = core::Build::Unknown;
     bool classifying_ = true;
     bool classifiedOnce_ = false;
+    bool hookTried_ = false;
     int64_t nextClassify_ = 0;
     bool serverUp_ = false;
     int serverFailures_ = 0;

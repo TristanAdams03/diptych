@@ -81,7 +81,7 @@ endif()
 if(WIN32)
   # Windows layer: forwarder, SEH guard, module reader/memory, file log, runtime. DllMain lives only in the DLL.
   add_library(kh1_win STATIC src/win/forwarder.cpp src/win/log.cpp src/win/memory.cpp src/win/module_reader.cpp
-    src/win/runtime.cpp src/win/seh.cpp)
+    src/win/runtime.cpp src/win/seh.cpp src/win/xinput_hook.cpp)
   target_compile_definitions(kh1_win PUBLIC ${KH1_WIN_DEFS})
   target_link_libraries(kh1_win PUBLIC kh1_core)
   kh1_warnings(kh1_win)

@@ -1,5 +1,6 @@
 #include "core/kh1_commands.h"
 
+#include <cstdio>
 #include <limits>
 
 #include "proto/envelope.h"
@@ -10,79 +11,33 @@ using nlohmann::json;
 
 // ---- PressScheduler ---------------------------------------------------------------------------
 
-void PressScheduler::start(int byteIndex, uint8_t mask, int durationMs) {
+void PressScheduler::start(int byteIndex, uint8_t mask, PadInject pad, int durationMs) {
     active_ = true;
-    byteIndex_ = byteIndex;
-    mask_ = mask;
+    pad_ = pad;
     durationMs_ = durationMs;
     startMs_.reset();
-    writes_ = 0;
-    lastWritten_.reset();
+    char buf[64];
+    std::snprintf(buf, sizeof buf, " (xinput buttons 0x%04x lt %u rt %u)", static_cast<unsigned>(pad.buttons),
+                  static_cast<unsigned>(pad.leftTrigger), static_cast<unsigned>(pad.rightTrigger));
     log_.push_back("press start byte " + std::to_string(byteIndex) + " mask " + std::to_string(mask) + " for " +
-                   std::to_string(durationMs) + " ms");
+                   std::to_string(durationMs) + " ms" + buf);
 }
 
-void PressScheduler::end_(const std::string& why) {
+void PressScheduler::end_(const std::string& why, int64_t nowMs) {
+    if (inject_) inject_->clear();
     active_ = false;
+    const int64_t held = startMs_ ? nowMs - *startMs_ : 0;
     startMs_.reset();
-    log_.push_back("press end (" + why + ") after " + std::to_string(writes_) + " writes");
-}
-
-void PressScheduler::release_(IMemory& mem) {
-    if (!lastWritten_) return;
-    const uint8_t last = *lastWritten_;
-    lastWritten_.reset();
-    const uintptr_t off = kInputOffset + static_cast<uintptr_t>(byteIndex_);
-    std::optional<uint8_t> cur;
-    try {
-        cur = mem.u8(off);
-    } catch (...) {
-    }
-    if (!cur || *cur != last) return;  // unreadable, or the game rewrote it: leave it alone
-    bool ok = false;
-    try {
-        ok = mem.write_u8(off, static_cast<uint8_t>(*cur & ~mask_));
-    } catch (...) {
-    }
-    if (!ok) {
-        writesDisabled_ = true;
-        log_.push_back("press release write faulted, presses disabled for this session");
-        return;
-    }
-    log_.push_back("press release: cleared mask from the input byte");
+    log_.push_back("press end (" + why + ") after " + std::to_string(held) + " ms");
 }
 
 void PressScheduler::tick(IMemory& mem, int64_t nowMs) {
     if (!active_) return;
     if (!startMs_) startMs_ = nowMs;
-    if (nowMs - *startMs_ >= durationMs_) {
-        release_(mem);
-        return end_("done");
-    }
-    if (!safe_now(mem)) {
-        release_(mem);
-        return end_("aborted: not safe now");
-    }
-    const uintptr_t off = kInputOffset + static_cast<uintptr_t>(byteIndex_);
-    std::optional<uint8_t> cur;
-    try {
-        cur = mem.u8(off);
-    } catch (...) {
-    }
-    if (!cur) return end_("aborted: input byte unreadable");
-    const uint8_t v = static_cast<uint8_t>(*cur | mask_);
-    bool ok = false;
-    try {
-        ok = mem.write_u8(off, v);
-    } catch (...) {
-    }
-    if (!ok) {
-        writesDisabled_ = true;
-        lastWritten_.reset();
-        return end_("aborted: write faulted, presses disabled for this session");
-    }
-    lastWritten_ = v;
-    ++writes_;
+    if (!inject_) return end_("aborted: xinput hook not installed", nowMs);
+    if (nowMs - *startMs_ >= durationMs_) return end_("done", nowMs);
+    if (!safe_now(mem)) return end_("aborted: not safe now", nowMs);
+    inject_->set(pad_);  // a no-op after the first tick
 }
 
 std::vector<std::string> PressScheduler::take_log() {
@@ -127,19 +82,14 @@ proto::CommandResult probe(IMemory& mem, const json& args) {
 }
 
 proto::CommandResult press_input(IMemory& gate, const json& args, PressScheduler& press) {
-    const int64_t byteIndex = int_arg(args, "byteIndex", 0, kInputBlockLen - 1);
+    const int64_t byteIndex = int_arg(args, "byteIndex", 0, 1);
     const int64_t mask = int_arg(args, "mask", 0, 255);
+    const std::optional<PadInject> pad = ps2_to_xinput(static_cast<int>(byteIndex), static_cast<int>(mask));
+    if (!pad) throw Fail{"out of range"};  // start (byte 0, 0x08) opens the pause menu
     const int64_t durationMs = int_arg(args, "durationMs", 16, 1000);
     if (press.active()) throw Fail{"busy"};
-    if (press.writes_disabled() || !safe_now(gate)) throw Fail{"not safe now"};
-    // The first tick reads this byte through the same gate; if that reader is off, say so now.
-    std::optional<uint8_t> in;
-    try {
-        in = gate.u8(kInputOffset + static_cast<uintptr_t>(byteIndex));
-    } catch (...) {
-    }
-    if (!in) throw Fail{"not safe now"};
-    press.start(static_cast<int>(byteIndex), static_cast<uint8_t>(mask), static_cast<int>(durationMs));
+    if (!press.available() || !safe_now(gate)) throw Fail{"not safe now"};
+    press.start(static_cast<int>(byteIndex), static_cast<uint8_t>(mask), *pad, static_cast<int>(durationMs));
     return {true, "", nullptr};
 }
 

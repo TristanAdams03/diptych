@@ -15,6 +15,7 @@
 #include "win/memory.h"
 #include "win/module_reader.h"
 #include "win/runtime.h"
+#include "win/xinput_hook.h"
 
 namespace {
 
@@ -85,6 +86,9 @@ void runtime_body() {
     o.logPinned = [](const std::string& s) { win::log_line(s, true); };
     o.ring = &win::log_ring();
     o.moduleId = peId;
+    // Ruling W: installed by the runtime (this thread) once the build is supported; never in DllMain.
+    o.installInputHook = [base](std::string& line) { return win::install_xinput_hook(base, line); };
+    o.inject = &win::xinput_inject_state();
     auto* rt = new win::Runtime(std::move(o));
     static std::atomic<bool> never{false};
     rt->run(never);

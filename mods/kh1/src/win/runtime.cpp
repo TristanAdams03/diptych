@@ -72,6 +72,7 @@ void Runtime::step(int64_t now) {
     classify_(now);
     serve_(now);
     if (supported_()) {
+        hook_();
         press_.tick(guarded_, now);
         flush_press_log_();
     }
@@ -183,6 +184,25 @@ void Runtime::state_(int64_t now) {
     nextState_ = now + 1000 / rate;
     server_.sendToSubscribers(std::string(proto::kSpikeTopic),
                               core::spike_state_frame(core::kh1_spike_state(guarded_, seq_++, now, supported_())));
+}
+
+void Runtime::hook_() {
+    if (!hookTried_) {
+        hookTried_ = true;
+        std::string line;
+        bool ok = false;
+        try {
+            if (o_.installInputHook) ok = o_.installInputHook(line);
+            else line = "xinput hook not available; presses disabled";
+        } catch (...) {
+            ok = false;
+            line = "xinput hook install threw; presses disabled";
+        }
+        log_pinned_(line);
+        if (ok && o_.inject) press_.attach(o_.inject);
+    }
+    if (o_.inject && o_.inject->take_no_pad_once())
+        log_("xinput controller 0 not connected during a press; nothing injected (logged once)");
 }
 
 void Runtime::flush_press_log_() {

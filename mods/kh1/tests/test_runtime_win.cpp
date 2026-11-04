@@ -41,6 +41,9 @@ struct RunningRuntime {
     std::atomic<core::Build> build{core::Build::Unknown};
     core::LogRing ring;
     FakeMemory mem;
+    core::InjectState inject;
+    std::atomic<int> hookInstalls{0};
+    std::atomic<bool> hookOk{true};
     std::atomic<bool> boom{false};      // makes onStep throw (Important 3)
     std::atomic<bool> runReturned{false};
     std::atomic<int> steps{0};
@@ -64,6 +67,12 @@ struct RunningRuntime {
         o.log = [this](const std::string& s) { ring.add(s); };
         o.logPinned = [this](const std::string& s) { ring.add(s, true); };
         o.ring = &ring;
+        o.installInputHook = [this](std::string& line) {
+            ++hookInstalls;
+            line = hookOk.load() ? "xinput hook installed (slot +0x1608, fake)" : "xinput hook not installed: fake";
+            return hookOk.load();
+        };
+        o.inject = &inject;
         o.classifyEveryMs = 20;
         o.classifyForMs = classifyForMs;
         o.moduleId = std::move(moduleId);
@@ -146,35 +155,67 @@ TEST_CASE("runtime_end_to_end") {
     CHECK(res == json::parse(fixture("result_probe.json")));
 
     // 1000 ms (the maximum) so the second press surely lands while the first runs, even on a slow loop.
-    REQUIRE(c.sendFrame(0x1, command("p1", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 1000}})));
+    REQUIRE(c.sendFrame(0x1, command("p1", "kh1.pressInput", {{"byteIndex", 1}, {"mask", 0x40}, {"durationMs", 1000}})));
     res = next_of_type(c, "result");
     CHECK(res["id"] == "p1");
     CHECK(res["ok"] == true);
-    REQUIRE(c.sendFrame(0x1, command("p2", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 50}})));
+    REQUIRE(c.sendFrame(0x1, command("p2", "kh1.pressInput", {{"byteIndex", 1}, {"mask", 0x40}, {"durationMs", 50}})));
     res = next_of_type(c, "result");
     CHECK(res["error"] == "busy");
-    std::this_thread::sleep_for(std::chrono::milliseconds(1300));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    {
+        uint32_t pk = 0;
+        uint16_t b = 0;
+        uint8_t lt = 0, rt = 0;
+        r.inject.apply(pk, b, lt, rt);
+        CHECK(b == core::kXiA);  // mid-press: the hook would report A held
+        CHECK(pk == 1);
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(1100));
 
     REQUIRE(c.sendFrame(0x1, command("x", "kh1.nope", json::object())));
     res = next_of_type(c, "result");
     CHECK(res["error"] == "unknown command");
 
     r.halt();
-    REQUIRE(r.mem.writes.size() >= 2);
-    for (size_t i = 0; i < r.mem.writes.size(); ++i) {
-        CHECK(r.mem.writes[i].first == core::kInputOffset);
-        // Press writes OR the mask in; the last write releases it (FakeMemory never rewrites the byte).
-        CHECK(r.mem.writes[i].second == (i + 1 == r.mem.writes.size() ? 0x00 : 0x10));
-    }
-    bool started = false, released = false, ended = false;
+    CHECK(r.mem.writes.empty());  // presses never write game memory
+    CHECK_FALSE(r.inject.active());
+    CHECK(r.inject.generation() == 2);
+    CHECK(r.hookInstalls.load() == 1);
+    bool installed = false, started = false, ended = false;
+    for (auto& l : r.ring.pinned()) installed |= l == "xinput hook installed (slot +0x1608, fake)";
     for (auto& l : r.ring.last(500)) {
         started |= l.find("press start") != std::string::npos;
-        released |= l.find("press release") != std::string::npos;
         ended |= l.find("press end (done)") != std::string::npos;
     }
+    CHECK(installed);
     CHECK(started);
-    CHECK(released);
     CHECK(ended);
+}
+
+TEST_CASE("runtime_refuses_presses_when_the_xinput_hook_fails") {
+    RunningRuntime r(30000, {}, [](win::RuntimeOptions&) {});
+    r.hookOk = false;
+    r.build = core::Build::Steam1002;
+    TestClient c(r.rt->port());
+    REQUIRE(c.handshake());
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    REQUIRE(c.sendFrame(0x1, command("p", "kh1.pressInput", {{"byteIndex", 1}, {"mask", 0x40}, {"durationMs", 100}})));
+    json res = next_of_type(c, "result");
+    CHECK(res["error"] == "not safe now");
+    r.halt();
+    CHECK(r.hookInstalls.load() == 1);
+    bool logged = false;
+    for (auto& l : r.ring.pinned()) logged |= l == "xinput hook not installed: fake";
+    CHECK(logged);
+}
+
+TEST_CASE("runtime_does_not_hook_an_unsupported_build") {
+    RunningRuntime r;
+    r.build = core::Build::Egs10010;
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    r.halt();
+    CHECK(r.hookInstalls.load() == 0);
 }
 
 TEST_CASE("runtime_goes_inert_when_a_step_throws") {
@@ -240,7 +281,7 @@ TEST_CASE("runtime_idles_slower_without_a_press") {
 
     TestClient c(r.rt->port());
     REQUIRE(c.handshake());
-    REQUIRE(c.sendFrame(0x1, command("p", "kh1.pressInput", {{"byteIndex", 0}, {"mask", 16}, {"durationMs", 1000}})));
+    REQUIRE(c.sendFrame(0x1, command("p", "kh1.pressInput", {{"byteIndex", 1}, {"mask", 0x40}, {"durationMs", 1000}})));
     json res = next_of_type(c, "result");
     REQUIRE(res["ok"] == true);
     s0 = r.steps.load();
