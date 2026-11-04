@@ -50,7 +50,7 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
 
 - `kh1.probe` `args:{offset:int, length:1..256}` -> ok `data:{offset:int, hex:string}`. Reads `length` bytes at module base + `offset`.
   A read that faults or is outside the module image fails with `out of range`.
-- `kh1.pressInput` `args:{byteIndex:0..3, mask:0..255, durationMs:16..1000}` -> ok `data:null`. ORs `mask` into
+- `kh1.pressInput` `args:{byteIndex:0..31, mask:0..255, durationMs:16..1000}` -> ok `data:null`. ORs `mask` into
   byte `byteIndex` of the input block for `durationMs`. The only game-memory write in M0; refused with `not safe now`
   in a menu, cutscene or Gummi, and with `unsupported build` on an unsupported build. The mod re-checks those
   flags on every write tick and ends the press early if any becomes set (or a read fails).

@@ -255,7 +255,7 @@ TEST_CASE("pressInput refuses once a safety-gate reader is disabled") {
 TEST_CASE("pressInput args") {
     FakeMemory m;
     PressScheduler p;
-    check_err(run(m, true, "kh1.pressInput", press_args(4, 16, 100), p), "out of range");
+    check_err(run(m, true, "kh1.pressInput", press_args(32, 16, 100), p), "out of range");
     check_err(run(m, true, "kh1.pressInput", press_args(-1, 16, 100), p), "out of range");
     check_err(run(m, true, "kh1.pressInput", press_args(0, 256, 100), p), "out of range");
     check_err(run(m, true, "kh1.pressInput", press_args(0, 16, 15), p), "out of range");
@@ -266,6 +266,15 @@ TEST_CASE("pressInput args") {
     CHECK(m.writes.empty());
     CHECK_FALSE(p.active());
     CHECK(run(m, true, "kh1.pressInput", press_args(3, 255, 1000), p)["ok"] == true);
+}
+
+TEST_CASE("pressInput reaches the last byte of the 32-byte input block") {
+    FakeMemory m;
+    PressScheduler p;
+    CHECK(run(m, true, "kh1.pressInput", press_args(31, 64, 100), p)["ok"] == true);
+    p.tick(m, 0);
+    REQUIRE_FALSE(m.writes.empty());
+    CHECK(m.writes.front().first == diptych::core::kInputOffset + 31);
 }
 
 TEST_CASE("press log lines") {

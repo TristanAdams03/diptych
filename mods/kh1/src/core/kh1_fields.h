@@ -23,7 +23,10 @@ inline constexpr uintptr_t kSoraHpMaxOffset = 0x2D5CC50; // confirmed on PC 2026
 inline constexpr uintptr_t kMenuOffset = 0x232DFA0;      // u8, 0 = no menu
 inline constexpr uintptr_t kCutsceneOffset = 0x23AB2D0;  // read 4 bytes, any non-zero = cutscene
 inline constexpr uintptr_t kGummiOffset = 0x5075A8;      // u32, non-zero = Gummi
-inline constexpr uintptr_t kInputOffset = 0x23407B4;     // 4 input bytes
+inline constexpr uintptr_t kInputOffset = 0x23407B4;     // 4 input bytes (held buttons; byte 1 = PS2 pad bits)
+// pressInput may target any byte of the 32-byte input block from kInputOffset (PC session 2026-11-04:
+// writing the held byte does not trigger actions; +0x0D and +0x11 look like edge/repeat copies).
+inline constexpr int kInputBlockLen = 32;
 
 // Reads and writes at moduleBase + off. Every call returns nullopt/false (and may throw, in tests)
 // when the range is outside the image or the access faults.

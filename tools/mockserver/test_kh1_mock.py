@@ -203,13 +203,13 @@ async def test_press_unsafe_refused_matches_fixture():
 
 
 @pytest.mark.parametrize("args,err", [
-    ({"byteIndex": 4, "mask": 1, "durationMs": 100}, "out of range"),
+    ({"byteIndex": 32, "mask": 1, "durationMs": 100}, "out of range"),
     ({"byteIndex": -1, "mask": 1, "durationMs": 100}, "out of range"),
     ({"byteIndex": 0, "mask": 256, "durationMs": 100}, "out of range"),
     ({"byteIndex": 0, "mask": 1, "durationMs": 15}, "out of range"),
     ({"byteIndex": 0, "mask": 1, "durationMs": 1001}, "out of range"),
     ({"byteIndex": 0, "mask": 1}, "bad command"),
-    ({"byteIndex": 9, "mask": "x", "durationMs": 100}, "out of range"),  # per-field order
+    ({"byteIndex": 40, "mask": "x", "durationMs": 100}, "out of range"),  # per-field order
     ({"byteIndex": "x", "mask": 999, "durationMs": 100}, "bad command"),
     ({"byteIndex": 0, "mask": 999, "durationMs": "x"}, "out of range"),
     ({"byteIndex": 0, "mask": 1, "durationMs": 5.5}, "bad command"),

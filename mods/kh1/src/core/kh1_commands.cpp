@@ -127,7 +127,7 @@ proto::CommandResult probe(IMemory& mem, const json& args) {
 }
 
 proto::CommandResult press_input(IMemory& gate, const json& args, PressScheduler& press) {
-    const int64_t byteIndex = int_arg(args, "byteIndex", 0, 3);
+    const int64_t byteIndex = int_arg(args, "byteIndex", 0, kInputBlockLen - 1);
     const int64_t mask = int_arg(args, "mask", 0, 255);
     const int64_t durationMs = int_arg(args, "durationMs", 16, 1000);
     if (press.active()) throw Fail{"busy"};

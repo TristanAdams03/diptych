@@ -143,7 +143,7 @@ class Mock:
                     raise Fail("out of range")
                 return res(True, data={"offset": off,
                                        "hex": bytes(fake_byte(off + i) for i in range(n)).hex()})
-            bi = int_arg(args, "byteIndex", 0, 3)
+            bi = int_arg(args, "byteIndex", 0, 31)
             mask = int_arg(args, "mask", 0, 255)
             dur = int_arg(args, "durationMs", 16, 1000)
         except Fail as f:
