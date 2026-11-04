@@ -28,6 +28,9 @@ struct RuntimeOptions {
     // Falls back to `log` when empty.
     std::function<void(const std::string&)> logPinned;
     const core::LogRing* ring = nullptr;    // what kh1.log returns
+    // Appended to the "build classification final" line, e.g. the main module's PE TimeDateStamp
+    // and SizeOfImage. Log only: it does not affect the gate.
+    std::string moduleId;
     // Ruling O: classify every classifyEveryMs until the build is recognised or classifyForMs pass.
     int classifyEveryMs = 500;
     int classifyForMs = 30000;

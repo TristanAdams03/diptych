@@ -113,7 +113,8 @@ void Runtime::classify_(int64_t now) {
     }
     if (b != core::Build::Unknown || now >= o_.classifyForMs) {
         classifying_ = false;
-        log_pinned_(std::string("build classification final: ") + core::build_name(b));
+        log_pinned_(std::string("build classification final: ") + core::build_name(b) +
+                    (o_.moduleId.empty() ? "" : " (" + o_.moduleId + ")"));
     }
 }
 

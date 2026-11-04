@@ -46,7 +46,7 @@ struct RunningRuntime {
     std::unique_ptr<win::Runtime> rt;
     std::thread th;
 
-    explicit RunningRuntime(int classifyForMs = 30000) {
+    explicit RunningRuntime(int classifyForMs = 30000, std::string moduleId = {}) {
         mem.set(core::kWorldOffset, 3);
         mem.set(core::kRoomOffset, 2);
         mem.set(core::kWorldAltOffset, 3);
@@ -64,6 +64,7 @@ struct RunningRuntime {
         o.ring = &ring;
         o.classifyEveryMs = 20;
         o.classifyForMs = classifyForMs;
+        o.moduleId = std::move(moduleId);
         o.onStep = [this](int64_t) {
             if (boom.load()) throw std::runtime_error("injected");
         };
@@ -210,6 +211,15 @@ TEST_CASE("runtime_stops_classifying_after_the_window") {
     bool final = false;
     for (auto& l : r.ring.pinned()) final |= l == "build classification final: unknown";
     CHECK(final);
+}
+
+TEST_CASE("runtime_logs_the_module_id_next_to_the_final_classification") {
+    RunningRuntime r(100, "pe TimeDateStamp 0x12345678 SizeOfImage 0x3000000");
+    std::this_thread::sleep_for(std::chrono::milliseconds(400));
+    bool found = false;
+    for (auto& l : r.ring.pinned())
+        found |= l == "build classification final: unknown (pe TimeDateStamp 0x12345678 SizeOfImage 0x3000000)";
+    CHECK(found);
 }
 
 TEST_CASE("runtime_stops_classifying_once_recognised") {

@@ -3,7 +3,9 @@
 #include <windows.h>
 
 #include <atomic>
+#include <cstdint>
 #include <cstdio>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -55,9 +57,24 @@ void runtime_body() {
     const void* base = GetModuleHandleW(nullptr);
     // Leaked on purpose: the runtime lives as long as the process; nothing runs at detach.
     auto* mem = new win::WinMemory(win::WinMemory::for_module(base));
+    // Log only (the gate is unchanged): the PE header's TimeDateStamp and SizeOfImage identify the
+    // exact build, so the PC session can record them for a stronger gate before M1 ships writes.
+    // Read through the guarded reader: e_lfanew at 0x3C, then the NT headers.
+    std::optional<uint32_t> ts, img;
+    if (auto lfanew = mem->u32(0x3C)) {
+        ts = mem->u32(*lfanew + 8);    // IMAGE_FILE_HEADER::TimeDateStamp
+        img = mem->u32(*lfanew + 80);  // IMAGE_OPTIONAL_HEADER64::SizeOfImage
+    }
+    const auto hex = [](const std::optional<uint32_t>& v) {
+        if (!v) return std::string("?");
+        char b[16];
+        std::snprintf(b, sizeof b, "0x%08lx", static_cast<unsigned long>(*v));
+        return std::string(b);
+    };
+    const std::string peId = "pe TimeDateStamp " + hex(ts) + " SizeOfImage " + hex(img);
     char size[64];
     std::snprintf(size, sizeof size, "module image size 0x%llx", static_cast<unsigned long long>(mem->image_size()));
-    win::log_line(size, true);
+    win::log_line(std::string(size) + "; main module " + peId, true);
 
     win::RuntimeOptions o;
     o.mem = mem;
@@ -66,6 +83,7 @@ void runtime_body() {
     o.log = [](const std::string& s) { win::log_line(s); };
     o.logPinned = [](const std::string& s) { win::log_line(s, true); };
     o.ring = &win::log_ring();
+    o.moduleId = peId;
     auto* rt = new win::Runtime(std::move(o));
     static std::atomic<bool> never{false};
     rt->run(never);
