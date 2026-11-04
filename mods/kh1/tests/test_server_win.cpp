@@ -158,6 +158,34 @@ TEST_CASE("subscribe_and_send_to_all") {
     CHECK(gone);
 }
 
+TEST_CASE("send_to_subscribers_skips_unsubscribed_clients") {
+    Running r;
+    TestClient sub(r.srv.port()), other(r.srv.port()), elsewhere(r.srv.port());
+    REQUIRE(sub.handshake());
+    REQUIRE(other.handshake());
+    REQUIRE(elsewhere.handshake());
+    REQUIRE(sub.sendFrame(0x1, "{\"type\":\"subscribe\",\"topics\":[\"kh1.spike\"],\"rateHz\":5}"));
+    REQUIRE(elsewhere.sendFrame(0x1, "{\"type\":\"subscribe\",\"topics\":[\"spike\"],\"rateHz\":5}"));
+    CHECK(sub.pingPong("s1"));  // subscribe has no ack; the pong orders after it
+    CHECK(elsewhere.pingPong("s2"));
+
+    for (int i = 0; i < 3; ++i) r.srv.sendToSubscribers("kh1.spike", "{\"type\":\"state\",\"n\":" + std::to_string(i) + "}");
+    r.srv.sendToAll("{\"type\":\"marker\"}");  // ordered after the state frames on every client
+
+    std::string text;
+    for (int i = 0; i < 3; ++i) {
+        REQUIRE(sub.expect(0x1, text));
+        CHECK(text == "{\"type\":\"state\",\"n\":" + std::to_string(i) + "}");
+    }
+    REQUIRE(sub.expect(0x1, text));
+    CHECK(text == "{\"type\":\"marker\"}");
+    // The unsubscribed client and the one on another topic see the marker first: no state frames.
+    REQUIRE(other.expect(0x1, text));
+    CHECK(text == "{\"type\":\"marker\"}");
+    REQUIRE(elsewhere.expect(0x1, text));
+    CHECK(text == "{\"type\":\"marker\"}");
+}
+
 TEST_CASE("server_close_and_binary") {
     Running r;
     {

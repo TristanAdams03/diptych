@@ -1,7 +1,7 @@
 #pragma once
 // Loopback WebSocket server (Windows only, x64). One network thread: non-blocking accept and
 // select() with a 50 ms timeout, plain Winsock. The runtime thread only calls pollCommand,
-// sendToAll and hasSubscriber, which take a mutex briefly and never wait on I/O.
+// sendToAll, sendToSubscribers and hasSubscriber, which take a mutex briefly and never wait on I/O.
 #include <atomic>
 #include <cstdint>
 #include <deque>
@@ -44,6 +44,9 @@ public:
 
     bool pollCommand(PendingCommand& out);
     void sendToAll(std::string json);  // enqueue a text frame for every handshaken client
+    // Enqueue a text frame only for open clients subscribed to `topic` (state frames). Every
+    // subscriber gets it at the caller's rate; per-client rates are not honoured yet.
+    void sendToSubscribers(const std::string& topic, std::string json);
     // True if any open client subscribes to `topic`; rateHz is then their max rate (else untouched).
     bool hasSubscriber(const std::string& topic, int& rateHz) const;
 

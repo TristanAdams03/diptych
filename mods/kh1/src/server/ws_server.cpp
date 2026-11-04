@@ -162,6 +162,16 @@ void WsServer::sendToAll(std::string json) {
     }
 }
 
+void WsServer::sendToSubscribers(const std::string& topic, std::string json) {
+    const std::string frame = net::ws_encode(kOpText, json);
+    std::lock_guard<std::mutex> lk(clientsMx_);
+    for (auto& c : clients_) {
+        if (!c->open || !proto::subscribed(c->sub, topic)) continue;
+        c->queue.push_back(frame);
+        while (c->queue.size() > kMaxQueuedFrames) c->queue.pop_front();
+    }
+}
+
 void WsServer::setInfo(proto::Info info) {
     std::lock_guard<std::mutex> lk(infoMx_);
     info_ = std::move(info);

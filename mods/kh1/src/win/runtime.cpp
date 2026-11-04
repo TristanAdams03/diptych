@@ -148,7 +148,8 @@ void Runtime::state_(int64_t now) {
     if (now < nextState_) return;
     rate = std::clamp(rate, 1, 10);
     nextState_ = now + 1000 / rate;
-    server_.sendToAll(core::spike_state_frame(core::kh1_spike_state(guarded_, seq_++, now, supported_())));
+    server_.sendToSubscribers(std::string(proto::kSpikeTopic),
+                              core::spike_state_frame(core::kh1_spike_state(guarded_, seq_++, now, supported_())));
 }
 
 void Runtime::flush_press_log_() {
