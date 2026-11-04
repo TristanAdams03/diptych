@@ -361,3 +361,17 @@ async def test_log_wording_unsupported_and_press_line():
         await rpc(ws, fixture("command_press.json"))
         r = await rpc(ws, cmd("kh1.log", {}))
         assert "press start byte 0 mask 16 for 100 ms" in r["data"]["lines"]
+
+
+async def test_stall_after_stops_states_but_keeps_pongs():
+    server, url = await start(stall_after=0.6)
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps(fixture("subscribe.json")))
+        before = await collect_states(ws, 0.5)
+        assert len(before) >= 1
+        await asyncio.sleep(0.3)  # past the stall point
+        await collect_states(ws, 0.2)  # drain anything in flight
+        assert await collect_states(ws, 0.8) == []
+        assert await rpc(ws, {"type": "ping", "t": 9}) == {"type": "pong", "t": 9}
+        log = await rpc(ws, cmd("kh1.log", {}))
+        assert log["ok"] is True

@@ -69,13 +69,17 @@ def int_arg(args, key, lo, hi):
 
 
 class Mock:
-    def __init__(self, unsupported, unsafe):
+    def __init__(self, unsupported, unsafe, stall_after=None):
         self.unsupported = unsupported
         self.unsafe = unsafe
+        self.stall_after = stall_after  # seconds after start; then no more states (pongs/results continue)
         self.t0 = time.monotonic()
         self.seq = 0
         self.press = None  # (byteIndex, mask, end_time)
         self.extra_log = []
+
+    def stalled(self):
+        return self.stall_after is not None and time.monotonic() - self.t0 >= self.stall_after
 
     def ms(self):
         return int((time.monotonic() - self.t0) * 1000) + 205750
@@ -156,7 +160,8 @@ class Mock:
         try:
             while True:
                 await asyncio.sleep(1.0 / rate)
-                await ws.send(json.dumps(self.state()))
+                if not self.stalled():  # simulates a frozen game main loop
+                    await ws.send(json.dumps(self.state()))
         except ConnectionClosed:
             pass
 
@@ -218,8 +223,8 @@ def process_request(connection, request):
     return None
 
 
-async def serve(port=7970, unsupported=False, unsafe=False, host="127.0.0.1"):
-    mock = Mock(unsupported, unsafe)
+async def serve(port=7970, unsupported=False, unsafe=False, host="127.0.0.1", stall_after=None):
+    mock = Mock(unsupported, unsafe, stall_after)
     server = await ws_serve(mock.handler, host, port, process_request=process_request)
     server.mock = mock  # test hook: tests flip mock.unsafe mid-run
     return server
@@ -230,9 +235,11 @@ async def main():
     p.add_argument("--port", type=int, default=7970)
     p.add_argument("--unsupported", action="store_true")
     p.add_argument("--unsafe", action="store_true")
+    p.add_argument("--stall-after", type=float, default=None,
+                   help="stop sending state frames this many seconds after start (pongs continue)")
     p.add_argument("--host", default="127.0.0.1", help=argparse.SUPPRESS)  # test-only escape hatch
     a = p.parse_args()
-    server = await serve(a.port, a.unsupported, a.unsafe, a.host)
+    server = await serve(a.port, a.unsupported, a.unsafe, a.host, a.stall_after)
     print(f"kh1 mock listening on ws://{a.host}:{a.port}", flush=True)
     await server.serve_forever()
 
