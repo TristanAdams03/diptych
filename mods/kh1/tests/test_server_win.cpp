@@ -78,7 +78,7 @@ struct TestClient {
     // Reads more bytes into buf; false on EOF/error/timeout.
     bool fill() {
         char tmp[4096];
-        int n = ::recv(s, tmp, sizeof tmp, 0);
+        int n = ::recv(s, tmp, static_cast<int>(sizeof tmp), 0);
         if (n <= 0) return false;
         buf.append(tmp, static_cast<size_t>(n));
         return true;
@@ -167,7 +167,7 @@ struct TestClient {
     bool closedByServer() {
         char tmp[4096];
         for (;;) {
-            int n = ::recv(s, tmp, sizeof tmp, 0);
+            int n = ::recv(s, tmp, static_cast<int>(sizeof tmp), 0);
             if (n > 0) continue;
             if (n == 0) return true;
             return WSAGetLastError() != WSAETIMEDOUT;

@@ -38,7 +38,7 @@ bool subscribed(const Subscription& sub, std::string_view topic);
 
 struct CommandResult {
     bool ok = false;
-    std::string error;    // empty -> null
+    std::string error;    // empty -> null when ok, "internal error" when !ok
     nlohmann::json data;  // null when absent; always null when !ok
 };
 
@@ -46,9 +46,11 @@ std::string welcome_json(const Info& info);
 std::string result_json(const std::string& id, const CommandResult& r);
 std::string error_json(const std::string& message);
 
-// Never throws. Unparseable -> error "invalid json"; not an object, no string type, or an unknown
-// type -> error "unknown type"; a command without string id/name or an object args -> result
-// "bad command". Commands go to the main queue unvalidated beyond that (execution is Task 4).
+// Never throws, and never deep-copies client JSON. Unparseable, or objects/arrays nested more than
+// 32 levels -> error "invalid json"; not an object, no string type, or an unknown type -> error
+// "unknown type"; a command without string id/name, or whose args is not an object or serializes
+// to more than 64 KB -> result "bad command" (id "" when there is no string id). Commands go to
+// the main queue unvalidated beyond that (execution is Task 4).
 Inbound classify(std::string_view text, const Info& info, Subscription& sub);
 
 }  // namespace diptych::proto

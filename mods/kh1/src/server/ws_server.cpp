@@ -30,6 +30,8 @@ constexpr uint8_t kOpCont = 0x0, kOpText = 0x1, kOpBin = 0x2, kOpClose = 0x8, kO
 const char kForbidden[] =
     "HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
 
+// listen_ keeps the SOCKET as uintptr_t so callers need no winsock2.h; on x64 both are 64-bit.
+static_assert(sizeof(SOCKET) == sizeof(uintptr_t), "SOCKET must round-trip through uintptr_t");
 SOCKET sock(uintptr_t s) { return static_cast<SOCKET>(s); }
 
 std::string closePayload(uint16_t code) {

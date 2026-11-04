@@ -62,20 +62,24 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
 
 | message | When |
 |---------|------|
-| `invalid json` | the frame is not parseable JSON |
+| `invalid json` | the frame is not parseable JSON, or nests objects/arrays more than 32 levels deep |
 | `unknown type` | not an object, `type` missing/not a string, or an unknown `type` |
 
 `result` frames (`error`) for a `command`:
 
 | error | When |
 |-------|------|
-| `bad command` | `command` without a string `id` and string `name`, or `args` missing/invalid for the command |
+| `bad command` | `command` without a string `id` and string `name`, `args` missing/not an object/over 64 KB, or `args` invalid for the command |
 | `unknown command` | `name` is not one of the three commands |
 | `unsupported build` | any command except `kh1.log` on an unsupported build |
 | `out of range` | an argument is outside its range, or a probe read faulted |
 | `not safe now` | `kh1.pressInput` in a menu, cutscene or Gummi |
 | `busy` | the command queue is full, or an input press is already running |
-| `internal error` | a C++ exception escaped the command |
+| `internal error` | a C++ exception escaped the command, or a failure carried no error string |
+
+- A `command` with a missing or non-string `id` gets `bad command` with `id:""`.
+- Missing or non-object `args` is `bad command`, checked before the `name` is looked up (so an unknown name without `args` is `bad command`, not `unknown command`).
+- Limits: a frame may nest objects/arrays at most 32 levels deep (the frame object itself is level 1; deeper is `invalid json`); a command's `args` may serialize to at most 64 KB (65536 bytes; larger is `bad command`); a WebSocket message over 1 MiB closes the connection with 1009.
 
 ## Rules
 
