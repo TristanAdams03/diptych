@@ -82,6 +82,11 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID) {
         const DWORD cap = static_cast<DWORD>(sizeof g_exePath / sizeof g_exePath[0]);
         const DWORD n = GetModuleFileNameW(nullptr, g_exePath, cap);
         if (n > 0 && n < cap && diptych::core::is_kh1_process(std::wstring_view(g_exePath, n))) {
+            // Pin this DLL so a stray FreeLibrary can never unmap code our threads are running.
+            // Takes no new lock beyond the loader lock we already hold; it does not load anything.
+            HMODULE self = nullptr;
+            GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN | GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                               reinterpret_cast<LPCWSTR>(&g_exePath), &self);
             if (HANDLE t = CreateThread(nullptr, 0, runtime_start, nullptr, 0, nullptr)) CloseHandle(t);
         }
     }
