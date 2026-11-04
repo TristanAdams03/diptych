@@ -40,7 +40,10 @@ public:
     // bind must be an IPv4 loopback literal (127.x.x.x). port 0 picks an ephemeral port.
     bool start(const std::string& bind, uint16_t port, proto::Info info);
     void stop();  // joins the network thread (within ~50 ms) and closes all sockets
-    uint16_t port() const;  // bound port, 0 when not running
+    // Bound port; 0 when not running, or once the network thread hit an unexpected exception.
+    // In that case it logs one line, closes every socket and stops serving (it never rethrows);
+    // the server stays inert until stop().
+    uint16_t port() const;
 
     bool pollCommand(PendingCommand& out);
     void sendToAll(std::string json);  // enqueue a text frame for every handshaken client
@@ -59,7 +62,9 @@ public:
     struct Client;  // network-thread state + shared queue/subscription (see .cpp)
 
 private:
-    void run();
+    void run();       // the network thread: runLoop_() inside a catch-all
+    void runLoop_();
+    void failInert_();  // network thread, after an exception escaped runLoop_()
     void handleReadable(Client& c);
     void handleFrames(Client& c);
     void handleText(Client& c, const std::string& text);

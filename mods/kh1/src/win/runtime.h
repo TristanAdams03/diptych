@@ -33,6 +33,8 @@ struct RuntimeOptions {
     int classifyForMs = 30000;
     int serverRetryMs = 5000;  // if the port is taken, try again this often
     int tickReportMs = 60000;  // how often the measured loop rate is logged
+    // Tests only: called at the start of every step(); a throw here exercises the run() guard.
+    std::function<void(int64_t)> onStep;
 };
 
 class Runtime {
@@ -46,8 +48,11 @@ public:
     Runtime(const Runtime&) = delete;
     Runtime& operator=(const Runtime&) = delete;
 
-    // Loops step() with a 1 ms sleep until stop is set (forever in the game).
+    // Loops step() with a 1 ms sleep until stop is set (forever in the game). Never throws: if
+    // anything escapes step(), it logs one line, stops the server and returns, and the runtime
+    // stays inert (no memory access, no serving) from then on.
     void run(const std::atomic<bool>& stop);
+    bool inert() const { return inert_.load(); }  // any thread
     // One iteration at nowMs (ms since the runtime started). Runtime thread only.
     void step(int64_t nowMs);
 
@@ -61,6 +66,7 @@ private:
     void log_(const std::string& s);
     void log_pinned_(const std::string& s);
     void flush_press_log_();
+    void go_inert_() noexcept;
     bool supported_() const { return build_ == core::Build::Steam1002; }
     proto::Info info_() const;
 
@@ -70,6 +76,7 @@ private:
     core::RawWatch raw_;
     server::WsServer server_;
 
+    std::atomic<bool> inert_{false};
     core::Build build_ = core::Build::Unknown;
     bool classifying_ = true;
     bool classifiedOnce_ = false;

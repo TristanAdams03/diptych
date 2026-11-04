@@ -16,8 +16,25 @@
 
 namespace {
 
-// The runtime thread: everything here runs after DllMain has returned. It never exits.
+void runtime_body();
+
+// The runtime thread: everything here runs after DllMain has returned. An exception escaping a
+// thread proc would terminate the game, so nothing escapes: on one, log a line and end the thread
+// (the mod is then inert; the forwarder keeps working).
 DWORD WINAPI runtime_start(LPVOID) {
+    try {
+        runtime_body();
+    } catch (...) {
+        try {
+            diptych::win::log_line("runtime failed with an unexpected error; the mod is inert for this session", true);
+        } catch (...) {
+        }
+    }
+    return 0;
+}
+
+// Runs forever unless the runtime goes inert (Runtime::run returns instead of throwing).
+void runtime_body() {
     using namespace diptych;
     win::enable_file_log();
     win::log_line(std::string("diptych_kh1 ") + win::kPluginVersion + " loaded", true);
@@ -52,7 +69,6 @@ DWORD WINAPI runtime_start(LPVOID) {
     auto* rt = new win::Runtime(std::move(o));
     static std::atomic<bool> never{false};
     rt->run(never);
-    return 0;
 }
 
 // Static so DllMain does not put 64 KiB on the loader's stack; DllMain is serialised by the loader.

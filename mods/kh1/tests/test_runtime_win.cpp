@@ -5,7 +5,9 @@
 
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <thread>
 
@@ -39,6 +41,8 @@ struct RunningRuntime {
     std::atomic<core::Build> build{core::Build::Unknown};
     core::LogRing ring;
     FakeMemory mem;
+    std::atomic<bool> boom{false};      // makes onStep throw (Important 3)
+    std::atomic<bool> runReturned{false};
     std::unique_ptr<win::Runtime> rt;
     std::thread th;
 
@@ -60,8 +64,14 @@ struct RunningRuntime {
         o.ring = &ring;
         o.classifyEveryMs = 20;
         o.classifyForMs = classifyForMs;
+        o.onStep = [this](int64_t) {
+            if (boom.load()) throw std::runtime_error("injected");
+        };
         rt = std::make_unique<win::Runtime>(std::move(o));
-        th = std::thread([this] { rt->run(stop); });
+        th = std::thread([this] {
+            rt->run(stop);
+            runReturned = true;
+        });
         const auto until = std::chrono::steady_clock::now() + std::chrono::seconds(5);
         while (rt->port() == 0 && std::chrono::steady_clock::now() < until)
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -160,6 +170,33 @@ TEST_CASE("runtime_end_to_end") {
     CHECK(started);
     CHECK(released);
     CHECK(ended);
+}
+
+TEST_CASE("runtime_goes_inert_when_a_step_throws") {
+    RunningRuntime r;
+    r.build = core::Build::Steam1002;
+    TestClient c(r.rt->port());
+    REQUIRE(c.handshake());
+    REQUIRE(c.sendFrame(0x1, R"({"type":"subscribe","topics":["kh1.spike"],"rateHz":10})"));
+    json st = next_of_type(c, "state");
+    REQUIRE(st["data"]["world"] == 3);  // memory is being read
+
+    r.boom = true;  // the next step throws
+    const auto t0 = std::chrono::steady_clock::now();
+    while (!r.runReturned.load() && std::chrono::steady_clock::now() - t0 < std::chrono::seconds(3))
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    // run() returned on its own (stop was never set) instead of letting the exception escape.
+    REQUIRE(r.runReturned.load());
+    CHECK_FALSE(r.stop.load());
+    CHECK(r.rt->inert());
+    CHECK(r.rt->port() == 0);
+    CHECK(c.closedByServer());
+    const int reads = r.mem.reads;
+    r.rt->step(999999);  // a stray step does nothing once inert
+    CHECK(r.mem.reads == reads);
+    int inertLines = 0;
+    for (auto& l : r.ring.pinned()) inertLines += l.find("the mod is inert") != std::string::npos ? 1 : 0;
+    CHECK(inertLines == 1);
 }
 
 TEST_CASE("runtime_stops_classifying_after_the_window") {

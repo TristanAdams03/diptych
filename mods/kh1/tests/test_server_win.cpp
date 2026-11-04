@@ -14,6 +14,7 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <mutex>
 #include <thread>
@@ -344,6 +345,48 @@ TEST_CASE("server_set_info_and_event_log") {
     std::lock_guard<std::mutex> lk(mx);
     REQUIRE(!events.empty());
     CHECK(events[0] == "client connected (1 open)");
+}
+
+TEST_CASE("server_goes_inert_when_the_network_thread_throws") {
+    Wsa wsa;
+    server::WsServer srv;
+    std::mutex mx;
+    std::vector<std::string> events;
+    // The event log runs on the network thread; throwing from it stands in for any unexpected
+    // exception there (bad_alloc, system_error). It must not escape the thread.
+    srv.setEventLog([&](const std::string& e) {
+        if (e.rfind("client connected", 0) == 0) throw std::runtime_error("injected");
+        std::lock_guard<std::mutex> lk(mx);
+        events.push_back(e);
+    });
+    REQUIRE(srv.start("127.0.0.1", 0, testInfo()));
+    const uint16_t port = srv.port();
+    TestClient c(port);
+    c.sendRaw(c.request());  // the handshake triggers "client connected"
+    CHECK(c.closedByServer());
+    const auto t0 = Clock::now();
+    while (srv.port() != 0 && Clock::now() - t0 < std::chrono::seconds(2))
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    CHECK(srv.port() == 0);
+    // Nothing listens any more.
+    SOCKET s = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sockaddr_in a{};
+    a.sin_family = AF_INET;
+    a.sin_port = htons(port);
+    inet_pton(AF_INET, "127.0.0.1", &a.sin_addr);
+    CHECK(::connect(s, reinterpret_cast<sockaddr*>(&a), sizeof a) != 0);
+    closesocket(s);
+    // Calls from the runtime thread stay harmless.
+    srv.sendToAll("{}");
+    srv.sendToSubscribers("kh1.spike", "{}");
+    int rate = 0;
+    CHECK_FALSE(srv.hasSubscriber("kh1.spike", rate));
+    server::PendingCommand pc;
+    CHECK_FALSE(srv.pollCommand(pc));
+    srv.stop();
+    std::lock_guard<std::mutex> lk(mx);
+    REQUIRE(events.size() == 1);
+    CHECK(events[0] == "server stopped after an unexpected error; not serving any more");
 }
 
 TEST_CASE("server_busy_reply_has_null_data") {

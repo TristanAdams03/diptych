@@ -38,14 +38,35 @@ proto::Info Runtime::info_() const {
 
 void Runtime::run(const std::atomic<bool>& stop) {
     using Clock = std::chrono::steady_clock;
-    const auto t0 = Clock::now();
-    while (!stop.load()) {
-        step(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - t0).count());
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    try {
+        const auto t0 = Clock::now();
+        while (!stop.load() && !inert_.load()) {
+            step(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - t0).count());
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    } catch (...) {
+        go_inert_();
     }
 }
 
+// An exception escaping the runtime thread would terminate the game. Log once, stop serving and
+// leave game memory alone for the rest of the session. Never rethrows.
+void Runtime::go_inert_() noexcept {
+    if (inert_.exchange(true)) return;
+    try {
+        log_pinned_("runtime stopped after an unexpected error; the mod is inert for this session");
+    } catch (...) {
+    }
+    try {
+        server_.stop();
+    } catch (...) {
+    }
+    serverUp_ = false;
+}
+
 void Runtime::step(int64_t now) {
+    if (inert_.load()) return;
+    if (o_.onStep) o_.onStep(now);
     classify_(now);
     serve_(now);
     if (supported_()) {
@@ -99,7 +120,16 @@ void Runtime::classify_(int64_t now) {
 void Runtime::serve_(int64_t now) {
     if (serverUp_ || now < nextServerTry_) return;
     nextServerTry_ = now + o_.serverRetryMs;
-    if (server_.start(o_.bind, o_.port, info_())) {
+    bool started = false;
+    try {
+        started = server_.start(o_.bind, o_.port, info_());
+    } catch (...) {  // e.g. bad_alloc building the info; start() cleans up its own sockets
+        try {
+            server_.stop();
+        } catch (...) {
+        }
+    }
+    if (started) {
         serverUp_ = true;
         log_pinned_("server listening on " + o_.bind + ":" + std::to_string(server_.port()));
         return;

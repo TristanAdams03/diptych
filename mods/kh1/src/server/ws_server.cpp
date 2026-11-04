@@ -113,7 +113,12 @@ bool WsServer::start(const std::string& bind, uint16_t port, proto::Info info) {
     setInfo(std::move(info));
     stop_ = false;
     port_ = ntohs(sa.sin_port);
-    thread_ = std::thread([this] { run(); });
+    try {
+        thread_ = std::thread([this] { run(); });
+    } catch (...) {  // std::system_error: no thread, so no server
+        stop();
+        return false;
+    }
     return true;
 }
 
@@ -357,6 +362,36 @@ void WsServer::handleReadable(Client& c) {
 }
 
 void WsServer::run() {
+    try {
+        runLoop_();
+    } catch (...) {
+        failInert_();
+    }
+}
+
+// An exception escaping a std::thread would terminate the game. Instead: log once, close every
+// socket and stop serving. Nothing here may throw.
+void WsServer::failInert_() {
+    port_ = 0;
+    std::vector<std::unique_ptr<Client>> gone;
+    try {
+        std::lock_guard<std::mutex> lk(clientsMx_);
+        gone.swap(clients_);
+    } catch (...) {
+    }
+    for (auto& c : gone)
+        if (c && c->s != INVALID_SOCKET) closesocket(c->s);
+    if (listen_ != ~uintptr_t(0)) {
+        closesocket(sock(listen_));
+        listen_ = ~uintptr_t(0);
+    }
+    try {
+        if (eventLog_) eventLog_("server stopped after an unexpected error; not serving any more");
+    } catch (...) {
+    }
+}
+
+void WsServer::runLoop_() {
     const SOCKET ls = sock(listen_);
     while (!stop_) {
         // Move queued outbound frames and drop finished clients.
