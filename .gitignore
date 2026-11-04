@@ -1,0 +1,16 @@
+.superpowers/
+build/
+*.apk
+*.keystore
+*.jks
+local.properties
+.gradle/
+.idea/
+out/
+plugin/b/
+plugin/build*/
+tools/mockserver/.venv/
+__pycache__/
+.pytest_cache/
+.kotlin/
+mods/kh1/b/
