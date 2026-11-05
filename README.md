@@ -15,4 +15,6 @@ Protocol: [protocol/kh1/PROTOCOL.md](protocol/kh1/PROTOCOL.md)
 
 Spike checklists: [PC](docs/spike/PC-CHECKLIST.md), [Thor](docs/spike/THOR-CHECKLIST.md)
 
+KH1 map (v0.1.0): [map checklist](docs/spike/MAP-CHECKLIST.md)
+
 Licence: GPL-3.0-or-later.

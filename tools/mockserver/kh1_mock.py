@@ -21,8 +21,12 @@ STARTUP_LINES = ["diptych_kh1 0.1.0 loaded"]
 BATTLE_BLOCK = 0x2D5CC4C  # Sora HP, maxHP, MP, maxMP as u32 (PROTOCOL.md address table)
 CHEST_FLAGS = 0x2DE992C   # chest-opened bit table; the mock's bytes come from --chests
 FAKE_BYTES = {0x233FE94: 3, 0x233FE8C: 2, 0x233FE84: 3}
-for _i, _v in enumerate((55, 57, 5, 5)):
-    FAKE_BYTES.update({BATTLE_BLOCK + 4 * _i + k: b for k, b in enumerate(_v.to_bytes(4, "little"))})
+# Party in battle-block order (stride 0x100), as read live on the PC: Sora, Donald, Goofy.
+for _m, _vals in enumerate(((55, 57, 5, 5), (42, 42, 8, 8), (63, 63, 4, 4))):
+    for _i, _v in enumerate(_vals):
+        FAKE_BYTES.update({BATTLE_BLOCK + 0x100 * _m + 4 * _i + k: b for k, b in enumerate(_v.to_bytes(4, "little"))})
+PARTY_SLOTS = 0x2DE97EF  # slot 1 / slot 2 char ids: 1 Donald, 2 Goofy
+FAKE_BYTES.update({PARTY_SLOTS: 1, PARTY_SLOTS + 1: 2})
 WATCH_MAX_REGIONS, WATCH_MAX_LENGTH, WATCH_MAX_TOTAL = 8, 256, 1024
 
 
