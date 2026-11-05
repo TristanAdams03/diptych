@@ -114,7 +114,7 @@ TEST_CASE("runtime_end_to_end") {
     REQUIRE(c.handshake());
     REQUIRE(c.sendFrame(0x1, fixture("hello.json")));
     json w = next_of_type(c, "welcome");
-    CHECK(w["plugin"] == "0.0.1-spike");
+    CHECK(w["plugin"] == "0.1.0");
     CHECK(w["gameId"] == "kh1");
     CHECK(w["gameBuild"] == "unknown");
     CHECK(w["supported"] == false);
@@ -332,4 +332,75 @@ TEST_CASE("runtime_stops_classifying_once_recognised") {
     REQUIRE(c.sendFrame(0x1, fixture("hello.json")));
     json w = next_of_type(c, "welcome");
     CHECK(w == json::parse(fixture("welcome_unsupported.json")));
+}
+
+TEST_CASE("runtime_streams_watched_regions_to_the_watching_client_only") {
+    RunningRuntime r;
+    r.mem.set32(core::kSoraHpOffset, 55);
+    r.mem.set32(core::kSoraHpOffset + 4, 57);
+    r.mem.set32(core::kSoraHpOffset + 8, 5);
+    r.mem.set32(core::kSoraHpOffset + 12, 5);
+    r.mem.faults.insert(0x100);  // a second region that faults
+    r.build = core::Build::Steam1002;
+    const std::string sub = R"({"type":"subscribe","topics":["kh1.spike"],"rateHz":10})";
+    TestClient a(r.rt->port()), b(r.rt->port());
+    REQUIRE(a.handshake());
+    REQUIRE(b.handshake());
+    REQUIRE(a.sendFrame(0x1, sub));
+    REQUIRE(b.sendFrame(0x1, sub));
+    CHECK_FALSE(next_of_type(a, "state")["data"].contains("regions"));
+
+    const json regions = json::array({{{"offset", core::kSoraHpOffset}, {"length", 16}}, {{"offset", 0x100}, {"length", 4}}});
+    REQUIRE(a.sendFrame(0x1, command("w1", "kh1.watch", {{"regions", regions}})));
+    json res = next_of_type(a, "result");
+    CHECK(res["id"] == "w1");
+    CHECK(res["ok"] == true);
+    CHECK(res["data"]["count"] == 2);
+
+    // Frames queued before the watch landed have no regions; the next ones do.
+    json st;
+    for (int i = 0; i < 5; ++i) {
+        st = next_of_type(a, "state");
+        if (st["data"].contains("regions")) break;
+    }
+    REQUIRE(st["data"].contains("regions"));
+    REQUIRE(st["data"]["regions"].size() == 2);
+    CHECK(st["data"]["regions"][0]["offset"] == core::kSoraHpOffset);
+    CHECK(st["data"]["regions"][0]["hex"] == "37000000390000000500000005000000");
+    CHECK(st["data"]["regions"][1]["hex"].is_null());
+    CHECK(st["data"]["world"] == 3);  // every existing field is still there
+    CHECK(st["data"]["inMenu"] == false);
+
+    for (int i = 0; i < 4; ++i) {
+        json sb = next_of_type(b, "state");
+        REQUIRE(sb.is_object());
+        CHECK_FALSE(sb["data"].contains("regions"));
+    }
+
+    // The watch belongs to that connection: a reconnect starts without one.
+    a.closeNow();
+    TestClient a2(r.rt->port());
+    REQUIRE(a2.handshake());
+    REQUIRE(a2.sendFrame(0x1, sub));
+    for (int i = 0; i < 3; ++i) {
+        json s2 = next_of_type(a2, "state");
+        REQUIRE(s2.is_object());
+        CHECK_FALSE(s2["data"].contains("regions"));
+    }
+
+    // An empty list clears a watch.
+    REQUIRE(a2.sendFrame(0x1, command("w2", "kh1.watch", {{"regions", json::array({{{"offset", 0}, {"length", 1}}})}})));
+    CHECK(next_of_type(a2, "result")["ok"] == true);
+    REQUIRE(a2.sendFrame(0x1, command("w3", "kh1.watch", {{"regions", json::array()}})));
+    res = next_of_type(a2, "result");
+    CHECK(res["data"]["count"] == 0);
+    json last;
+    for (int i = 0; i < 3; ++i) last = next_of_type(a2, "state");
+    CHECK_FALSE(last["data"].contains("regions"));
+
+    r.halt();
+    CHECK(r.mem.writes.empty());  // kh1.watch never writes game memory
+    bool disabled = false;
+    for (auto& l : r.ring.last(500)) disabled |= l.find("faulted; it stays off") != std::string::npos;
+    CHECK_FALSE(disabled);  // a faulting watch region turns off no state reader
 }

@@ -3,11 +3,18 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
+#include <optional>
 #include <thread>
+#include <unordered_map>
+#include <vector>
+
+#include <nlohmann/json.hpp>
 
 #include "proto/envelope.h"
 
 namespace diptych::win {
+
+using nlohmann::json;
 
 Runtime::Runtime(RuntimeOptions o)
     : o_(std::move(o)), guarded_(*o_.mem, [this](uintptr_t off) {
@@ -61,6 +68,7 @@ void Runtime::go_inert_() noexcept {
     }
     // Let go of any injected buttons: the hook stays installed, and nothing else would clear them.
     if (o_.inject) o_.inject->clear();
+    watches_.clear();
     try {
         server_.stop();
     } catch (...) {
@@ -163,8 +171,17 @@ void Runtime::commands_(int64_t now) {
         ++windowUsed_;
         // Probes read raw memory: a faulting probe must not turn off a state reader. The press
         // safety check reads guarded_, like the press ticks, so a disabled gate reader refuses it.
-        std::string reply =
-            core::run_kh1_command(*o_.mem, supported_(), cmd.id, cmd.name, cmd.args, press_, o_.ring, &guarded_);
+        // Watch reads, like probes, go to raw memory (SEH-guarded, image-bounded) at state time.
+        std::optional<core::WatchSet> watch;
+        std::string reply = core::run_kh1_command(*o_.mem, supported_(), cmd.id, cmd.name, cmd.args, press_, o_.ring,
+                                                  &guarded_, &watch);
+        if (watch) {
+            if (watch->regions.empty())
+                watches_.erase(cmd.client);
+            else
+                watches_[cmd.client] = std::move(*watch);
+            prune_watches_();  // bounds the map even when nobody subscribes
+        }
         flush_press_log_();
         if (cmd.name != "kh1.log") {
             const bool ok = reply.find("\"ok\":true") != std::string::npos;
@@ -184,8 +201,28 @@ void Runtime::state_(int64_t now) {
     if (now < nextState_) return;
     rate = std::clamp(rate, 1, 10);
     nextState_ = now + 1000 / rate;
-    server_.sendToSubscribers(std::string(proto::kSpikeTopic),
-                              core::spike_state_frame(core::kh1_spike_state(guarded_, seq_++, now, supported_())));
+    const std::string topic(proto::kSpikeTopic);
+    json data = core::kh1_spike_state(guarded_, seq_++, now, supported_());
+    std::unordered_map<server::ClientId, std::string> perClient;
+    if (!watches_.empty()) {
+        prune_watches_();
+        if (supported_()) {
+            for (const auto& [id, w] : watches_) {
+                json d = data;
+                // Raw memory, not guarded_: a faulting watch region must never disable a safety-gate reader.
+                d["regions"] = core::read_watch(*o_.mem, w);
+                perClient.emplace(id, core::spike_state_frame(d));
+            }
+        }
+    }
+    server_.sendToSubscribers(topic, core::spike_state_frame(data), perClient);
+}
+
+// Forgets the watches of clients that disconnected or are closing (ids are never reused).
+void Runtime::prune_watches_() {
+    if (watches_.empty()) return;
+    const std::vector<server::ClientId> open = server_.openClients();
+    std::erase_if(watches_, [&](const auto& kv) { return std::find(open.begin(), open.end(), kv.first) == open.end(); });
 }
 
 void Runtime::hook_() {

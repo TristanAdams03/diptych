@@ -1,22 +1,24 @@
 #pragma once
 // The KH1 runtime: owns the WebSocket server and, on one thread, re-classifies the build, ticks
 // the press scheduler at ~1 kHz while a press runs (~100 Hz otherwise), runs queued commands (at most 8 per 100 ms) and sends kh1.spike
-// state at the subscribed rate (<= 10 Hz). The thread never takes the loader lock and never waits
+// state at the subscribed rate (<= 10 Hz), with each watching client's kh1.watch regions in its own frames. The thread never takes the loader lock and never waits
 // on the network thread (WsServer calls only take a mutex briefly).
 #include <atomic>
 #include <cstdint>
 #include <functional>
+#include <map>
 #include <string>
 
 #include "core/kh1_commands.h"
 #include "core/kh1_fields.h"
+#include "core/kh1_watch.h"
 #include "core/log_ring.h"
 #include "core/version_gate.h"
 #include "server/ws_server.h"
 
 namespace diptych::win {
 
-inline constexpr const char* kPluginVersion = "0.0.1-spike";
+inline constexpr const char* kPluginVersion = "0.1.0";
 
 struct RuntimeOptions {
     std::string bind = server::kDefaultBind;
@@ -76,6 +78,7 @@ private:
     void serve_(int64_t now);
     void commands_(int64_t now);
     void state_(int64_t now);
+    void prune_watches_();
     void log_(const std::string& s);
     void log_pinned_(const std::string& s);
     void flush_press_log_();
@@ -89,6 +92,9 @@ private:
     core::PressScheduler press_;
     core::RawWatch raw_;
     server::WsServer server_;
+    // kh1.watch, per connection (Ruling B): only that client's state frames carry its regions.
+    // Entries for clients that are no longer open are dropped before each state send.
+    std::map<server::ClientId, core::WatchSet> watches_;
 
     std::atomic<bool> inert_{false};
     core::Build build_ = core::Build::Unknown;
