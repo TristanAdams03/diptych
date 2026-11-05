@@ -26,8 +26,8 @@ std::string fixtureText(const char* name) {
 }
 json fixture(const char* name) { return json::parse(fixtureText(name)); }
 
-Info steam() { return {"0.0.1-spike", "kh1", "steam-1.0.0.2", true}; }
-Info egs() { return {"0.0.1-spike", "kh1", "egs-1.0.0.10", false}; }
+Info steam() { return {"0.1.0", "kh1", "steam-1.0.0.2", true}; }
+Info egs() { return {"0.1.0", "kh1", "egs-1.0.0.10", false}; }
 
 // classify on a fresh std::thread with the default stack, like the server's network thread
 // (1 MB on Windows, as in KINGDOM HEARTS FINAL MIX.exe; 8 MB on Linux).
@@ -82,7 +82,7 @@ TEST_CASE("unsupported-build hello -> welcome with supported:false") {
     CHECK(got["supported"] == false);
     CHECK(got["gameBuild"] == "egs-1.0.0.10");
 
-    Info unknown{"0.0.1-spike", "kh1", "unknown", false};
+    Info unknown{"0.1.0", "kh1", "unknown", false};
     got = json::parse(classify(R"({"type":"hello"})", unknown, sub).reply);
     CHECK(got["supported"] == false);
     CHECK(got["gameBuild"] == "unknown");

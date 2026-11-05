@@ -32,7 +32,7 @@ class ReportTest {
         val r = buildReport(ui, listOf("12:00:00 connected"), "AYN Thor Android 13", displays)
         assertKeys(r)
         for (want in listOf(
-            "plugin=0.0.1-spike", "gameBuild=steam-1.0.0.2", "supported=true", "loop=ALIVE", "seqPerSec=5.0",
+            "plugin=0.1.0", "gameBuild=steam-1.0.0.2", "supported=true", "loop=ALIVE", "seqPerSec=5.0",
             "world=3", "worldAlt=3", "room=2", "hp=52/60", "inMenu=false", "inCutscene=false", "inGummi=false",
             "inputBytes=00000000", "device=AYN Thor Android 13", "4:1240x1080", "12:00:00 connected",
             "server listening on 127.0.0.1:7970",

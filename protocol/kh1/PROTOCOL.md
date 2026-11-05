@@ -7,11 +7,11 @@ Example frames for each message are in `fixtures/`. The mod listens on **127.0.0
 | Dir | Type | Fields | Fixture |
 |-----|------|--------|---------|
 | C->S | `hello` | `client:string`, `protocol:0` | hello.json |
-| S->C | `welcome` | `plugin:"0.0.1-spike"`, `protocol:0`, `gameId:"kh1"`, `gameBuild:"steam-1.0.0.2"\|"egs-1.0.0.10"\|"unknown"`, `supported:bool`, `features:["spike"]` | welcome_steam.json, welcome_unsupported.json |
+| S->C | `welcome` | `plugin:"0.1.0"`, `protocol:0`, `gameId:"kh1"`, `gameBuild:"steam-1.0.0.2"\|"egs-1.0.0.10"\|"unknown"`, `supported:bool`, `features:["spike","watch"]` | welcome_steam.json, welcome_unsupported.json |
 | C->S | `subscribe` | `topics:["kh1.spike"]`, `rateHz:int 1..10` | subscribe.json |
-| S->C | `state` | `topic:"kh1.spike"`, `data:{...}` (below) | state_spike.json, state_unsupported.json |
-| C->S | `command` | `id:string`, `name:"kh1.probe"\|"kh1.pressInput"\|"kh1.log"`, `args:{}` | command_probe.json, command_press.json, command_log.json |
-| S->C | `result` | `id:string`, `ok:bool`, `error:string\|null`, `data:object\|null` | result_probe.json, result_press_refused.json, result_log.json |
+| S->C | `state` | `topic:"kh1.spike"`, `data:{...}` (below) | state_spike.json, state_unsupported.json, state_watch.json |
+| C->S | `command` | `id:string`, `name:"kh1.probe"\|"kh1.pressInput"\|"kh1.log"\|"kh1.watch"`, `args:{}` | command_probe.json, command_press.json, command_log.json, command_watch.json |
+| S->C | `result` | `id:string`, `ok:bool`, `error:string\|null`, `data:object\|null` | result_probe.json, result_press_refused.json, result_log.json, result_watch.json |
 | C->S | `ping` | `t:int` | ping.json |
 | S->C | `pong` | `t:int` | pong.json |
 | S->C | `error` | `message:string` | error.json |
@@ -43,8 +43,12 @@ attach can still be diagnosed from the app.
 | `inCutscene` | bool\|null | any of the 4 bytes at `inCutscene` != 0 |
 | `inGummi` | bool\|null | `inGummi` u32 != 0 |
 | `inputBytes` | string\|null | the 4 bytes at `0x23407B4`, lowercase hex (8 chars) |
+| `regions` | array (only with a watch) | `[{offset:int, hex:string\|null}]`: this client's `kh1.watch` regions, in watch order (see `state_watch.json`) |
 
 A field is `null` when unsupported or when its reader faulted (that reader is then off for the session).
+`regions` is present only in the frames sent to a client that has a non-empty watch; without one the key is absent.
+A region's `hex` (lowercase, two digits per byte) is `null` when that read faults; the other regions still read, and a
+faulting region never turns off a state reader.
 
 ## Commands
 
@@ -82,6 +86,14 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
   input block at `0x23407B4`) is proven not to work: on PC the bytes held the bits but the game never acted; that
   block is a derived copy.
 - `kh1.log` `args:{}` -> ok `data:{lines:[string]}`. Recent mod log lines. Works on any build.
+- `kh1.watch` `args:{regions:[{offset:int, length:int}]}` -> ok `data:{count:int}` (the number of regions). Read-only.
+  From then on, every `kh1.spike` state frame sent to **this connection** carries `regions` (above); other clients'
+  frames are unchanged. A new `kh1.watch` replaces the previous one; an empty `regions` list clears it. The watch belongs
+  to the connection: it is dropped when the client disconnects, so a client re-sends it after every `welcome`.
+  Limits: at most **8** regions, each `length` **1..256** bytes, **1024** bytes in total, and each region wholly inside
+  the module image (`offset + length <= SizeOfImage`). Breaking a limit is `out of range`; `regions` missing or not an
+  array, an element that is not an object, or a missing or non-integer `offset`/`length` is `bad command`; on an
+  unsupported build it is `unsupported build`. A failed `kh1.watch` leaves the previous watch in place.
 - Every failed `result` has `ok:false`, `error:<string below>`, `data:null`.
 
 ## Error strings
@@ -98,9 +110,9 @@ A field is `null` when unsupported or when its reader faulted (that reader is th
 | error | When |
 |-------|------|
 | `bad command` | `command` without a string `id` and string `name`, `args` missing/not an object/over 64 KB, or `args` invalid for the command |
-| `unknown command` | `name` is not one of the three commands |
+| `unknown command` | `name` is not one of the four commands |
 | `unsupported build` | any command except `kh1.log` on an unsupported build |
-| `out of range` | an argument is outside its range (including pressInput start), or a probe read faulted |
+| `out of range` | an argument is outside its range (including pressInput start, and the `kh1.watch` limits), or a probe read faulted |
 | `not safe now` | `kh1.pressInput` in a menu, cutscene or Gummi, or without the XInput hook |
 | `busy` | the command queue is full, or an input press is already running |
 | `internal error` | a C++ exception escaped the command, or a failure carried no error string |

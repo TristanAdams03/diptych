@@ -278,7 +278,7 @@ TEST_CASE("kh1.log keeps the pinned startup lines first, then the last 200 other
     FakeMemory m;
     PressScheduler p;
     LogRing ring;
-    ring.add("diptych_kh1 0.0.1-spike loaded", true);
+    ring.add("diptych_kh1 0.1.0 loaded", true);
     ring.add("build unknown not supported", true);
     ring.add("server listening on 127.0.0.1:7970", true);
     for (int i = 0; i < 1000; ++i) ring.add("debug " + std::to_string(i));
@@ -289,7 +289,7 @@ TEST_CASE("kh1.log keeps the pinned startup lines first, then the last 200 other
         REQUIRE(r["ok"] == true);
         const json& lines = r["data"]["lines"];
         REQUIRE(lines.size() == 204);
-        CHECK(lines[0] == "diptych_kh1 0.0.1-spike loaded");
+        CHECK(lines[0] == "diptych_kh1 0.1.0 loaded");
         CHECK(lines[1] == "build unknown not supported");
         CHECK(lines[2] == "server listening on 127.0.0.1:7970");
         CHECK(lines[3] == "build classification final: unknown");

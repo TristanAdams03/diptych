@@ -12,7 +12,7 @@ inline constexpr std::string_view kSpikeTopic = "kh1.spike";
 
 // What `welcome` reports.
 struct Info {
-    std::string plugin;     // "0.0.1-spike"
+    std::string plugin;     // "0.1.0"
     std::string gameId;     // "kh1"
     std::string gameBuild;  // "steam-1.0.0.2" | "egs-1.0.0.10" | "unknown"
     bool supported = false;

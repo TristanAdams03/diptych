@@ -24,12 +24,12 @@ class ProtocolTest {
         val m = parseServer(fx("welcome_steam.json"))
         assertTrue(m is ServerMsg.Welcome)
         m as ServerMsg.Welcome
-        assertEquals("0.0.1-spike", m.plugin)
+        assertEquals("0.1.0", m.plugin)
         assertEquals(0, m.protocol)
         assertEquals("kh1", m.gameId)
         assertEquals("steam-1.0.0.2", m.gameBuild)
         assertTrue(m.supported)
-        assertEquals(listOf("spike"), m.features)
+        assertEquals(listOf("spike", "watch"), m.features)
     }
 
     @Test fun welcomeUnsupportedFixtureParses() {

@@ -26,7 +26,7 @@ class SpikeClientResultTest {
         assertNull(c.ui.value.modLog)
         c.handle(Fixtures.load("result_log.json"))
         assertEquals(
-            listOf("diptych_kh1 0.0.1-spike loaded", "build steam-1.0.0.2 supported", "server listening on 127.0.0.1:7970"),
+            listOf("diptych_kh1 0.1.0 loaded", "build steam-1.0.0.2 supported", "server listening on 127.0.0.1:7970"),
             c.ui.value.modLog,
         )
         assertEquals("c3 ok (3 log lines)", c.ui.value.lastResult)

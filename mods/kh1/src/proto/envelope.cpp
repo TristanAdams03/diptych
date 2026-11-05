@@ -108,7 +108,7 @@ std::string welcome_json(const Info& info) {
                      {"gameId", info.gameId},
                      {"gameBuild", info.gameBuild},
                      {"supported", info.supported},
-                     {"features", json::array({"spike"})}});
+                     {"features", json::array({"spike", "watch"})}});
 }
 
 std::string result_json(const std::string& id, const CommandResult& r) {

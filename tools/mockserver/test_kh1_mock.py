@@ -117,7 +117,7 @@ async def test_unsupported_commands():
                          "error": "unsupported build", "data": None}
         r = await rpc(ws, cmd("kh1.log", {}))
         assert r["ok"] is True
-        assert r["data"]["lines"][0] == "diptych_kh1 0.0.1-spike loaded"
+        assert r["data"]["lines"][0] == "diptych_kh1 0.1.0 loaded"
         assert "not supported" in r["data"]["lines"][1]
 
 
@@ -387,3 +387,115 @@ async def test_press_accepts_mapped_masks(bi, mask):
     async with server, connect(url) as ws:
         r = await rpc(ws, cmd("kh1.pressInput", {"byteIndex": bi, "mask": mask, "durationMs": 16}))
         assert r["ok"] is True
+
+
+# ---- kh1.watch -----------------------------------------------------------------------------------
+
+BATTLE = 0x2D5CC4C
+CHESTS = 0x2DE992C
+
+
+def watch(*regions, id="w1"):
+    return cmd("kh1.watch", {"regions": [{"offset": o, "length": n} for o, n in regions]}, id=id)
+
+
+async def next_state(ws, want_regions=True, tries=10):
+    """The next state frame; with want_regions, skips frames sent before the watch landed."""
+    for _ in range(tries):
+        m = json.loads(await asyncio.wait_for(ws.recv(), 2))
+        if m["type"] == "state" and ("regions" in m["data"] or not want_regions):
+            return m
+    raise AssertionError("no matching state frame")
+
+
+async def test_watch_fixture_and_state_regions():
+    server, url = await start(chests=bytes.fromhex("0102"))
+    async with server, connect(url) as ws:
+        assert await rpc(ws, fixture("command_watch.json")) == fixture("result_watch.json")
+        await ws.send(json.dumps(fixture("subscribe.json")))
+        s = await next_state(ws)
+        ref = fixture("state_watch.json")["data"]
+        assert set(s["data"]) == set(ref)
+        assert s["data"]["regions"] == [
+            {"offset": BATTLE, "hex": "37000000390000000500000005000000"},
+            {"offset": CHESTS, "hex": "0102000000000000"},
+        ]
+        assert ref["regions"][0] == s["data"]["regions"][0]
+        assert (s["data"]["soraHp"], s["data"]["soraHpMax"]) == (55, 57)
+
+
+async def test_watch_chests_default_zero_and_probe_agrees():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        r = await rpc(ws, cmd("kh1.probe", {"offset": BATTLE, "length": 16}))
+        assert r["data"]["hex"] == "37000000390000000500000005000000"
+        assert (await rpc(ws, watch((CHESTS, 256))))["data"] == {"count": 1}
+        await ws.send(json.dumps(fixture("subscribe.json")))
+        s = await next_state(ws)
+        assert s["data"]["regions"] == [{"offset": CHESTS, "hex": "00" * 256}]
+
+
+async def test_watch_is_per_connection_and_dropped_on_reconnect():
+    server, url = await start()
+    async with server:
+        async with connect(url) as a, connect(url) as b:
+            assert (await rpc(a, watch((BATTLE, 16))))["ok"] is True
+            for ws in (a, b):
+                await ws.send(json.dumps(fixture("subscribe.json")))
+            assert "regions" in (await next_state(a))["data"]
+            for s in await collect_states(b, 0.5):
+                assert "regions" not in s["data"]
+        async with connect(url) as a2:
+            await a2.send(json.dumps(fixture("subscribe.json")))
+            states = await collect_states(a2, 0.5)
+            assert states and all("regions" not in s["data"] for s in states)
+
+
+async def test_watch_empty_list_clears():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await rpc(ws, watch((BATTLE, 4)))
+        r = await rpc(ws, watch())
+        assert r == {"type": "result", "id": "w1", "ok": True, "error": None, "data": {"count": 0}}
+        await ws.send(json.dumps(fixture("subscribe.json")))
+        states = await collect_states(ws, 0.5)
+        assert states and all("regions" not in s["data"] for s in states)
+
+
+@pytest.mark.parametrize("args,err", [
+    ({"regions": [{"offset": i, "length": 1} for i in range(9)]}, "out of range"),
+    ({"regions": [{"offset": BATTLE, "length": 0}]}, "out of range"),
+    ({"regions": [{"offset": BATTLE, "length": 257}]}, "out of range"),
+    ({"regions": [{"offset": i * 256, "length": 256} for i in range(4)] + [{"offset": 1024, "length": 1}]},
+     "out of range"),
+    ({"regions": [{"offset": IMAGE_SIZE - 15, "length": 16}]}, "out of range"),
+    ({"regions": [{"offset": -1, "length": 4}]}, "out of range"),
+    ({}, "bad command"),
+    ({"regions": 5}, "bad command"),
+    ({"regions": [1]}, "bad command"),
+    ({"regions": [{"offset": "0x2D5CC4C", "length": 16}]}, "bad command"),
+    ({"regions": [{"offset": 1.5, "length": 16}]}, "bad command"),
+    ({"regions": [{"offset": True, "length": 16}]}, "bad command"),
+    ({"regions": [{"offset": BATTLE}]}, "bad command"),
+])
+async def test_watch_errors(args, err):
+    server, url = await start()
+    async with server, connect(url) as ws:
+        r = await rpc(ws, cmd("kh1.watch", args))
+        assert r == {"type": "result", "id": "c1", "ok": False, "error": err, "data": None}
+
+
+async def test_watch_failure_keeps_previous_watch():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await rpc(ws, watch((BATTLE, 4)))
+        assert (await rpc(ws, watch((BATTLE, 300))))["error"] == "out of range"
+        await ws.send(json.dumps(fixture("subscribe.json")))
+        assert (await next_state(ws))["data"]["regions"] == [{"offset": BATTLE, "hex": "37000000"}]
+
+
+async def test_watch_unsupported_build():
+    server, url = await start(unsupported=True)
+    async with server, connect(url) as ws:
+        r = await rpc(ws, fixture("command_watch.json"))
+        assert r["error"] == "unsupported build"

@@ -1,0 +1,1 @@
+{"type":"state","topic":"kh1.spike","data":{"seq":43,"ms":205850,"world":3,"room":2,"worldAlt":3,"soraHp":55,"soraHpMax":57,"inMenu":false,"inCutscene":false,"inGummi":false,"inputBytes":"00000000","regions":[{"offset":47565900,"hex":"37000000390000000500000005000000"},{"offset":48142636,"hex":null}]}}
