@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KH1 magic and items tab</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Nunito:wght@500;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#ffd166}a:hover{color:#ffe29a}
+</style>
+</helmet>
+<div style="width: 620px; height: 540px; box-sizing: border-box; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #0b1433; color: #f2f6ff; font-family: 'Nunito', system-ui, sans-serif; position: relative; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 14px; padding: 8px 12px; background: #15235a; border: 2px solid #9fc0ff; border-radius: 14px;">
+    <div style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 1.2px; flex-grow: 1;">HOLLOW BASTION <span style="color: #a9b9e6; font-weight: 600;">· LIBRARY</span></div>
+    <div style="display: flex; gap: 12px; font-size: 13px; font-weight: 800;">
+      <span>Sora <span style="color: #4fe08a;">55/57</span></span>
+      <span>MP <span style="color: #5aa8ff;">3/5</span></span>
+    </div>
+  </header>
+
+  <div style="display: flex; gap: 10px; flex-grow: 1; min-height: 0;">
+    <section aria-label="Magic" style="flex: 1; background: #15235a; border: 2px solid #9fc0ff; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'Fredoka', sans-serif; font-size: 12px; letter-spacing: 1.5px; color: #a9b9e6;">MAGIC · TAP TO CAST</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Firaga<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">1 MP</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Blizzara<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">1 MP</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Thundara<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">1 MP</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 3px solid #ffd166; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer;">Cura<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #fff3cc;">3 MP · picking</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Gravira<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">1 MP</div></button>
+        <button disabled style="height: 52px; border-radius: 12px; border: 2px dashed #5b6fa3; background: #0e1a45; color: #8a9bc9; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;">Stopra<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;">needs 4 MP</div></button>
+      </div>
+    </section>
+
+    <section aria-label="Items" style="flex: 1; background: #15235a; border: 2px solid #9fc0ff; border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'Fredoka', sans-serif; font-size: 12px; letter-spacing: 1.5px; color: #a9b9e6;">ITEMS · TAP TO USE</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Potion<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">× 6</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Hi-Potion<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">× 3</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Ether<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">× 4</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Elixir<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">× 1</div></button>
+        <button style="height: 52px; border-radius: 12px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px; cursor: pointer;">Tent<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700; color: #cfe0ff;">× 2</div></button>
+        <button disabled style="height: 52px; border-radius: 12px; border: 2px dashed #5b6fa3; background: #0e1a45; color: #8a9bc9; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 15px;">Mega-Potion<div style="font-family: 'Nunito', sans-serif; font-size: 11px; font-weight: 700;">none left</div></button>
+      </div>
+    </section>
+  </div>
+
+  <nav aria-label="Tabs" style="display: flex; gap: 6px; padding: 4px; background: #15235a; border: 2px solid #9fc0ff; border-radius: 14px;">
+    <a href="Main.dc.html" style="flex: 1; height: 44px; border-radius: 10px; color: #dce6ff; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 1px; text-decoration: none;">MAP</a>
+    <a href="#" style="flex: 1; height: 44px; border-radius: 10px; background: #3f8cff; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 1px; text-decoration: none;">MAGIC &amp; ITEMS</a>
+    <a href="#" style="flex: 1; height: 44px; border-radius: 10px; color: #dce6ff; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 1px; text-decoration: none;">PARTY</a>
+    <a href="#" style="flex: 1; height: 44px; border-radius: 10px; color: #8a9bc9; display: flex; align-items: center; justify-content: center; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 1px; text-decoration: none;">JOURNAL</a>
+  </nav>
+
+  <div style="position: absolute; left: 0; top: 0; width: 620px; height: 540px; background: rgba(5, 9, 26, 0.6);"></div>
+  <section aria-label="Cura target" style="position: absolute; left: 60px; right: 60px; bottom: 76px; background: #15235a; border: 3px solid #ffd166; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: baseline; gap: 10px;">
+      <div style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 19px; color: #ffd166;">Cura · who needs it?</div>
+      <div style="font-size: 12px; color: #a9b9e6;">the game's own picker is open on the top screen</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
+      <button style="height: 64px; border-radius: 14px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer;">Sora<div style="font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #4fe08a;">55 / 57</div></button>
+      <button style="height: 64px; border-radius: 14px; border: 3px solid #ffb84f; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer;">Donald<div style="font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #ffb84f;">18 / 46 · lowest</div></button>
+      <button style="height: 64px; border-radius: 14px; border: 2px solid #d8e6ff; background: #2b56c4; color: #ffffff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer;">Beast<div style="font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: #4fe08a;">66 / 66</div></button>
+    </div>
+    <button style="align-self: center; height: 44px; padding: 0 28px; border-radius: 12px; border: 2px solid #7f9de0; background: #0b1433; color: #dce6ff; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;">Cancel</button>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":620,"height":540}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

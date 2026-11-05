@@ -238,7 +238,11 @@ Approved look: `mockups/diptych-v4.html` (`diptych-v4.png`).
 
 ## 7. KH1 companion screen
 
-Approved layout: `mockups/kh1-first-look-v2.html` (`kh1-v2.png`). The final styling is a KH-inspired design of our
+Approved layout: `mockups/kh1-first-look-v2.html` (`kh1-v2.png`).
+**Approved style (user, 2026-11-04):** `mockups/kh1-style/` (Map tab and Magic & Items with the Cura target
+picker). Night-sky navy `#0b1433`, panels `#15235a` with a `#9fc0ff` rim, gold `#ffd166` for next/chests, "you"
+`#3f8cff`; Fredoka headings + Nunito body (OFL); touch targets ≥44 dp. Live at
+https://claude.ai/artifact/NbEdcugnxr11CzczfcZwUC. The final styling is a KH-inspired design of our
 own, drawn by us; no Square Enix assets.
 
 - **Header:** world and room ("TRAVERSE TOWN · SECOND DISTRICT").
