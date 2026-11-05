@@ -1,7 +1,7 @@
 #pragma once
 // Loopback WebSocket server (Windows only, x64). One network thread: non-blocking accept and
 // select() with a 50 ms timeout, plain Winsock. The runtime thread only calls pollCommand,
-// sendToAll, sendToSubscribers and hasSubscriber, which take a mutex briefly and never wait on I/O.
+// sendToAll, sendToSubscribers, openClients and hasSubscriber, which take a mutex briefly and never wait on I/O.
 #include <atomic>
 #include <cstdint>
 #include <deque>
@@ -10,6 +10,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <unordered_map>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -21,9 +22,14 @@ namespace diptych::server {
 inline constexpr const char* kDefaultBind = "127.0.0.1";
 inline constexpr uint16_t kDefaultPort = 7970;
 
+// Identifies one connection for its whole life. Ids start at 1, are never reused (not even across
+// stop()/start()), and 0 is never a client.
+using ClientId = uint64_t;
+
 struct PendingCommand {
     std::string id, name;
     nlohmann::json args;  // always an object (classify rejects anything else)
+    ClientId client = 0;  // the connection that sent it
 };
 
 class WsServer {
@@ -50,6 +56,14 @@ public:
     // Enqueue a text frame only for open clients subscribed to `topic` (state frames). Every
     // subscriber gets it at the caller's rate; per-client rates are not honoured yet.
     void sendToSubscribers(const std::string& topic, std::string json);
+    // As above, but a subscriber whose id is a key of `perClient` gets that frame instead of `json`
+    // (Ruling B: kh1.watch regions go to the watching client only). Build the frames before the
+    // call; the lock is held only to enqueue.
+    void sendToSubscribers(const std::string& topic, std::string json,
+                           const std::unordered_map<ClientId, std::string>& perClient);
+    // Ids of the handshaken clients that are not closing. A client missing from this list has
+    // disconnected (or is closing) and will never be served again.
+    std::vector<ClientId> openClients() const;
     // True if any open client subscribes to `topic`; rateHz is then their max rate (else untouched).
     bool hasSubscriber(const std::string& topic, int& rateHz) const;
 
@@ -83,6 +97,7 @@ private:
 
     mutable std::mutex clientsMx_;  // guards clients_ membership, each Client::queue and ::sub
     std::vector<std::unique_ptr<Client>> clients_;
+    ClientId nextClientId_ = 1;  // network thread only (assigned at accept)
 
     std::mutex cmdMx_;
     std::deque<PendingCommand> commands_;

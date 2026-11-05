@@ -71,6 +71,8 @@ struct WsServer::Client {
     Clock::time_point since = Clock::now();  // accept time, or start of closing
     Clock::time_point lastWrite = Clock::now();  // last send progress, or last time out was empty
 
+    ClientId id = 0;  // set at accept, before the client is shared; never changes
+
     // Guarded by WsServer::clientsMx_.
     bool open = false;  // handshaken and not closing: eligible for sendToAll/subscription
     proto::Subscription sub;
@@ -177,6 +179,29 @@ void WsServer::sendToSubscribers(const std::string& topic, std::string json) {
     }
 }
 
+void WsServer::sendToSubscribers(const std::string& topic, std::string json,
+                                 const std::unordered_map<ClientId, std::string>& perClient) {
+    if (perClient.empty()) return sendToSubscribers(topic, std::move(json));
+    const std::string frame = net::ws_encode(kOpText, json);
+    std::unordered_map<ClientId, std::string> encoded;
+    for (const auto& [id, j] : perClient) encoded.emplace(id, net::ws_encode(kOpText, j));
+    std::lock_guard<std::mutex> lk(clientsMx_);
+    for (auto& c : clients_) {
+        if (!c->open || !proto::subscribed(c->sub, topic)) continue;
+        auto it = encoded.find(c->id);
+        c->queue.push_back(it == encoded.end() ? frame : it->second);
+        while (c->queue.size() > kMaxQueuedFrames) c->queue.pop_front();
+    }
+}
+
+std::vector<ClientId> WsServer::openClients() const {
+    std::vector<ClientId> out;
+    std::lock_guard<std::mutex> lk(clientsMx_);
+    for (const auto& c : clients_)
+        if (c->open) out.push_back(c->id);
+    return out;
+}
+
 void WsServer::setInfo(proto::Info info) {
     std::lock_guard<std::mutex> lk(infoMx_);
     info_ = std::move(info);
@@ -254,7 +279,7 @@ void WsServer::handleText(Client& c, const std::string& text) {
         {
             std::lock_guard<std::mutex> lk(cmdMx_);
             full = commands_.size() >= kMaxQueuedCommands;
-            if (!full) commands_.push_back({in.commandId, in.commandName, std::move(in.commandArgs)});
+            if (!full) commands_.push_back({in.commandId, in.commandName, std::move(in.commandArgs), c.id});
         }
         if (!full) return;
         in.reply = proto::result_json(in.commandId, {false, "busy", nullptr});
@@ -455,6 +480,7 @@ void WsServer::runLoop_() {
                                sizeof nodelay);
                     auto c = std::make_unique<Client>();
                     c->s = s;
+                    c->id = nextClientId_++;
                     std::lock_guard<std::mutex> lk(clientsMx_);
                     clients_.push_back(std::move(c));
                 }
