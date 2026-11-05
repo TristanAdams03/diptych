@@ -11,6 +11,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import com.diptych.app.kh1.Kh1Link
+import com.diptych.app.kh1.Region
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,7 +53,7 @@ class SpikeClient(
         .connectTimeout(2, TimeUnit.SECONDS)
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build(),
-) {
+) : Kh1Link {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val stall = StallDetector()
     private val fps = FpsMeter()
@@ -61,6 +65,11 @@ class SpikeClient(
 
     private val _log = MutableStateFlow<List<String>>(emptyList())
     val log: StateFlow<List<String>> = _log.asStateFlow()
+
+    private val _events = MutableSharedFlow<ServerMsg>(extraBufferCapacity = 64)
+
+    /** Every parsed server frame, for consumers such as the KH1 session. */
+    override val events: Flow<ServerMsg> = _events
 
     @Volatile private var ws: WebSocket? = null
     private var job: Job? = null
@@ -91,6 +100,14 @@ class SpikeClient(
         log("-> $id $name")
         return id
     }
+
+    /** `kh1.watch`: replaces the connection's watched regions (empty clears). The mod forgets it per connection. */
+    override fun watch(regions: List<Region>): String? = command(
+        "kh1.watch",
+        JsonObject(mapOf("regions" to JsonArray(regions.map {
+            JsonObject(mapOf("offset" to JsonPrimitive(it.offset), "length" to JsonPrimitive(it.length)))
+        }))),
+    )
 
     /** `kh1.log` (works on any build); the reply's lines land in [SpikeUi.modLog]. */
     fun fetchModLog(): String? = command("kh1.log")
@@ -155,7 +172,9 @@ class SpikeClient(
      */
     internal fun handle(text: String) {
         val now = clock()
-        when (val m = parseServer(text)) {
+        val msg = parseServer(text)
+        _events.tryEmit(msg)
+        when (val m = msg) {
             is ServerMsg.Welcome -> {
                 _ui.update { it.copy(welcome = m) }
                 log("welcome plugin=${m.plugin} game=${m.gameId} build=${m.gameBuild} supported=${m.supported}")

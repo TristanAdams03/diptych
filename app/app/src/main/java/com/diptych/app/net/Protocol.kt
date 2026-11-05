@@ -33,7 +33,13 @@ data class SpikeData(
     val inCutscene: Boolean? = null,
     val inGummi: Boolean? = null,
     val inputBytes: String? = null,
+    /** Present only while a `kh1.watch` is set: one entry per watched region, in watch order. */
+    val regions: List<RegionHex>? = null,
 )
+
+/** One watched region's bytes as hex, or null when the read failed. */
+@Serializable
+data class RegionHex(val offset: Long, val hex: String?)
 
 /** Server -> client messages. */
 sealed interface ServerMsg {
