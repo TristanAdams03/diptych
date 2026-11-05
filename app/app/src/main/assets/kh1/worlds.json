@@ -1,0 +1,1452 @@
+{
+ "sources": [
+  "Rooms: AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs lines 211-286 (MIT); room byte == list index, confirmed live for Deep Jungle 12/14",
+  "World ids: AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Worlds.cs lines 14-86 (MIT); sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts (MIT)",
+  "Chest names: ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT)",
+  "Chest bit flags: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 723-727 and 1652-1673 (MIT); opened = (u8[offset] >> bit) & 1, confirmed live by pattern 2026-11-04",
+  "Neverland Hold Aero Chest: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 967 (MIT)",
+  "Hollow Bastion Emblem Piece (Chest): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 1013 (MIT); collected when u8[offset] >= atLeast",
+  "Chest contents: Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua and rewards.lua (Unlicense)",
+  "Edges: guesses from game knowledge (docs/research/kh1-data-draft/rooms.json adjacency); not sourced",
+  "Layout: hand-authored, tools/data/layouts/kh1_layouts.json",
+  "Per-row citations: docs/research/kh1-data-draft/*.json and docs/research/kh1-late-worlds.md"
+ ],
+ "version": 1,
+ "worlds": [
+  {
+   "chests": [
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 15)",
+     "contentsConfidence": "source",
+     "name": "Neverland Pirate Ship Deck White Trinity Chest",
+     "offset": 48143012,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "derived",
+     "name": "Neverland Pirate Ship Crows Nest Chest",
+     "offset": 48143012,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "source",
+     "name": "Neverland Hold Yellow Trinity Right Blue Chest",
+     "offset": 48143012,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Neverland Hold Yellow Trinity Left Blue Chest",
+     "offset": 48143016,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Meteor-G",
+     "contentsConfidence": "source",
+     "name": "Neverland Galley Chest",
+     "offset": 48143016,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Protera Chain",
+     "contentsConfidence": "derived",
+     "name": "Neverland Cabin Chest",
+     "offset": 48143016,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 28)",
+     "contentsConfidence": "source",
+     "name": "Neverland Hold Flight 1st Chest",
+     "offset": 48143016,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Flare-G",
+     "contentsConfidence": "source",
+     "name": "Neverland Clock Tower Chest",
+     "offset": 48143036,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Paper-G",
+     "contentsConfidence": "source",
+     "name": "Neverland Hold Flight 2nd Chest",
+     "offset": 48143040,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 29)",
+     "contentsConfidence": "source",
+     "name": "Neverland Hold Yellow Trinity Green Chest",
+     "offset": 48143040,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 30)",
+     "contentsConfidence": "source",
+     "name": "Neverland Captain's Cabin Chest",
+     "offset": 48143040,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Aero (magic)",
+     "contentsConfidence": "guess",
+     "name": "Neverland Hold Aero Chest",
+     "offset": 48148930,
+     "room": 0,
+     "roomConfidence": "guess"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     4
+    ],
+    [
+     4,
+     8
+    ],
+    [
+     5,
+     8
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     8,
+     9
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 13,
+   "name": "Neverland",
+   "rooms": [
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 0,
+     "name": "Ship: Hold (0)",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 1,
+     "name": "Ship: Hold (1)",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Ship: Hold (2)",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 3,
+     "name": "Ship: Freezer",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 4,
+     "name": "Ship: Galley",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 5,
+     "name": "Ship: Cabin",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Captain's Cabin",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 7,
+     "name": "Ship: Hold (7)",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 8,
+     "name": "Pirate Ship",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 9,
+     "name": "Clock Tower",
+     "row": 0
+    }
+   ],
+   "watch": [
+    {
+     "length": 29,
+     "offset": 48143012
+    },
+    {
+     "length": 1,
+     "offset": 48148930
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Life-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Rising Falls Water's Surface Chest",
+     "offset": 48143040,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Meteor-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Rising Falls Under Water 1st Chest",
+     "offset": 48143044,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Defense Up",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Rising Falls Under Water 2nd Chest",
+     "offset": 48143044,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 31)",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Rising Falls Floating Platform Near Save Chest",
+     "offset": 48143044,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Blizzara Ring",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Rising Falls Floating Platform Near Bubble Chest",
+     "offset": 48143044,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Rising Falls High Platform Chest",
+     "offset": 48143048,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 32)",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Castle Gates Gravity Chest",
+     "offset": 48143048,
+     "room": 1,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Castle Gates Freestanding Pillar Chest",
+     "offset": 48143048,
+     "room": 1,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Haste2-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Castle Gates High Pillar Chest",
+     "offset": 48143048,
+     "room": 1,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Great Crest Lower Chest",
+     "offset": 48143052,
+     "room": 2,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Thundaga-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Great Crest After Battle Platform Chest",
+     "offset": 48143052,
+     "room": 2,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Osmose-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion High Tower 2nd Gravity Chest",
+     "offset": 48143052,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Thundara Ring",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion High Tower 1st Gravity Chest",
+     "offset": 48143052,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion High Tower Above Sliding Blocks Chest",
+     "offset": 48143056,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "AP Up",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Entrance Hall Left of Emblem Door Chest",
+     "offset": 48143056,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Ultima-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Library Top of Bookshelf Chest",
+     "offset": 48143056,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Hollow Bastion Library 1st Floor Turn the Carousel Chest",
+     "offset": 48143056,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Hollow Bastion Library Top of Bookshelf Turn the Carousel Chest",
+     "offset": 48143060,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Hollow Bastion Library 2nd Floor Turn the Carousel 1st Chest",
+     "offset": 48143060,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Hollow Bastion Library 2nd Floor Turn the Carousel 2nd Chest",
+     "offset": 48143060,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Ramuh Belt",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Lift Stop Library Node After High Tower Switch Gravity Chest",
+     "offset": 48143060,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Osmose-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Lift Stop Library Node Gravity Chest",
+     "offset": 48143064,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Royal Crown",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Lift Stop Under High Tower Sliding Blocks Chest",
+     "offset": 48143064,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 33)",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Lift Stop Outside Library Gravity Chest",
+     "offset": 48143064,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Lift Stop Heartless Sigil Door Gravity Chest",
+     "offset": 48143064,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Base Level Bubble Under the Wall Platform Chest",
+     "offset": 48143068,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Paper-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Base Level Platform Near Entrance Chest",
+     "offset": 48143068,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Base Level Near Crystal Switch Chest",
+     "offset": 48143068,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Fira Ring",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Waterway Near Save Chest",
+     "offset": 48143068,
+     "room": 8,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Waterway Blizzard on Bubble Chest",
+     "offset": 48143072,
+     "room": 8,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Thundaga-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Waterway Unlock Passage from Base Level Chest",
+     "offset": 48143072,
+     "room": 8,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Ultima-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Dungeon By Candles Chest",
+     "offset": 48143072,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Thundaga-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Dungeon Corner Chest",
+     "offset": 48143072,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Grand Hall Steps Right Side Chest",
+     "offset": 48143080,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Oblivion",
+     "contentsConfidence": "derived",
+     "name": "Hollow Bastion Grand Hall Oblivion Chest",
+     "offset": 48143084,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 21)",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Grand Hall Left of Gate Chest",
+     "offset": 48143084,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Hollow Bastion Entrance Hall Push the Statue Chest",
+     "offset": 48143084,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Thundaga-G",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Rising Falls White Trinity Chest",
+     "offset": 48143084,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "atLeast": 2,
+     "confidence": "derived",
+     "contents": "Emblem Piece (Chest)",
+     "contentsConfidence": "source",
+     "name": "Hollow Bastion Entrance Hall Emblem Piece (Chest)",
+     "offset": 48149007,
+     "room": 4,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     7
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     4,
+     14
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     8,
+     10
+    ],
+    [
+     11,
+     14
+    ],
+    [
+     11,
+     15
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 15,
+   "name": "Hollow Bastion",
+   "rooms": [
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 0,
+     "name": "Rising Falls",
+     "row": 4
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 1,
+     "name": "Castle Gates",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Great Crest",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 3,
+     "name": "High Tower",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 4,
+     "name": "Entrance Hall",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 5,
+     "name": "Library",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 6,
+     "name": "Lift Stop",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 7,
+     "name": "Base Level",
+     "row": 4
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 8,
+     "name": "Waterway (8)",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 9,
+     "name": "Waterway (9)",
+     "row": 4
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 10,
+     "name": "Dungeon",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 11,
+     "name": "Castle Chapel (11)",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 12,
+     "name": "Castle Chapel (12)",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 13,
+     "name": "Castle Chapel (13)",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 14,
+     "name": "Grand Hall",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 15,
+     "name": "Dark Depths",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 16,
+     "name": "Castle Chapel (16)",
+     "row": 0
+    }
+   ],
+   "watch": [
+    {
+     "length": 45,
+     "offset": 48143040
+    },
+    {
+     "length": 1,
+     "offset": 48149007
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "End of the World Final Dimension 1st Chest",
+     "offset": 48143088,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World Final Dimension 2nd Chest",
+     "offset": 48143088,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World Final Dimension 3rd Chest",
+     "offset": 48143088,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World Final Dimension 4th Chest",
+     "offset": 48143088,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "derived",
+     "name": "End of the World Final Dimension 5th Chest",
+     "offset": 48143092,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "End of the World Final Dimension 6th Chest",
+     "offset": 48143092,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World Final Dimension 10th Chest",
+     "offset": 48143092,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "derived",
+     "name": "End of the World Final Dimension 9th Chest",
+     "offset": 48143092,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World Final Dimension 8th Chest",
+     "offset": 48143096,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World Final Dimension 7th Chest",
+     "offset": 48143096,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Full-Life-G",
+     "contentsConfidence": "source",
+     "name": "End of the World Giant Crevasse 3rd Chest",
+     "offset": 48143096,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Meteor Strike",
+     "contentsConfidence": "derived",
+     "name": "End of the World Giant Crevasse 5th Chest",
+     "offset": 48143096,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Drill-G",
+     "contentsConfidence": "source",
+     "name": "End of the World Giant Crevasse 1st Chest",
+     "offset": 48143100,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "End of the World Giant Crevasse 4th Chest",
+     "offset": 48143100,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Ultima-G",
+     "contentsConfidence": "source",
+     "name": "End of the World Giant Crevasse 2nd Chest",
+     "offset": 48143100,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Spirit Gem",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Traverse Town Chest",
+     "offset": 48143100,
+     "room": 16,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Thunder Gem",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Wonderland Chest",
+     "offset": 48143104,
+     "room": 17,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Frost Gem",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Olympus Coliseum Chest",
+     "offset": 48143104,
+     "room": 18,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Bright Gem",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Deep Jungle Chest",
+     "offset": 48143104,
+     "room": 19,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Blaze Gem",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Agrabah Chest",
+     "offset": 48143104,
+     "room": 20,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "End of the World World Terminus Atlantica Chest",
+     "offset": 48143108,
+     "room": 21,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Lucid Gem",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Halloween Town Chest",
+     "offset": 48143108,
+     "room": 22,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mighty Shield",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Neverland Chest",
+     "offset": 48143108,
+     "room": 23,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "End of the World World Terminus 100 Acre Wood Chest",
+     "offset": 48143108,
+     "room": 24,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "derived",
+     "name": "End of the World World Terminus Hollow Bastion Chest",
+     "offset": 48143112,
+     "room": 25,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "End of the World Final Rest Chest",
+     "offset": 48143112,
+     "room": 29,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     13,
+     14
+    ],
+    [
+     14,
+     15
+    ],
+    [
+     15,
+     16
+    ],
+    [
+     15,
+     17
+    ],
+    [
+     15,
+     18
+    ],
+    [
+     15,
+     19
+    ],
+    [
+     15,
+     20
+    ],
+    [
+     15,
+     21
+    ],
+    [
+     15,
+     22
+    ],
+    [
+     15,
+     23
+    ],
+    [
+     15,
+     24
+    ],
+    [
+     15,
+     25
+    ],
+    [
+     15,
+     26
+    ],
+    [
+     26,
+     27
+    ],
+    [
+     27,
+     28
+    ],
+    [
+     28,
+     29
+    ],
+    [
+     29,
+     32
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 16,
+   "name": "End of the World",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Gate to the Dark",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "Final Dimension (1)",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Final Dimension (2)",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 3,
+     "name": "Final Dimension (3)",
+     "row": 0
+    },
+    {
+     "col": 4,
+     "confidence": "source",
+     "id": 4,
+     "name": "Final Dimension (4)",
+     "row": 0
+    },
+    {
+     "col": 5,
+     "confidence": "source",
+     "id": 5,
+     "name": "Final Dimension (5)",
+     "row": 0
+    },
+    {
+     "col": 6,
+     "confidence": "source",
+     "id": 6,
+     "name": "Final Dimension (6)",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 7,
+     "name": "Final Dimension (7)",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 8,
+     "name": "Final Dimension (8)",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 9,
+     "name": "Final Dimension (9)",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 10,
+     "name": "Final Dimension (10)",
+     "row": 1
+    },
+    {
+     "col": 4,
+     "confidence": "source",
+     "id": 11,
+     "name": "Final Dimension (11)",
+     "row": 1
+    },
+    {
+     "col": 5,
+     "confidence": "source",
+     "id": 12,
+     "name": "Final Dimension (12)",
+     "row": 1
+    },
+    {
+     "col": 6,
+     "confidence": "source",
+     "id": 13,
+     "name": "Dark Sphere",
+     "row": 1
+    },
+    {
+     "col": 6,
+     "confidence": "source",
+     "id": 14,
+     "name": "Giant Crevasse",
+     "row": 2
+    },
+    {
+     "col": 5,
+     "confidence": "source",
+     "id": 15,
+     "name": "World Terminus",
+     "row": 3
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 16,
+     "name": "World Terminus (Traverse Town)",
+     "row": 2
+    },
+    {
+     "col": 4,
+     "confidence": "source",
+     "id": 17,
+     "name": "World Terminus (Wonderland)",
+     "row": 2
+    },
+    {
+     "col": 5,
+     "confidence": "source",
+     "id": 18,
+     "name": "World Terminus (Olympus Coliseum)",
+     "row": 2
+    },
+    {
+     "col": 6,
+     "confidence": "source",
+     "id": 19,
+     "name": "World Terminus (Deep Jungle)",
+     "row": 3
+    },
+    {
+     "col": 6,
+     "confidence": "source",
+     "id": 20,
+     "name": "World Terminus (Agrabah)",
+     "row": 4
+    },
+    {
+     "col": 6,
+     "confidence": "source",
+     "id": 21,
+     "name": "World Terminus (Atlantica)",
+     "row": 5
+    },
+    {
+     "col": 5,
+     "confidence": "source",
+     "id": 22,
+     "name": "World Terminus (Halloween Town)",
+     "row": 4
+    },
+    {
+     "col": 4,
+     "confidence": "source",
+     "id": 23,
+     "name": "World Terminus (Neverland)",
+     "row": 4
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 24,
+     "name": "World Terminus (100 Acre Wood)",
+     "row": 4
+    },
+    {
+     "col": 4,
+     "confidence": "source",
+     "id": 25,
+     "name": "World Terminus (Hollow Bastion)",
+     "row": 3
+    },
+    {
+     "col": 4,
+     "confidence": "source",
+     "id": 26,
+     "name": "Evil Grounds",
+     "row": 5
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 27,
+     "name": "Volcanic Crater",
+     "row": 5
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 28,
+     "name": "Linked Worlds",
+     "row": 5
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 29,
+     "name": "Final Rest",
+     "row": 5
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 30,
+     "name": "Homecoming (30)",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 31,
+     "name": "Crumbling Island",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 32,
+     "name": "Final Door",
+     "row": 5
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 33,
+     "name": "The Void (33)",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 34,
+     "name": "Crater",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 35,
+     "name": "Homecoming (35)",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 36,
+     "name": "The Void (36)",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 37,
+     "name": "The Void (37)",
+     "row": 4
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 38,
+     "name": "The Void (38)",
+     "row": 4
+    }
+   ],
+   "watch": [
+    {
+     "length": 25,
+     "offset": 48143088
+    }
+   ]
+  }
+ ]
+}

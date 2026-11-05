@@ -1,0 +1,55 @@
+{
+ "battleBlock": {
+  "confidence": "live",
+  "fields": {
+   "hp": {
+    "at": 0,
+    "width": 4
+   },
+   "maxHp": {
+    "at": 4,
+    "width": 4
+   },
+   "maxMp": {
+    "at": 12,
+    "width": 4
+   },
+   "mp": {
+    "at": 8,
+    "width": 4
+   }
+  },
+  "members": 3,
+  "offset": 47565900,
+  "stride": 256
+ },
+ "names": {
+  "0": "Sora",
+  "1": "Donald",
+  "2": "Goofy",
+  "8": "Peter Pan",
+  "9": "Beast"
+ },
+ "namesConfidence": {
+  "0": "live",
+  "1": "live",
+  "2": "live",
+  "8": "guess",
+  "9": "guess"
+ },
+ "slots": {
+  "confidence": "live",
+  "empty": 255,
+  "emptyConfidence": "source",
+  "length": 2,
+  "offset": 48142319
+ },
+ "sources": [
+  "Battle block and party slots: live check on Steam 1.0.0.2, docs/research/kh1-live-check-2026-11-04.md",
+  "Battle block layout: AmirulAndalib/MultiPresence@81cf9ac2 Presence/KH1.cs (MIT); Julumisan/kh-qol-manager@f35bfef6 KH_QoL/docs/FEATURE_RESEARCH.md lines 32-35 (MIT)",
+  "Party slot ids (1 Donald, 2 Goofy, 0xFF empty): Denhonator/KHPCSpeedrunTools@aeb4972e SteamGlobal_1_0_0_2.lua line 237 (Unlicense)",
+  "Peter Pan = 8: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua line 266 (MIT)",
+  "Beast = 9: Denhonator/KHPCSpeedrunTools@aeb4972e 1fmRandoSomeLogic.lua lines 2284-2292 (Unlicense)"
+ ],
+ "version": 1
+}
