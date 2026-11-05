@@ -2,9 +2,9 @@ name: app
 
 on:
   push:
-    paths: ["app/**", "protocol/**", ".github/workflows/app.yml"]
+    paths: ["app/**", "protocol/**", "tools/data/**", "docs/research/kh1-data-draft/**", ".github/workflows/app.yml"]
   pull_request:
-    paths: ["app/**", "protocol/**", ".github/workflows/app.yml"]
+    paths: ["app/**", "protocol/**", "tools/data/**", "docs/research/kh1-data-draft/**", ".github/workflows/app.yml"]
   workflow_dispatch:
 
 jobs:
@@ -15,6 +15,20 @@ jobs:
         working-directory: app
     steps:
       - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: KH1 data tests
+        working-directory: .
+        run: |
+          python -m pip install --quiet pytest==8.3.4
+          python -m pytest tools/data -q
+      - name: KH1 assets are up to date
+        working-directory: .
+        run: |
+          python tools/data/build_kh1_data.py
+          git diff --exit-code app/app/src/main/assets/kh1
+          test -z "$(git status --porcelain app/app/src/main/assets/kh1)"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
