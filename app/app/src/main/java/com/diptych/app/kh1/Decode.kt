@@ -7,7 +7,10 @@ data class PartyMember(val name: String, val hp: Int?, val maxHp: Int?, val mp: 
 private fun hexBytes(hex: String): ByteArray? {
     if (hex.length % 2 != 0) return null
     return ByteArray(hex.length / 2) { i ->
-        hex.substring(2 * i, 2 * i + 2).toIntOrNull(16)?.toByte() ?: return null
+        val hi = Character.digit(hex[2 * i], 16)
+        val lo = Character.digit(hex[2 * i + 1], 16)
+        if (hi < 0 || lo < 0) return null
+        ((hi shl 4) or lo).toByte()
     }
 }
 
@@ -25,7 +28,8 @@ internal fun readBytes(regions: List<RegionHex>, offset: Long, n: Int): ByteArra
 private fun u32(b: ByteArray, at: Int, width: Int): Int? =
     if (width != 4 || at + 4 > b.size) null
     else ((b[at].toLong() and 0xFF) or ((b[at + 1].toLong() and 0xFF) shl 8) or
-        ((b[at + 2].toLong() and 0xFF) shl 16) or ((b[at + 3].toLong() and 0xFF) shl 24)).toInt()
+        ((b[at + 2].toLong() and 0xFF) shl 16) or ((b[at + 3].toLong() and 0xFF) shl 24))
+        .coerceAtMost(Int.MAX_VALUE.toLong()).toInt() // unsigned on the wire; never negative
 
 /**
  * Member 0 is always Sora; member 1 and 2 are named by slot byte 0 and 1. A slot byte equal to `empty` omits the member;

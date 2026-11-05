@@ -75,3 +75,16 @@ fun loadKh1Data(open: (String) -> InputStream): Kh1Data {
 }
 
 fun loadKh1Data(assets: AssetManager): Kh1Data = loadKh1Data { assets.open("kh1/$it") }
+
+const val MAX_WATCH_REGIONS = 8
+const val MAX_WATCH_REGION_BYTES = 256
+const val MAX_WATCH_TOTAL_BYTES = 1024
+
+/** True when [regions] fit the mod's watch limits: at most 8 regions, each 1..256 bytes, 1024 bytes in total. */
+fun withinWatchLimits(regions: List<Region>): Boolean =
+    regions.size <= MAX_WATCH_REGIONS && regions.all { it.length in 1..MAX_WATCH_REGION_BYTES } &&
+        regions.sumOf { it.length } <= MAX_WATCH_TOTAL_BYTES
+
+/** Party regions plus [world]'s watch, or null when the combination is over the limits. */
+fun combinedWatch(party: PartyConfig, world: WorldDef?): List<Region>? =
+    (party.watch + world?.watch.orEmpty()).takeIf(::withinWatchLimits)

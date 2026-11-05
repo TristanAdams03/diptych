@@ -3,6 +3,7 @@ package com.diptych.app.kh1
 import com.diptych.app.Fixtures
 import com.diptych.app.kh1.TestData.data
 import com.diptych.app.kh1.TestData.state
+import com.diptych.app.net.RegionHex
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.net.parseServer
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +21,12 @@ private class FakeLink : Kh1Link {
     val sent = mutableListOf<List<Region>>()
     val bus = MutableSharedFlow<ServerMsg>(extraBufferCapacity = 64)
     override val events: Flow<ServerMsg> = bus
-    override fun watch(regions: List<Region>): String? { sent += regions; return "c${sent.size}" }
+    var failNext = 0
+    override fun watch(regions: List<Region>): String? {
+        sent += regions
+        if (failNext > 0) { failNext--; return null }
+        return "c${sent.size}"
+    }
 }
 
 class Kh1SessionTest {
@@ -61,14 +67,57 @@ class Kh1SessionTest {
 
     @Test fun staleRegionsDoNotChangeChestCounts() {
         welcome()
-        frame(15, 6, TestData.partyRegions() + TestData.hbRegions())
-        assertEquals(3, session.view.value!!.chestsOpened)
-        // world changes to Neverland; the in-flight frame still carries Hollow Bastion's regions
-        frame(13, 0, TestData.partyRegions() + TestData.hbRegions())
+        // Hollow Bastion's span starts at 48143040, where 3 Neverland chests also live (room 0 bits 0,1; room 6 bit 2).
+        val stale = RegionHex(48143040L, "07" + "00".repeat(44))
+        frame(15, 6, TestData.partyRegions() + stale)
+        // in-flight frame for the new world still carries Hollow Bastion's region; without the filter room 6 would read opened
+        frame(13, 6, TestData.partyRegions() + stale)
         val v = session.view.value!!
         assertEquals("Neverland", v.worldName)
+        assertNull(v.rooms.first { it.id == 6 }.opened)
+        assertNull(v.rooms.first { it.id == 0 }.opened)
         assertNull(v.chestsOpened)
         assertEquals(57, v.party[0].hp)
+        // a frame for the new watch is trusted
+        val real = RegionHex(48143012L, "00".repeat(29))
+        frame(13, 6, TestData.partyRegions() + stale + real)
+        assertEquals(0, session.view.value!!.rooms.first { it.id == 6 }.opened)
+    }
+
+    @Test fun failedSendRetriesOnNextFrame() {
+        welcome()
+        link.failNext = 1
+        frame(15, 6, TestData.partyRegions())
+        assertEquals(2, link.sent.size)
+        assertEquals(hbWatch, link.sent[1])
+        frame(15, 6, TestData.partyRegions())
+        assertEquals(3, link.sent.size)
+        frame(15, 6, TestData.partyRegions())
+        assertEquals(3, link.sent.size)
+    }
+
+    @Test fun overLimitWorldWatchesPartyOnlyAndLogs() {
+        val big = WorldDef(99, "Big", watch = List(5) { Region(48143000L + it * 300, 256) })
+        val logs = mutableListOf<String>()
+        val l = FakeLink()
+        val s = CoroutineScope(Dispatchers.Unconfined)
+        Kh1Session(l, data.copy(worlds = data.worlds + big), s, logs::add)
+        l.bus.tryEmit(ServerMsg.Welcome("0.1.0", 0, "kh1", "steam-1.0.0.2", true, listOf("watch")))
+        l.bus.tryEmit(ServerMsg.State("kh1.spike", state(99, 0, null)))
+        assertEquals(2, l.sent.size)
+        assertEquals(data.party.watch, l.sent[1])
+        assertEquals(1, logs.size)
+        s.cancel()
+    }
+
+    @Test fun everyShippedWorldFitsTheWatchLimits() {
+        for (w in data.worlds) {
+            val c = combinedWatch(data.party, w)
+            assertNotNull("world ${w.id} ${w.name}", c)
+            assertEquals(true, withinWatchLimits(c!!))
+        }
+        assertNull(combinedWatch(data.party, WorldDef(1, "x", watch = List(5) { Region(1L + it * 1000, 10) })))
+        assertNull(combinedWatch(data.party, WorldDef(1, "x", watch = listOf(Region(1, 257)))))
     }
 
     @Test fun secondWelcomeResendsWatch() {

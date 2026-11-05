@@ -52,4 +52,20 @@ class DecodeTest {
         assertNull(chestOpened(bitChest, listOf(RegionHex(100, null))))
         assertNull(chestOpened(atLeastChest, listOf(RegionHex(100, "08"))))
     }
+
+    @Test fun malformedHexDecodesToNullWithoutThrowing() {
+        for (bad in listOf("0", "zz", "+f", "-1", "080", "")) {
+            assertNull(bad, chestOpened(bitChest, listOf(RegionHex(100, bad))))
+        }
+        // short region: a battle block truncated below the member span gives null fields, not an exception
+        val short = TestData.partyRegions().map { if (it.offset == TestData.PARTY_BASE) it.copy(hex = "3900") else it }
+        assertEquals(PartyMember("Sora", null, null, null, null), decodeParty(data.party, short)[0])
+        // chest straddling a region end
+        assertNull(chestOpened(Chest("s", 0, 101, bit = 0), listOf(RegionHex(100, "01"))))
+    }
+
+    @Test fun highBitU32NeverGoesNegative() {
+        val r = TestData.partyRegions().map { if (it.offset == TestData.PARTY_BASE) it.copy(hex = "ffffffff" + "39000000".repeat(3)) else it }
+        assertEquals(Int.MAX_VALUE, decodeParty(data.party, r)[0].hp)
+    }
 }
