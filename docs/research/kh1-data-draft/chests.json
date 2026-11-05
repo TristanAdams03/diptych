@@ -1,0 +1,2333 @@
+{
+ "Neverland": {
+  "world_id": 13,
+  "count": 12,
+  "chests": [
+   {
+    "ap_location_id": 2653772,
+    "name": "Neverland Pirate Ship Deck White Trinity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 178",
+    "chest_index": 378,
+    "flag": {
+     "address": "0x2de9aa4",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9aa4] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 15",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 147",
+     "item": "Dalmatian puppies (set 15)",
+     "confidence": "source",
+     "den_room_label": "Pirate Ship",
+     "den_requirements": [
+      "White Trinity",
+      "Green Trinity",
+      "Glide"
+     ]
+    },
+    "room_ids": [
+     8
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2653773,
+    "name": "Neverland Pirate Ship Crows Nest Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 179",
+    "chest_index": 379,
+    "flag": {
+     "address": "0x2de9aa4",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9aa4] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a2",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 148",
+     "item": "Orichalcum",
+     "note": "'Reward a2' -> rewardDetails[0xa2+1=163] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 150); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Pirate Ship",
+     "den_requirements": [
+      "Green Trinity",
+      "Glide"
+     ]
+    },
+    "room_ids": [
+     8
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2653774,
+    "name": "Neverland Hold Yellow Trinity Right Blue Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 180",
+    "chest_index": 380,
+    "flag": {
+     "address": "0x2de9aa4",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9aa4] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Orichalcum",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 149",
+     "item": "Orichalcum",
+     "confidence": "source",
+     "den_room_label": "Ship: Hold",
+     "den_requirements": [
+      "Yellow Trinity"
+     ]
+    },
+    "room_ids": [
+     0,
+     1,
+     2,
+     7
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2653811,
+    "name": "Neverland Hold Yellow Trinity Left Blue Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 181",
+    "chest_index": 381,
+    "flag": {
+     "address": "0x2de9aa8",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9aa8] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a1",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 150",
+     "item": "Dark Matter",
+     "note": "'Reward a1' -> rewardDetails[0xa1+1=162] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 149); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Ship: Hold",
+     "den_requirements": [
+      "Yellow Trinity"
+     ]
+    },
+    "room_ids": [
+     0,
+     1,
+     2,
+     7
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2653812,
+    "name": "Neverland Galley Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 182",
+    "chest_index": 382,
+    "flag": {
+     "address": "0x2de9aa8",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9aa8] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Meteor-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 151",
+     "item": "Meteor-G",
+     "confidence": "source",
+     "den_room_label": "Ship: Galley"
+    },
+    "room_ids": [
+     4
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2653813,
+    "name": "Neverland Cabin Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 183",
+    "chest_index": 383,
+    "flag": {
+     "address": "0x2de9aa8",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9aa8] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 78",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 152",
+     "item": "Protera Chain",
+     "note": "'Reward 78' -> rewardDetails[0x78+1=121] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 111); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Ship: Cabin",
+     "den_requirements": [
+      "Green Trinity"
+     ]
+    },
+    "room_ids": [
+     5
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2653814,
+    "name": "Neverland Hold Flight 1st Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 184",
+    "chest_index": 384,
+    "flag": {
+     "address": "0x2de9aa8",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9aa8] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 28",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 153",
+     "item": "Dalmatian puppies (set 28)",
+     "confidence": "source",
+     "den_room_label": "Ship: Hold",
+     "den_requirements": [
+      "Glide",
+      "Green Trinity"
+     ]
+    },
+    "room_ids": [
+     0,
+     1,
+     2,
+     7
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654014,
+    "name": "Neverland Clock Tower Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 185",
+    "chest_index": 404,
+    "flag": {
+     "address": "0x2de9abc",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9abc] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Flare-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 154",
+     "item": "Flare-G",
+     "confidence": "source",
+     "den_room_label": "Clock Tower",
+     "den_requirements": [
+      "Green Trinity"
+     ]
+    },
+    "room_ids": [
+     9
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654051,
+    "name": "Neverland Hold Flight 2nd Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 186",
+    "chest_index": 405,
+    "flag": {
+     "address": "0x2de9ac0",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ac0] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Paper-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 155",
+     "item": "Paper-G",
+     "confidence": "source",
+     "den_room_label": "Ship: Hold",
+     "den_requirements": [
+      "Glide",
+      "Green Trinity"
+     ]
+    },
+    "room_ids": [
+     0,
+     1,
+     2,
+     7
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654052,
+    "name": "Neverland Hold Yellow Trinity Green Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 187",
+    "chest_index": 406,
+    "flag": {
+     "address": "0x2de9ac0",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ac0] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 29",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 156",
+     "item": "Dalmatian puppies (set 29)",
+     "confidence": "source",
+     "den_room_label": "Ship: Hold",
+     "den_requirements": [
+      "Yellow Trinity"
+     ]
+    },
+    "room_ids": [
+     0,
+     1,
+     2,
+     7
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654053,
+    "name": "Neverland Captain's Cabin Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 188",
+    "chest_index": 407,
+    "flag": {
+     "address": "0x2de9ac0",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ac0] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 30",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 157",
+     "item": "Dalmatian puppies (set 30)",
+     "confidence": "source",
+     "den_room_label": "Captain's Cabin",
+     "den_requirements": [
+      "Green Trinity"
+     ]
+    },
+    "room_ids": [
+     6
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2656344,
+    "name": "Neverland Hold Aero Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 375",
+    "room_ids": [
+     0,
+     1,
+     2,
+     7
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown",
+    "flag": {
+     "address": "0x2DEB1C2",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2DEB1C2] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) line 967 ({0x2DEBBC2, 0x2DEB1C2}, 2656344, 2, 0x0) - misc check, bit is 1-based in the connector",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": "Aero (magic)",
+     "note": "game knowledge; AP names it \"Hold Aero Chest\"",
+     "confidence": "guess"
+    },
+    "chest_index": null
+   }
+  ]
+ },
+ "Hollow Bastion": {
+  "world_id": 15,
+  "count": 39,
+  "chests": [
+   {
+    "ap_location_id": 2654054,
+    "name": "Hollow Bastion Rising Falls Water's Surface Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 189",
+    "chest_index": 408,
+    "flag": {
+     "address": "0x2de9ac0",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ac0] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Life-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 158",
+     "item": "Life-G",
+     "confidence": "source",
+     "den_room_label": "Rising Falls"
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654091,
+    "name": "Hollow Bastion Rising Falls Under Water 1st Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 190",
+    "chest_index": 409,
+    "flag": {
+     "address": "0x2de9ac4",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ac4] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Meteor-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 159",
+     "item": "Meteor-G",
+     "confidence": "source",
+     "den_room_label": "Rising Falls"
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654092,
+    "name": "Hollow Bastion Rising Falls Under Water 2nd Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 191",
+    "chest_index": 410,
+    "flag": {
+     "address": "0x2de9ac4",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ac4] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 58",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 160",
+     "item": "Defense Up",
+     "note": "'Reward 58' -> rewardDetails[0x58+1=89] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 79); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Rising Falls",
+     "den_requirements": [
+      "HB1",
+      "HB2"
+     ]
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654093,
+    "name": "Hollow Bastion Rising Falls Floating Platform Near Save Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 192",
+    "chest_index": 411,
+    "flag": {
+     "address": "0x2de9ac4",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ac4] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 31",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 161",
+     "item": "Dalmatian puppies (set 31)",
+     "confidence": "source",
+     "den_room_label": "Rising Falls",
+     "den_requirements": [
+      "Blizzard Magic"
+     ]
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654094,
+    "name": "Hollow Bastion Rising Falls Floating Platform Near Bubble Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 193",
+    "chest_index": 412,
+    "flag": {
+     "address": "0x2de9ac4",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ac4] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 79",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 162",
+     "item": "Blizzara Ring",
+     "note": "'Reward 79' -> rewardDetails[0x79+1=122] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 112); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Rising Falls",
+     "den_requirements": [
+      "Blizzard Magic"
+     ]
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654131,
+    "name": "Hollow Bastion Rising Falls High Platform Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 194",
+    "chest_index": 413,
+    "flag": {
+     "address": "0x2de9ac8",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ac8] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Megalixir",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 163",
+     "item": "Megalixir",
+     "confidence": "source",
+     "den_room_label": "Rising Falls"
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654132,
+    "name": "Hollow Bastion Castle Gates Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 195",
+    "chest_index": 414,
+    "flag": {
+     "address": "0x2de9ac8",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ac8] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 32",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 164",
+     "item": "Dalmatian puppies (set 32)",
+     "confidence": "source",
+     "den_room_label": "Castle Gates",
+     "den_requirements": [
+      "Dumbo OR HB1",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     1
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654133,
+    "name": "Hollow Bastion Castle Gates Freestanding Pillar Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 196",
+    "chest_index": 415,
+    "flag": {
+     "address": "0x2de9ac8",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ac8] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 59",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 165",
+     "item": "Orichalcum",
+     "note": "'Reward 59' -> rewardDetails[0x59+1=90] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 80); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Castle Gates",
+     "den_requirements": [
+      "Dumbo OR HB1"
+     ]
+    },
+    "room_ids": [
+     1
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654134,
+    "name": "Hollow Bastion Castle Gates High Pillar Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 197",
+    "chest_index": 416,
+    "flag": {
+     "address": "0x2de9ac8",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ac8] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Haste2-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 166",
+     "item": "Haste2-G",
+     "confidence": "source",
+     "den_room_label": "Castle Gates",
+     "den_requirements": [
+      "Dumbo OR HB1"
+     ]
+    },
+    "room_ids": [
+     1
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654171,
+    "name": "Hollow Bastion Great Crest Lower Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 198",
+    "chest_index": 417,
+    "flag": {
+     "address": "0x2de9acc",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9acc] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Orichalcum",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 167",
+     "item": "Orichalcum",
+     "confidence": "source",
+     "den_room_label": "Great Crest",
+     "den_requirements": [
+      "HB1"
+     ]
+    },
+    "room_ids": [
+     2
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654172,
+    "name": "Hollow Bastion Great Crest After Battle Platform Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 199",
+    "chest_index": 418,
+    "flag": {
+     "address": "0x2de9acc",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9acc] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Thundaga-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 168",
+     "item": "Thundaga-G",
+     "confidence": "source",
+     "den_room_label": "Great Crest",
+     "den_requirements": [
+      "HB1"
+     ]
+    },
+    "room_ids": [
+     2
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654173,
+    "name": "Hollow Bastion High Tower 2nd Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 200",
+    "chest_index": 419,
+    "flag": {
+     "address": "0x2de9acc",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9acc] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Osmose-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 169",
+     "item": "Osmose-G",
+     "confidence": "source",
+     "den_room_label": "High Tower",
+     "den_requirements": [
+      "HB1",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     3
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654174,
+    "name": "Hollow Bastion High Tower 1st Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 201",
+    "chest_index": 420,
+    "flag": {
+     "address": "0x2de9acc",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9acc] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 5a",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 170",
+     "item": "Thundara Ring",
+     "note": "'Reward 5a' -> rewardDetails[0x5a+1=91] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 81); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "High Tower",
+     "den_requirements": [
+      "HB1",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     3
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654211,
+    "name": "Hollow Bastion High Tower Above Sliding Blocks Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 202",
+    "chest_index": 421,
+    "flag": {
+     "address": "0x2de9ad0",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ad0] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Megalixir",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 171",
+     "item": "Megalixir",
+     "confidence": "source",
+     "den_room_label": "High Tower",
+     "den_requirements": [
+      "HB1"
+     ]
+    },
+    "room_ids": [
+     3
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654213,
+    "name": "Hollow Bastion Library Top of Bookshelf Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 203",
+    "chest_index": 423,
+    "flag": {
+     "address": "0x2de9ad0",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ad0] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Ultima-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 173",
+     "item": "Ultima-G",
+     "confidence": "source",
+     "den_room_label": "Library",
+     "den_requirements": [
+      "Khama"
+     ]
+    },
+    "room_ids": [
+     5
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654214,
+    "name": "Hollow Bastion Library 1st Floor Turn the Carousel Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 204",
+    "chest_index": 424,
+    "flag": {
+     "address": "0x2de9ad0",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ad0] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     5
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654251,
+    "name": "Hollow Bastion Library Top of Bookshelf Turn the Carousel Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 205",
+    "chest_index": 425,
+    "flag": {
+     "address": "0x2de9ad4",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ad4] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     5
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654252,
+    "name": "Hollow Bastion Library 2nd Floor Turn the Carousel 1st Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 206",
+    "chest_index": 426,
+    "flag": {
+     "address": "0x2de9ad4",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ad4] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     5
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654253,
+    "name": "Hollow Bastion Library 2nd Floor Turn the Carousel 2nd Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 207",
+    "chest_index": 427,
+    "flag": {
+     "address": "0x2de9ad4",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ad4] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     5
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654254,
+    "name": "Hollow Bastion Lift Stop Library Node After High Tower Switch Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 208",
+    "chest_index": 428,
+    "flag": {
+     "address": "0x2de9ad4",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ad4] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a3",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 174",
+     "item": "Ramuh Belt",
+     "note": "'Reward a3' -> rewardDetails[0xa3+1=164] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 151); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Lift Stop",
+     "den_requirements": [
+      "HB1",
+      "Khama",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     6
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654291,
+    "name": "Hollow Bastion Lift Stop Library Node Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 209",
+    "chest_index": 429,
+    "flag": {
+     "address": "0x2de9ad8",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ad8] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Osmose-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 175",
+     "item": "Osmose-G",
+     "confidence": "source",
+     "den_room_label": "Lift Stop",
+     "den_requirements": [
+      "Dumbo OR HB1",
+      "Khama",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     6
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654292,
+    "name": "Hollow Bastion Lift Stop Under High Tower Sliding Blocks Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 210",
+    "chest_index": 430,
+    "flag": {
+     "address": "0x2de9ad8",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ad8] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a4",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 176",
+     "item": "Royal Crown",
+     "note": "'Reward a4' -> rewardDetails[0xa4+1=165] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 152); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Lift Stop",
+     "den_requirements": [
+      "HB1",
+      "Khama",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     6
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654293,
+    "name": "Hollow Bastion Lift Stop Outside Library Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 211",
+    "chest_index": 431,
+    "flag": {
+     "address": "0x2de9ad8",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ad8] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 33",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 177",
+     "item": "Dalmatian puppies (set 33)",
+     "confidence": "source",
+     "den_room_label": "Lift Stop",
+     "den_requirements": [
+      "Dumbo OR HB1",
+      "Khama",
+      "Gravity Magic"
+     ]
+    },
+    "room_ids": [
+     6
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654294,
+    "name": "Hollow Bastion Lift Stop Heartless Sigil Door Gravity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 212",
+    "chest_index": 432,
+    "flag": {
+     "address": "0x2de9ad8",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ad8] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Orichalcum",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 178",
+     "item": "Orichalcum",
+     "confidence": "source",
+     "den_room_label": "Lift Stop",
+     "den_requirements": [
+      "Dumbo OR HB1"
+     ]
+    },
+    "room_ids": [
+     6
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654331,
+    "name": "Hollow Bastion Base Level Bubble Under the Wall Platform Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 213",
+    "chest_index": 433,
+    "flag": {
+     "address": "0x2de9adc",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9adc] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Mythril",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 179",
+     "item": "Mythril",
+     "confidence": "source",
+     "den_room_label": "Base Level"
+    },
+    "room_ids": [
+     7
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654332,
+    "name": "Hollow Bastion Base Level Platform Near Entrance Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 214",
+    "chest_index": 434,
+    "flag": {
+     "address": "0x2de9adc",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9adc] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Paper-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 180",
+     "item": "Paper-G",
+     "confidence": "source",
+     "den_room_label": "Base Level"
+    },
+    "room_ids": [
+     7
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654333,
+    "name": "Hollow Bastion Base Level Near Crystal Switch Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 215",
+    "chest_index": 435,
+    "flag": {
+     "address": "0x2de9adc",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9adc] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Thundara-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 181",
+     "item": "Thundara-G",
+     "confidence": "source",
+     "den_room_label": "Base Level"
+    },
+    "room_ids": [
+     7
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654334,
+    "name": "Hollow Bastion Waterway Near Save Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 216",
+    "chest_index": 436,
+    "flag": {
+     "address": "0x2de9adc",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9adc] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 7a",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 182",
+     "item": "Fira Ring",
+     "note": "'Reward 7a' -> rewardDetails[0x7a+1=123] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 113); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Waterway"
+    },
+    "room_ids": [
+     8,
+     9
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654371,
+    "name": "Hollow Bastion Waterway Blizzard on Bubble Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 217",
+    "chest_index": 437,
+    "flag": {
+     "address": "0x2de9ae0",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9ae0] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a5",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 183",
+     "item": "Dark Matter",
+     "note": "'Reward a5' -> rewardDetails[0xa5+1=166] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 153); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Waterway",
+     "den_requirements": [
+      "High Jump",
+      "Blizzard Magic"
+     ]
+    },
+    "room_ids": [
+     8,
+     9
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654372,
+    "name": "Hollow Bastion Waterway Unlock Passage from Base Level Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 218",
+    "chest_index": 438,
+    "flag": {
+     "address": "0x2de9ae0",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ae0] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Thundaga-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 184",
+     "item": "Thundaga-G",
+     "confidence": "source",
+     "den_room_label": "Waterway"
+    },
+    "room_ids": [
+     8,
+     9
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654373,
+    "name": "Hollow Bastion Dungeon By Candles Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 219",
+    "chest_index": 439,
+    "flag": {
+     "address": "0x2de9ae0",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9ae0] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Ultima-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 185",
+     "item": "Ultima-G",
+     "confidence": "source",
+     "den_room_label": "Dungeon"
+    },
+    "room_ids": [
+     10
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654374,
+    "name": "Hollow Bastion Dungeon Corner Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 220",
+    "chest_index": 440,
+    "flag": {
+     "address": "0x2de9ae0",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ae0] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Thundaga-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 186",
+     "item": "Thundaga-G",
+     "confidence": "source",
+     "den_room_label": "Dungeon"
+    },
+    "room_ids": [
+     10
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654454,
+    "name": "Hollow Bastion Grand Hall Steps Right Side Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 221",
+    "chest_index": 448,
+    "flag": {
+     "address": "0x2de9ae8",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9ae8] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a6",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 187",
+     "item": "Dark Matter",
+     "note": "'Reward a6' -> rewardDetails[0xa6+1=167] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 154); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Grand Hall",
+     "den_requirements": [
+      "HB1",
+      "HB2"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654491,
+    "name": "Hollow Bastion Grand Hall Oblivion Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 222",
+    "chest_index": 449,
+    "flag": {
+     "address": "0x2de9aec",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9aec] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 31",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 188",
+     "item": "Oblivion",
+     "note": "'Reward 31' -> rewardDetails[0x31+1=50] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 40); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Grand Hall",
+     "den_requirements": [
+      "HB1",
+      "HB2"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654492,
+    "name": "Hollow Bastion Grand Hall Left of Gate Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 223",
+    "chest_index": 450,
+    "flag": {
+     "address": "0x2de9aec",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9aec] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Dalmatians 21",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 189",
+     "item": "Dalmatian puppies (set 21)",
+     "confidence": "source",
+     "den_room_label": "Grand Hall",
+     "den_requirements": [
+      "HB1",
+      "HB2"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654493,
+    "name": "Hollow Bastion Entrance Hall Push the Statue Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 224 (commented out in AP: \"handled later\")",
+    "chest_index": 451,
+    "flag": {
+     "address": "0x2de9aec",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9aec] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     4
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654212,
+    "name": "Hollow Bastion Entrance Hall Left of Emblem Door Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 225",
+    "chest_index": 422,
+    "flag": {
+     "address": "0x2de9ad0",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9ad0] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 5b",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 172",
+     "item": "AP Up",
+     "note": "'Reward 5b' -> rewardDetails[0x5b+1=92] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 82); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Entrance Hall",
+     "den_requirements": [
+      "Dumbo"
+     ]
+    },
+    "room_ids": [
+     4
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654494,
+    "name": "Hollow Bastion Rising Falls White Trinity Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 226",
+    "chest_index": 452,
+    "flag": {
+     "address": "0x2de9aec",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9aec] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Thundaga-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 190",
+     "item": "Thundaga-G",
+     "confidence": "source",
+     "den_room_label": "Rising Falls",
+     "den_requirements": [
+      "White Trinity"
+     ]
+    },
+    "room_ids": [
+     0
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2656517,
+    "name": "Hollow Bastion Entrance Hall Emblem Piece (Chest)",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 464",
+    "room_ids": [
+     4
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)",
+    "flag": {
+     "address": "0x2DEB20F",
+     "rule": "collected when u8[0x2DEB20F] >= 2",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) line 1013 (Emblem Piece (Chest))",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": "Emblem Piece (Chest)",
+     "confidence": "source"
+    },
+    "note": "Not a treasure-chest bit; emblem piece tracked by a counter byte."
+   }
+  ]
+ },
+ "End of the World": {
+  "world_id": 16,
+  "count": 26,
+  "chests": [
+   {
+    "ap_location_id": 2654531,
+    "name": "End of the World Final Dimension 1st Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 227",
+    "chest_index": 453,
+    "flag": {
+     "address": "0x2de9af0",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9af0] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 7b",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 191",
+     "item": "Mythril Shard",
+     "note": "'Reward 7b' -> rewardDetails[0x7b+1=124] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 114); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Final Dimension",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654532,
+    "name": "End of the World Final Dimension 2nd Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 228",
+    "chest_index": 454,
+    "flag": {
+     "address": "0x2de9af0",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9af0] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654533,
+    "name": "End of the World Final Dimension 3rd Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 229",
+    "chest_index": 455,
+    "flag": {
+     "address": "0x2de9af0",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9af0] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654534,
+    "name": "End of the World Final Dimension 4th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 230",
+    "chest_index": 456,
+    "flag": {
+     "address": "0x2de9af0",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9af0] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654571,
+    "name": "End of the World Final Dimension 5th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 231",
+    "chest_index": 457,
+    "flag": {
+     "address": "0x2de9af4",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9af4] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 7f",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 192",
+     "item": "Elixir",
+     "note": "'Reward 7f' -> rewardDetails[0x7f+1=128] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 118); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Final Dimension",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654572,
+    "name": "End of the World Final Dimension 6th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 232",
+    "chest_index": 458,
+    "flag": {
+     "address": "0x2de9af4",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9af4] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 80",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 193",
+     "item": "Mythril Shard",
+     "note": "'Reward 80' -> rewardDetails[0x80+1=129] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 119); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Final Dimension",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654573,
+    "name": "End of the World Final Dimension 10th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 233",
+    "chest_index": 459,
+    "flag": {
+     "address": "0x2de9af4",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9af4] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654574,
+    "name": "End of the World Final Dimension 9th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 234",
+    "chest_index": 460,
+    "flag": {
+     "address": "0x2de9af4",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9af4] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 82",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 194",
+     "item": "Cottage",
+     "note": "'Reward 82' -> rewardDetails[0x82+1=131] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 121); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Final Dimension",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654611,
+    "name": "End of the World Final Dimension 8th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 235",
+    "chest_index": 461,
+    "flag": {
+     "address": "0x2de9af8",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9af8] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654612,
+    "name": "End of the World Final Dimension 7th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 236",
+    "chest_index": 462,
+    "flag": {
+     "address": "0x2de9af8",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9af8] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12
+    ],
+    "room_confidence": "ambiguous: same-named rooms, sub-room unknown"
+   },
+   {
+    "ap_location_id": 2654613,
+    "name": "End of the World Giant Crevasse 3rd Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 237",
+    "chest_index": 463,
+    "flag": {
+     "address": "0x2de9af8",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9af8] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Full-Life-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 195",
+     "item": "Full-Life-G",
+     "confidence": "source",
+     "den_room_label": "Giant Crevasse",
+     "den_requirements": [
+      "EotW",
+      "Glide"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654614,
+    "name": "End of the World Giant Crevasse 5th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 238",
+    "chest_index": 464,
+    "flag": {
+     "address": "0x2de9af8",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9af8] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a8",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 196",
+     "item": "Meteor Strike",
+     "note": "'Reward a8' -> rewardDetails[0xa8+1=169] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 156); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Giant Crevasse",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654651,
+    "name": "End of the World Giant Crevasse 1st Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 239",
+    "chest_index": 465,
+    "flag": {
+     "address": "0x2de9afc",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9afc] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Drill-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 197",
+     "item": "Drill-G",
+     "confidence": "source",
+     "den_room_label": "Giant Crevasse",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654652,
+    "name": "End of the World Giant Crevasse 4th Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 240",
+    "chest_index": 466,
+    "flag": {
+     "address": "0x2de9afc",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9afc] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward a7",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 198",
+     "item": "Dark Matter",
+     "note": "'Reward a7' -> rewardDetails[0xa7+1=168] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 155); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "Giant Crevasse",
+     "den_requirements": [
+      "EotW",
+      "Glide"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654653,
+    "name": "End of the World Giant Crevasse 2nd Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 241",
+    "chest_index": 467,
+    "flag": {
+     "address": "0x2de9afc",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9afc] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Ultima-G",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 199",
+     "item": "Ultima-G",
+     "confidence": "source",
+     "den_room_label": "Giant Crevasse",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     14
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654654,
+    "name": "End of the World World Terminus Traverse Town Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 242",
+    "chest_index": 468,
+    "flag": {
+     "address": "0x2de9afc",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9afc] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 87",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 200",
+     "item": "Spirit Gem",
+     "note": "'Reward 87' -> rewardDetails[0x87+1=136] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 124); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     16
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654691,
+    "name": "End of the World World Terminus Wonderland Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 243",
+    "chest_index": 469,
+    "flag": {
+     "address": "0x2de9b00",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9b00] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 88",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 201",
+     "item": "Thunder Gem",
+     "note": "'Reward 88' -> rewardDetails[0x88+1=137] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 125); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     17
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654692,
+    "name": "End of the World World Terminus Olympus Coliseum Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 244",
+    "chest_index": 470,
+    "flag": {
+     "address": "0x2de9b00",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9b00] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 89",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 202",
+     "item": "Frost Gem",
+     "note": "'Reward 89' -> rewardDetails[0x89+1=138] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 126); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     18
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654693,
+    "name": "End of the World World Terminus Deep Jungle Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 245",
+    "chest_index": 471,
+    "flag": {
+     "address": "0x2de9b00",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9b00] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 8a",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 203",
+     "item": "Bright Gem",
+     "note": "'Reward 8a' -> rewardDetails[0x8a+1=139] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 127); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     19
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654694,
+    "name": "End of the World World Terminus Agrabah Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 246",
+    "chest_index": 472,
+    "flag": {
+     "address": "0x2de9b00",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9b00] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 8b",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 204",
+     "item": "Blaze Gem",
+     "note": "'Reward 8b' -> rewardDetails[0x8b+1=140] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 128); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     20
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654731,
+    "name": "End of the World World Terminus Atlantica Chest",
+    "ap_type": "Static",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 247",
+    "chest_index": 473,
+    "flag": {
+     "address": "0x2de9b04",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9b04] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "item": null,
+     "note": "not in Denhonator chests.lua (vanilla-only/unrandomized chest)",
+     "confidence": "gap"
+    },
+    "room_ids": [
+     21
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654732,
+    "name": "End of the World World Terminus Halloween Town Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 248",
+    "chest_index": 474,
+    "flag": {
+     "address": "0x2de9b04",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9b04] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 8c",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 205",
+     "item": "Lucid Gem",
+     "note": "'Reward 8c' -> rewardDetails[0x8c+1=141] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 129); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     22
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654733,
+    "name": "End of the World World Terminus Neverland Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 249",
+    "chest_index": 475,
+    "flag": {
+     "address": "0x2de9b04",
+     "bit": 2,
+     "mask": "0x4",
+     "rule": "opened = (u8[0x2de9b04] >> 2) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 8d",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 206",
+     "item": "Mighty Shield",
+     "note": "'Reward 8d' -> rewardDetails[0x8d+1=142] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 130); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     23
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654734,
+    "name": "End of the World World Terminus 100 Acre Wood Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 250",
+    "chest_index": 476,
+    "flag": {
+     "address": "0x2de9b04",
+     "bit": 3,
+     "mask": "0x8",
+     "rule": "opened = (u8[0x2de9b04] >> 3) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Megalixir",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 207",
+     "item": "Megalixir",
+     "confidence": "source",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     24
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654771,
+    "name": "End of the World World Terminus Hollow Bastion Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 251",
+    "chest_index": 477,
+    "flag": {
+     "address": "0x2de9b08",
+     "bit": 0,
+     "mask": "0x1",
+     "rule": "opened = (u8[0x2de9b08] >> 0) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Reward 8e",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 208",
+     "item": "Elixir",
+     "note": "'Reward 8e' -> rewardDetails[0x8e+1=143] (Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/rewards.lua (Unlicense) line 131); +1 offset derived from Geppetto's chest = Wishing Star and Grand Hall = Oblivion",
+     "confidence": "derived",
+     "den_room_label": "World Terminus",
+     "den_requirements": [
+      "HB1",
+      "HB2",
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     25
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   },
+   {
+    "ap_location_id": 2654772,
+    "name": "End of the World Final Rest Chest",
+    "ap_type": "Chest",
+    "ap_source": "ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT) line 252",
+    "chest_index": 478,
+    "flag": {
+     "address": "0x2de9b08",
+     "bit": 1,
+     "mask": "0x2",
+     "rule": "opened = (u8[0x2de9b08] >> 1) & 1",
+     "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua (MIT) lines 723-727 (read_chests_opened_array, Steam = 2nd entry 0x2DE992C) + lines 1664-1669 (location_id = 2650000 + byte_index_1based*10 + bit_1based)",
+     "confidence": "derived"
+    },
+    "vanilla_contents": {
+     "raw": "Megalixir",
+     "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua (Unlicense) line 209",
+     "item": "Megalixir",
+     "confidence": "source",
+     "den_room_label": "Final Rest",
+     "den_requirements": [
+      "HB1",
+      "HB2",
+      "EotW"
+     ]
+    },
+    "room_ids": [
+     29
+    ],
+    "room_confidence": "derived (chest name matched to MultiPresence room list)"
+   }
+  ]
+ }
+}

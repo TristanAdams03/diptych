@@ -1,0 +1,117 @@
+{
+ "persistent_stats_table": {
+  "layout": "char n at 0x2DE9364 + n*0x74: +0 level, +1 HP, +2 max HP, +3 MP, +4 max MP, +5 AP, +6 Str, +7 Def; +0x70 = magic-unlock bits (Sora 0x2DE93D4)",
+  "layout_sources": [
+   "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPHandleDeathlink.lua lines 31-34 (Sora 0x2DE9360+5, Donald +0x74, Goofy +0x74*2)",
+   "Drflash55/KH1-Critical-Mix-Additions@f705c7c0 scripts/CMix_SpiritLink.lua lines 101-106 (Sora cur/max HP 0x2DE9365/66, MP 0x2DE9367/68) [AGPL-3.0: cite only]",
+   "sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts line 96 (SORA_LEVEL_OFFSET 0x4 from slot base 0x2DE9360)",
+   "Denhonator 1fmRandoSomeLogic.lua line 2501 (per-character stride 116 = 0x74)",
+   "gaithern/KH1FM-RANDOMIZER@57e701fc Static Files/scripts/1fmRandoHandleItems.lua line 26 (donald_magic_unlocked_bits_offset = 0x74)"
+  ],
+  "end_check": "10 entries (ids 0-9) end at 0x2DE97EC; party slot bytes start at 0x2DE97EF (Denhonator line 237 party1) - consistent with a 10-character table (derived)",
+  "chars": [
+   {
+    "char_id": 0,
+    "name": "Sora",
+    "struct_base": "0x2de9364",
+    "level": "0x2de9364",
+    "hp": "0x2de9365",
+    "max_hp": "0x2de9366",
+    "mp": "0x2de9367",
+    "max_mp": "0x2de9368",
+    "type": "u8 each",
+    "confidence": "source (HP/maxHP/MP/maxMP), matches live 55/57/5/5 pattern",
+    "source": "CMix_SpiritLink.lua 101-106; deathlink line 32"
+   },
+   {
+    "char_id": 1,
+    "name": "Donald",
+    "struct_base": "0x2de93d8",
+    "level": "0x2de93d8",
+    "hp": "0x2de93d9",
+    "max_hp": "0x2de93da",
+    "mp": "0x2de93db",
+    "max_mp": "0x2de93dc",
+    "type": "u8 each",
+    "confidence": "source for HP (deathlink line 33); max HP/MP by same layout = derived",
+    "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPHandleDeathlink.lua lines 31-34"
+   },
+   {
+    "char_id": 2,
+    "name": "Goofy",
+    "struct_base": "0x2de944c",
+    "level": "0x2de944c",
+    "hp": "0x2de944d",
+    "max_hp": "0x2de944e",
+    "mp": "0x2de944f",
+    "max_mp": "0x2de9450",
+    "type": "u8 each",
+    "confidence": "source for HP (deathlink line 34); max HP/MP by same layout = derived",
+    "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPHandleDeathlink.lua lines 31-34"
+   },
+   {
+    "char_id": 8,
+    "name": "Peter Pan",
+    "struct_base": "0x2de9704",
+    "level": "0x2de9704",
+    "hp": "0x2de9705",
+    "max_hp": "0x2de9706",
+    "mp": "0x2de9707",
+    "max_mp": "0x2de9708",
+    "type": "u8 each",
+    "confidence": "guess: id 8 from party1==0x08 (AP 1fmAPFixWarps.lua line 266 'Before Captain Hook', ReadShort(party1)==0xFF08); struct address extrapolated; guests may not persist stats",
+    "source": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua line 266"
+   },
+   {
+    "char_id": 9,
+    "name": "Beast",
+    "struct_base": "0x2de9778",
+    "level": "0x2de9778",
+    "hp": "0x2de9779",
+    "max_hp": "0x2de977a",
+    "mp": "0x2de977b",
+    "max_mp": "0x2de977c",
+    "type": "u8 each",
+    "confidence": "guess: id 9 from Denhonator 1fmRandoSomeLogic.lua line 2289 (HB1 party1=9); struct address extrapolated",
+    "source": "Denhonator 1fmRandoSomeLogic.lua lines 2284-2292"
+   }
+  ],
+  "user_observed_note": "User's reads at 0x2DE9440 / 0x2DE94C0 do not line up with this layout (Donald would be 0x2DE93D8.., Goofy 0x2DE944C..). Re-read those two bases live before trusting either."
+ },
+ "battle_blocks": {
+  "layout": "32 blocks x 0x100 from 0x2D5CC10; +0x3C HP, +0x40 max HP, +0x44 MP, +0x48 max MP (u32); occupancy mask at 0x2D5CB04",
+  "source": "Julumisan/kh-qol-manager@f35bfef6 KH_QoL/docs/FEATURE_RESEARCH.md lines 32-35 (MIT); AmirulAndalib/MultiPresence@81cf9ac2 Presence/KH1.cs (Sora u32 HP/max/MP/max at 0x2D5CC4C/50/54/58)",
+  "has_party_after_sora": "yes (derived): Denhonator 1fmEnemyRando.lua lines 567-573 uses block 3 HP (0x2D5CF4C) as the boss HP when the party has two members, and block 1 (0x2D5CD4C) when party1 and party1-1 are both 0xFF - so blocks 1-2 hold the allies when present",
+  "entries": [
+   {
+    "slot": 0,
+    "who": "Sora",
+    "hp": "0x2D5CC4C",
+    "max_hp": "0x2D5CC50",
+    "mp": "0x2D5CC54",
+    "max_mp": "0x2D5CC58",
+    "confidence": "source + confirmed live"
+   },
+   {
+    "slot": 1,
+    "who": "party slot 1 (u8 0x2DE97EF: 1 Donald, 2 Goofy, 8 Peter Pan, 9 Beast, 0xFF empty)",
+    "hp": "0x2D5CD4C",
+    "max_hp": "0x2D5CD50",
+    "mp": "0x2D5CD54",
+    "max_mp": "0x2D5CD58",
+    "confidence": "derived"
+   },
+   {
+    "slot": 2,
+    "who": "party slot 2 (u8 0x2DE97F0)",
+    "hp": "0x2D5CE4C",
+    "max_hp": "0x2D5CE50",
+    "mp": "0x2D5CE54",
+    "max_mp": "0x2D5CE58",
+    "confidence": "derived"
+   }
+  ],
+  "caveat": "Julumisan warns slot order is not guaranteed ('assuming all but the first slot is unsafe'). Robust path: party object pointers 0x2D37288 / 0x2D37290 (library lines 344-345; Denhonator lines 70-71) -> object+0x6C handle -> resolve fn 0x38ADC0 -> stats block (FEATURE_RESEARCH.md line 33). Validate a block by max_hp == persistent max HP of that character. Blocks are only valid in-field (they are rebuilt on room loads)."
+ },
+ "egs_delta": "EGS 1.0.0.10: persistent table +0xA00 (deathlink line 31: 0x2DE9D60); battle block +0xA00 (Sora 0x2D5D64C). JP Steam 1.0.0.2: identical to Global."
+}

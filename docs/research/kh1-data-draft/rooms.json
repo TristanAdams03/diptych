@@ -1,0 +1,763 @@
+{
+ "Traverse Town": {
+  "world_id": 3,
+  "map_file_prefix": "tw",
+  "map_file_note": "room r <-> <prefix>{r+1:02d}.ard (derived: file counts in gaithern/KH-1FM-AP-LUA remastered/ match list lengths)",
+  "rooms": [
+   {
+    "id": 0,
+    "name": "1st District",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 49",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 1,
+    "name": "2nd District",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 50",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 2,
+    "name": "3rd District",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 51",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 3,
+    "name": "Vacant House",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 52",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 4,
+    "name": "Alleyway",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 53",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 5,
+    "name": "Green Room",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 54",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 6,
+    "name": "Red Room",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 55",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 7,
+    "name": "Hallway",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 56",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 8,
+    "name": "Mystical House",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 57",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 9,
+    "name": "Item Shop",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 58",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 10,
+    "name": "Accessory Shop",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 59",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 11,
+    "name": "Item Workshop",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 60",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 12,
+    "name": "Geppetto's House",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 61",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 13,
+    "name": "Dalmatians' Den",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 62",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 14,
+    "name": "Dining Room",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 63",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 15,
+    "name": "Living Room",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 64",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 16,
+    "name": "Piano Room",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 65",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 17,
+    "name": "Gizmo Shop",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 66",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 18,
+    "name": "Merlin's House",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 67",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 19,
+    "name": "Magician's Study",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 68",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 20,
+    "name": "Magician's Lab",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 69",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 21,
+    "name": "???",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 70",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 22,
+    "name": "Secret Waterway",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 71",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 23,
+    "name": "???",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 72",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 24,
+    "name": "3rd District",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 73",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 25,
+    "name": "Small House",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 74",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   }
+  ],
+  "adjacency": {
+   "edges": [],
+   "confidence": "guess",
+   "notes": "sanity only"
+  }
+ },
+ "Neverland": {
+  "world_id": 13,
+  "map_file_prefix": "pp",
+  "map_file_note": "room r <-> <prefix>{r+1:02d}.ard (derived: file counts in gaithern/KH-1FM-AP-LUA remastered/ match list lengths)",
+  "rooms": [
+   {
+    "id": 0,
+    "name": "Ship: Hold",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 212",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 1,
+    "name": "Ship: Hold",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 213",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 2,
+    "name": "Ship: Hold",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 214",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 3,
+    "name": "Ship: Freezer",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 215",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 4,
+    "name": "Ship: Galley",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 216",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 5,
+    "name": "Ship: Cabin",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 217",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 6,
+    "name": "Captain's Cabin",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 218",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 7,
+    "name": "Ship: Hold",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 219",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 8,
+    "name": "Pirate Ship",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 220",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 9,
+    "name": "Clock Tower",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 221",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   }
+  ],
+  "adjacency": {
+   "edges": [
+    [
+     0,
+     4
+    ],
+    [
+     4,
+     8
+    ],
+    [
+     8,
+     5
+    ],
+    [
+     8,
+     6
+    ],
+    [
+     8,
+     9
+    ]
+   ],
+   "confidence": "guess",
+   "notes": "GUESS from game knowledge; verify by logging (prev_room, room) pairs live."
+  },
+  "extra_rooms_note": "pp11.ard and pp12.ard exist (rooms 10-11) but MultiPresence lists only 0-9; names unknown (likely Hook-battle deck/night-flight variants) - GAP"
+ },
+ "Hollow Bastion": {
+  "world_id": 15,
+  "map_file_prefix": "pc",
+  "map_file_note": "room r <-> <prefix>{r+1:02d}.ard (derived: file counts in gaithern/KH-1FM-AP-LUA remastered/ match list lengths)",
+  "rooms": [
+   {
+    "id": 0,
+    "name": "Rising Falls",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 225",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 1,
+    "name": "Castle Gates",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 226",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 2,
+    "name": "Great Crest",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 227",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 3,
+    "name": "High Tower",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 228",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 4,
+    "name": "Entrance Hall",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 229",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 5,
+    "name": "Library",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 230",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 6,
+    "name": "Lift Stop",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 231",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 7,
+    "name": "Base Level",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 232",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 8,
+    "name": "Waterway",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 233",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 9,
+    "name": "Waterway",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 234",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 10,
+    "name": "Dungeon",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 235",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 11,
+    "name": "Castle Chapel",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 236",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 12,
+    "name": "Castle Chapel",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 237",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 13,
+    "name": "Castle Chapel",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 238",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 14,
+    "name": "Grand Hall",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 239",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 15,
+    "name": "Dark Depths",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 240",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 16,
+    "name": "Castle Chapel",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 241",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   }
+  ],
+  "adjacency": {
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     7
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     6
+    ],
+    [
+     4,
+     14
+    ],
+    [
+     6,
+     3
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     8,
+     10
+    ],
+    [
+     14,
+     11
+    ],
+    [
+     11,
+     15
+    ]
+   ],
+   "confidence": "guess",
+   "notes": "GUESS from game knowledge; verify live."
+  },
+  "also_world_14": "MultiPresence maps world 14 to \"Hollow Bastion\" too; Kingdom Save Editor (via kh-tracker constants.ts) has no 14. Treat 14 as unconfirmed."
+ },
+ "End of the World": {
+  "world_id": 16,
+  "map_file_prefix": "ew",
+  "map_file_note": "room r <-> <prefix>{r+1:02d}.ard (derived: file counts in gaithern/KH-1FM-AP-LUA remastered/ match list lengths)",
+  "rooms": [
+   {
+    "id": 0,
+    "name": "Gate to the Dark",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 245",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 1,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 246",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 2,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 247",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 3,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 248",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 4,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 249",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 5,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 250",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 6,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 251",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 7,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 252",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 8,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 253",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 9,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 254",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 10,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 255",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 11,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 256",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 12,
+    "name": "Final Dimension",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 257",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 13,
+    "name": "Dark Sphere",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 258",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 14,
+    "name": "Giant Crevasse",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 259",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 15,
+    "name": "World Terminus",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 260",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 16,
+    "name": "World Terminus (Traverse Town)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 261",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 17,
+    "name": "World Terminus (Wonderland)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 262",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 18,
+    "name": "World Terminus (Olympus Coliseum)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 263",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 19,
+    "name": "World Terminus (Deep Jungle)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 264",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 20,
+    "name": "World Terminus (Agrabah)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 265",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 21,
+    "name": "World Terminus (Atlantica)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 266",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 22,
+    "name": "World Terminus (Halloween Town)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 267",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 23,
+    "name": "World Terminus (Neverland)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 268",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 24,
+    "name": "World Terminus (100 Acre Wood)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 269",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 25,
+    "name": "World Terminus (Hollow Bastion)",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 270",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 26,
+    "name": "Evil Grounds",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 271",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 27,
+    "name": "Volcanic Crater",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 272",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 28,
+    "name": "Linked Worlds",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 273",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 29,
+    "name": "Final Rest",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 274",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 30,
+    "name": "Homecoming",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 275",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 31,
+    "name": "Crumbling Island",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 276",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 32,
+    "name": "Final Door",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 277",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 33,
+    "name": "The Void",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 278",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 34,
+    "name": "Crater",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 279",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 35,
+    "name": "Homecoming",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 280",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 36,
+    "name": "The Void",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 281",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 37,
+    "name": "The Void",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 282",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   },
+   {
+    "id": 38,
+    "name": "The Void",
+    "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs (MIT) line 283",
+    "confidence": "source (MultiPresence list index; index==room byte confirmed live for Deep Jungle 12/14)"
+   }
+  ],
+  "adjacency": {
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     13,
+     14
+    ],
+    [
+     14,
+     15
+    ],
+    [
+     15,
+     16
+    ],
+    [
+     15,
+     17
+    ],
+    [
+     15,
+     18
+    ],
+    [
+     15,
+     19
+    ],
+    [
+     15,
+     20
+    ],
+    [
+     15,
+     21
+    ],
+    [
+     15,
+     22
+    ],
+    [
+     15,
+     23
+    ],
+    [
+     15,
+     24
+    ],
+    [
+     15,
+     25
+    ],
+    [
+     15,
+     26
+    ],
+    [
+     26,
+     27
+    ],
+    [
+     27,
+     28
+    ],
+    [
+     28,
+     29
+    ],
+    [
+     29,
+     32
+    ]
+   ],
+   "confidence": "guess",
+   "notes": "GUESS; Final Dimension sub-rooms 1-12 are a linear-ish chain whose order is unknown."
+  }
+ }
+}

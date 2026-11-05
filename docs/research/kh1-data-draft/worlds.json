@@ -1,0 +1,114 @@
+{
+ "addresses": {
+  "world": {
+   "address": "0x233FE94",
+   "type": "u8",
+   "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/SteamGlobal_1_0_0_2.lua line 40",
+   "confidence": "source + confirmed live"
+  },
+  "world_alt_g_WorldNumber": {
+   "address": "0x233FE84",
+   "type": "u8",
+   "source": "gaithern/KH1-LUA-LIBRARY@e387282a scripts/io_packages/SteamGlobal_1_0_0_2.lua line 315; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 765 (read_world)",
+   "confidence": "source + confirmed live",
+   "note": "Same numbering as `world` in every AP/rando comparison seen (0x0D Neverland, 0x0F HB, 0x10 EotW). Which of the two changes first on a world transition is untested."
+  },
+  "room": {
+   "address": "0x233FE8C",
+   "type": "u8",
+   "source": "Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/SteamGlobal_1_0_0_2.lua line 28; library line 316 (g_AreaNumber)",
+   "confidence": "source + confirmed live"
+  },
+  "set_number": {
+   "address": "0x233FE90",
+   "type": "u8",
+   "source": "gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua line 317 (g_SetNumber: per-room map-state row)",
+   "confidence": "source"
+  }
+ },
+ "ids": [
+  {
+   "id": 0,
+   "name": "Dive into the Heart"
+  },
+  {
+   "id": 1,
+   "name": "Destiny Islands"
+  },
+  {
+   "id": 2,
+   "name": "Disney Castle"
+  },
+  {
+   "id": 3,
+   "name": "Traverse Town",
+   "extra": "Denhonator 1fmRandoSomeLogic.lua line 2162 (world==3), AP 1fmAPFixWarps 0x03"
+  },
+  {
+   "id": 4,
+   "name": "Wonderland"
+  },
+  {
+   "id": 5,
+   "name": "Deep Jungle",
+   "extra": "confirmed live"
+  },
+  {
+   "id": 6,
+   "name": "100 Acre Wood"
+  },
+  {
+   "id": 7,
+   "name": "(unused)",
+   "confidence": "no source names it"
+  },
+  {
+   "id": 8,
+   "name": "Agrabah"
+  },
+  {
+   "id": 9,
+   "name": "Atlantica"
+  },
+  {
+   "id": 10,
+   "name": "Halloween Town"
+  },
+  {
+   "id": 11,
+   "name": "Olympus Coliseum"
+  },
+  {
+   "id": 12,
+   "name": "Monstro"
+  },
+  {
+   "id": 13,
+   "name": "Neverland",
+   "extra": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua line 243 (world 0x0D room 7 'Start of Neverland 2')"
+  },
+  {
+   "id": 14,
+   "name": "Hollow Bastion (?)",
+   "confidence": "guess: only MultiPresence lists it; KSE/kh-tracker omit 14"
+  },
+  {
+   "id": 15,
+   "name": "Hollow Bastion",
+   "extra": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua lines 306,312 (world 0x0F); Denhonator 1fmRandoSomeLogic.lua line 2460"
+  },
+  {
+   "id": 16,
+   "name": "End of the World",
+   "extra": "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 1474 (world 0x10 room 0x20 = final)"
+  },
+  {
+   "id": 255,
+   "name": "Title / main menu",
+   "source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Presence/KH1.cs line ~63"
+  }
+ ],
+ "ids_source": "AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Worlds.cs lines 14-86; cross-checked against sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts (SAVE_WORLD_NAMES, from Kingdom Save Editor WorldType)",
+ "ids_confidence": "source (two independent lists agree on 0-6,8-13,15,16)",
+ "note": "The save file's world id (u32 at save+0x2040) uses the same numbering per kh-tracker; gummiSelect (0x50707C) also uses 3=TT, 15=HB (Denhonator 1fmRandoSomeLogic.lua lines 2284-2287)."
+}
