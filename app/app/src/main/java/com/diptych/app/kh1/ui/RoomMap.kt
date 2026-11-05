@@ -91,6 +91,11 @@ internal fun chestText(opened: Int?, total: Int): String = when {
 internal fun clampPan(pan: Float, content: Float, viewport: Float): Float =
     if (content <= viewport + 0.5f) 0f else pan.coerceIn(viewport - content, 0f)
 
+/** Pan that puts [target] (content px) at the viewport center, clamped; zero when the room is unknown. */
+internal fun centeredPan(target: Offset?, cw: Float, ch: Float, vw: Float, vh: Float): Offset =
+    if (target == null) Offset.Zero
+    else Offset(clampPan(vw / 2 - target.x, cw, vw), clampPan(vh / 2 - target.y, ch, vh))
+
 /** The map panel: title, pannable room grid, key bar; or "No map for this world yet". */
 @Composable
 fun RoomMap(view: MapView, modifier: Modifier = Modifier) {
@@ -130,15 +135,12 @@ private fun PannableGrid(view: MapView) {
         val cw = m.contentWidth(cols) * px
         val ch = m.contentHeight(rows) * px
         val here = view.rooms.firstOrNull { it.here }
-        // Re-center whenever the world changes (or the viewport does); drags move it after that.
-        var pan by remember(view.worldName, vw, vh) {
+        // Re-center on world change, viewport change, or when the current room first becomes known; drags move it after that.
+        var pan by remember(view.worldName, vw, vh, here != null) {
             val target = here?.let { Offset((m.boxX(it.col) + m.boxW / 2) * px, (m.boxY(it.row) + m.boxH / 2) * px) }
-            mutableStateOf(
-                if (target == null) Offset.Zero
-                else Offset(clampPan(vw / 2 - target.x, cw, vw), clampPan(vh / 2 - target.y, ch, vh)),
-            )
+            mutableStateOf(centeredPan(target, cw, ch, vw, vh))
         }
-        val byId = remember(view.rooms) { view.rooms.associateBy { it.id } }
+        val byId = view.rooms.associateBy { it.id }
         Box(
             Modifier.fillMaxSize().pointerInput(view.worldName, cw, ch, vw, vh) {
                 detectDragGestures { change, drag ->

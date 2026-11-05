@@ -1,6 +1,7 @@
 package com.diptych.app.kh1.ui
 
 import com.diptych.app.kh1.TestData
+import androidx.compose.ui.geometry.Offset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
@@ -30,6 +31,13 @@ class MapUiLogicTest {
         assertEquals(0f, clampPan(30f, 800f, 400f)) // never past the left/top edge
         assertEquals(-400f, clampPan(-900f, 800f, 400f)) // never past the right/bottom edge
         assertEquals(-120f, clampPan(-120f, 800f, 400f))
+    }
+
+    @Test fun centeredPanRecentersOnceTheRoomIsKnown() {
+        // Unknown room on the first frame: no pan. Once it appears (same world) the pan centers on it, clamped.
+        assertEquals(Offset.Zero, centeredPan(null, 800f, 600f, 400f, 300f))
+        assertEquals(Offset(-300f, -250f), centeredPan(Offset(500f, 400f), 800f, 600f, 400f, 300f))
+        assertEquals(Offset(0f, -300f), centeredPan(Offset(50f, 590f), 800f, 600f, 400f, 300f)) // clamped at edges
     }
 
     // Map viewport on the Thor bottom screen: 1240 px / 2.25 = 551.1 dp, minus 24 padding, 10 gap, 196 side, 4 rim.
