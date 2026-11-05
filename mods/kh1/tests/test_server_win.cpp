@@ -1,0 +1,433 @@
+// Windows-only: drives WsServer with a raw Winsock client on an ephemeral loopback port.
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#include <chrono>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <mutex>
+#include <thread>
+#include <vector>
+
+#include "proto/envelope.h"
+#include "server/ws_server.h"
+#include "ws_test_client.h"
+
+using namespace diptych;
+using namespace testws;
+using Clock = std::chrono::steady_clock;
+
+namespace {
+
+proto::Info testInfo() { return {"0.0.0-test", "kh1", "steam-1.0.0.2", true}; }
+
+struct Running {
+    Wsa wsa;
+    server::WsServer srv;
+    Running() { REQUIRE(srv.start("127.0.0.1", 0, testInfo())); REQUIRE(srv.port() != 0); }
+    ~Running() { srv.stop(); }
+};
+
+}  // namespace
+
+TEST_CASE("x64_build_and_defaults") {
+    CHECK(sizeof(void*) == 8);
+    CHECK(sizeof(SOCKET) == 8);  // UINT_PTR: the server must not truncate it to int
+    CHECK(server::kDefaultPort == 7970);
+    CHECK(std::string(server::kDefaultBind) == "127.0.0.1");
+}
+
+TEST_CASE("server_handshake_and_ping") {
+    Running r;
+    TestClient c(r.srv.port());
+    REQUIRE(c.handshake());
+    CHECK(c.pingPong("ping"));
+
+    // Protocol-level ping/hello are answered on the network thread.
+    REQUIRE(c.sendFrame(0x1, fixture("ping.json")));
+    std::string text;
+    REQUIRE(c.expect(0x1, text));
+    CHECK(text.find("\"pong\"") != std::string::npos);
+    REQUIRE(c.sendFrame(0x1, fixture("hello.json")));
+    REQUIRE(c.expect(0x1, text));
+    CHECK(text.find("\"welcome\"") != std::string::npos);
+    CHECK(text.find("0.0.0-test") != std::string::npos);
+}
+
+TEST_CASE("server_two_clients_and_abrupt_close") {
+    Running r;
+    TestClient a(r.srv.port());
+    REQUIRE(a.handshake());
+    TestClient b(r.srv.port());
+    REQUIRE(b.handshake());
+    CHECK(b.pingPong("b1"));
+
+    REQUIRE(a.sendRaw(TestClient::frame(0x1, "{\"type\":\"ping\"}").substr(0, 3)));
+    a.closeNow();
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    CHECK(b.pingPong("b2"));
+    CHECK(b.pingPong("b3"));
+
+    auto t0 = Clock::now();
+    r.srv.stop();
+    CHECK(Clock::now() - t0 < std::chrono::milliseconds(500));
+    CHECK(r.srv.port() == 0);
+}
+
+TEST_CASE("server_oversized_frame") {
+    Running r;
+    {
+        TestClient c(r.srv.port());
+        REQUIRE(c.handshake());
+        c.sendRaw(TestClient::frame(0x1, std::string(2 * 1024 * 1024, 'x')));  // may fail midway
+        std::string p;
+        REQUIRE(c.expect(0x8, p));
+        CHECK(closeCode(p) == 1009);
+        CHECK(c.closedByServer());
+    }
+    TestClient d(r.srv.port());
+    REQUIRE(d.handshake());
+    CHECK(d.pingPong("again"));
+}
+
+TEST_CASE("command_routed") {
+    Running r;
+    TestClient c(r.srv.port());
+    REQUIRE(c.handshake());
+    REQUIRE(c.sendFrame(0x1, fixture("command_probe.json")));
+    server::PendingCommand pc;
+    bool got = false;
+    auto t0 = Clock::now();
+    while (!got && Clock::now() - t0 < std::chrono::milliseconds(200)) {
+        got = r.srv.pollCommand(pc);
+        if (!got) std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+    REQUIRE(got);
+    CHECK(pc.id == "c1");
+    CHECK(pc.name == "kh1.probe");
+    CHECK(pc.args == nlohmann::json{{"offset", 36961940}, {"length", 4}});
+    CHECK_FALSE(r.srv.pollCommand(pc));
+
+    // A malformed command is answered on the network thread and never queued.
+    REQUIRE(c.sendFrame(0x1, "{\"type\":\"command\",\"id\":\"c5\",\"name\":\"kh1.log\"}"));
+    std::string text;
+    REQUIRE(c.expect(0x1, text));
+    auto j = nlohmann::json::parse(text);
+    CHECK(j["type"] == "result");
+    CHECK(j["id"] == "c5");
+    CHECK(j["error"] == "bad command");
+    CHECK_FALSE(r.srv.pollCommand(pc));
+}
+
+TEST_CASE("subscribe_and_send_to_all") {
+    Running r;
+    int rate = 0;
+    CHECK_FALSE(r.srv.hasSubscriber("kh1.spike", rate));
+    TestClient c(r.srv.port());
+    REQUIRE(c.handshake());
+    REQUIRE(c.sendFrame(0x1, "{\"type\":\"subscribe\",\"topics\":[\"kh1.spike\"],\"rateHz\":7}"));
+    CHECK(c.pingPong("sync"));  // subscribe has no ack; the pong orders after it
+    REQUIRE(r.srv.hasSubscriber("kh1.spike", rate));
+    CHECK(rate == 7);
+    rate = 0;
+    CHECK_FALSE(r.srv.hasSubscriber("spike", rate));  // TTW's topic name is not ours
+    CHECK(rate == 0);
+
+    r.srv.sendToAll("{\"type\":\"state\"}");
+    std::string text;
+    REQUIRE(c.expect(0x1, text));
+    CHECK(text == "{\"type\":\"state\"}");
+
+    c.closeNow();
+    bool gone = false;
+    auto t0 = Clock::now();
+    while (!gone && Clock::now() - t0 < std::chrono::milliseconds(1000)) {
+        gone = !r.srv.hasSubscriber("kh1.spike", rate);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    CHECK(gone);
+}
+
+TEST_CASE("send_to_subscribers_skips_unsubscribed_clients") {
+    Running r;
+    TestClient sub(r.srv.port()), other(r.srv.port()), elsewhere(r.srv.port());
+    REQUIRE(sub.handshake());
+    REQUIRE(other.handshake());
+    REQUIRE(elsewhere.handshake());
+    REQUIRE(sub.sendFrame(0x1, "{\"type\":\"subscribe\",\"topics\":[\"kh1.spike\"],\"rateHz\":5}"));
+    REQUIRE(elsewhere.sendFrame(0x1, "{\"type\":\"subscribe\",\"topics\":[\"spike\"],\"rateHz\":5}"));
+    CHECK(sub.pingPong("s1"));  // subscribe has no ack; the pong orders after it
+    CHECK(elsewhere.pingPong("s2"));
+
+    for (int i = 0; i < 3; ++i) r.srv.sendToSubscribers("kh1.spike", "{\"type\":\"state\",\"n\":" + std::to_string(i) + "}");
+    r.srv.sendToAll("{\"type\":\"marker\"}");  // ordered after the state frames on every client
+
+    std::string text;
+    for (int i = 0; i < 3; ++i) {
+        REQUIRE(sub.expect(0x1, text));
+        CHECK(text == "{\"type\":\"state\",\"n\":" + std::to_string(i) + "}");
+    }
+    REQUIRE(sub.expect(0x1, text));
+    CHECK(text == "{\"type\":\"marker\"}");
+    // The unsubscribed client and the one on another topic see the marker first: no state frames.
+    REQUIRE(other.expect(0x1, text));
+    CHECK(text == "{\"type\":\"marker\"}");
+    REQUIRE(elsewhere.expect(0x1, text));
+    CHECK(text == "{\"type\":\"marker\"}");
+}
+
+TEST_CASE("server_close_and_binary") {
+    Running r;
+    {
+        TestClient c(r.srv.port());
+        REQUIRE(c.handshake());
+        REQUIRE(c.sendFrame(0x8, std::string("\x03\xE8", 2)));
+        std::string p;
+        REQUIRE(c.expect(0x8, p));
+        CHECK(closeCode(p) == 1000);
+    }
+    {
+        TestClient c(r.srv.port());
+        REQUIRE(c.handshake());
+        REQUIRE(c.sendFrame(0x2, "bin"));
+        std::string p;
+        REQUIRE(c.expect(0x8, p));
+        CHECK(closeCode(p) == 1002);
+    }
+    {
+        TestClient c(r.srv.port());
+        REQUIRE(c.handshake());
+        REQUIRE(c.sendRaw(std::string("\x81\x05hello", 7)));  // unmasked -> protocol error
+        std::string p;
+        REQUIRE(c.expect(0x8, p));
+        CHECK(closeCode(p) == 1002);
+    }
+}
+
+TEST_CASE("server_rejects_bad_handshakes") {
+    Running r;
+    {
+        TestClient c(r.srv.port());
+        REQUIRE(c.sendRaw(c.request("Origin: http://evil.example\r\n")));
+        CHECK(c.readHttp().rfind("HTTP/1.1 403", 0) == 0);
+        CHECK(c.closedByServer());
+    }
+    {
+        TestClient c(r.srv.port());
+        c.sendRaw(std::string(9000, 'A'));
+        CHECK(c.closedByServer());
+    }
+    CHECK_FALSE(r.srv.start("0.0.0.0", 0, testInfo()));  // already running
+}
+
+TEST_CASE("server_bind_must_be_loopback") {
+    Wsa wsa;
+    server::WsServer s;
+    CHECK_FALSE(s.start("0.0.0.0", 0, testInfo()));
+    CHECK_FALSE(s.start("localhost", 0, testInfo()));
+    CHECK(s.port() == 0);
+    s.stop();  // no-op
+}
+
+TEST_CASE("server_max_four_clients") {
+    Running r;
+    TestClient c1(r.srv.port()), c2(r.srv.port()), c3(r.srv.port()), c4(r.srv.port());
+    REQUIRE(c1.handshake());
+    REQUIRE(c2.handshake());
+    REQUIRE(c3.handshake());
+    REQUIRE(c4.handshake());
+    TestClient c5(r.srv.port());
+    CHECK(c5.closedByServer());
+    CHECK(c4.pingPong("still"));
+    c1.closeNow();
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+    TestClient c6(r.srv.port());
+    REQUIRE(c6.handshake());
+    CHECK(c6.pingPong("room"));
+}
+
+TEST_CASE("server_drops_idle_unhandshaken") {
+    Running r;
+    TestClient c(r.srv.port());
+    DWORD tmo = 7000;
+    setsockopt(c.s, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&tmo), sizeof tmo);
+    auto t0 = Clock::now();
+    CHECK(c.closedByServer());
+    auto dt = Clock::now() - t0;
+    CHECK(dt > std::chrono::milliseconds(4500));
+    CHECK(dt < std::chrono::milliseconds(6500));
+}
+
+TEST_CASE("server_drops_stalled_reader") {
+    Running r;
+    TestClient slow(r.srv.port(), 4096);
+    REQUIRE(slow.handshake());
+    REQUIRE(slow.sendFrame(0x1, fixture("subscribe.json")));
+    REQUIRE(slow.pingPong("sync"));
+    int rate = 0;
+    REQUIRE(r.srv.hasSubscriber("kh1.spike", rate));
+
+    // The slow client never reads again; the game keeps broadcasting ~60 KB states.
+    const std::string big = "{\"type\":\"state\",\"pad\":\"" + std::string(60 * 1024, 'x') + "\"}";
+    bool dropped = false;
+    auto t0 = Clock::now();
+    while (!dropped && Clock::now() - t0 < std::chrono::seconds(12)) {
+        r.srv.sendToAll(big);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        dropped = !r.srv.hasSubscriber("kh1.spike", rate);
+    }
+    CHECK(dropped);
+    CHECK(Clock::now() - t0 < std::chrono::seconds(9));  // 5 s stall timeout + slack
+
+    TestClient fresh(r.srv.port());
+    REQUIRE(fresh.handshake());
+    CHECK(fresh.pingPong("alive"));
+}
+
+TEST_CASE("server_output_hard_cap") {
+    Running r;
+    TestClient c(r.srv.port(), 4096);
+    REQUIRE(c.handshake());
+    // Flood pings without reading: ~5 MB of pongs pile up server side and must trip the 2 MB cap.
+    const std::string ping = TestClient::frame(0x9, std::string(125, 'p'));
+    std::string burst;
+    for (int i = 0; i < 1000; ++i) burst += ping;
+    for (int i = 0; i < 40 && c.sendRaw(burst); ++i) {
+    }
+    std::string p;
+    REQUIRE(c.expect(0x8, p));
+    CHECK(closeCode(p) == 1008);
+    CHECK(c.closedByServer());
+
+    TestClient fresh(r.srv.port());
+    REQUIRE(fresh.handshake());
+    CHECK(fresh.pingPong("alive"));
+}
+
+TEST_CASE("server_set_info_and_event_log") {
+    Wsa wsa;
+    server::WsServer srv;
+    std::mutex mx;
+    std::vector<std::string> events;
+    srv.setEventLog([&](const std::string& e) {
+        std::lock_guard<std::mutex> lk(mx);
+        events.push_back(e);
+    });
+    REQUIRE(srv.start("127.0.0.1", 0, testInfo()));
+    auto info = testInfo();
+    info.plugin = "9.9.9-updated";
+    info.gameBuild = "egs-1.0.0.10";
+    info.supported = false;
+    srv.setInfo(info);
+    {
+        TestClient c(srv.port());
+        REQUIRE(c.handshake());
+        REQUIRE(c.sendFrame(0x1, fixture("hello.json")));
+        std::string text;
+        REQUIRE(c.expect(0x1, text));
+        auto j = nlohmann::json::parse(text);
+        CHECK(j["plugin"] == "9.9.9-updated");
+        CHECK(j["gameBuild"] == "egs-1.0.0.10");
+        CHECK(j["supported"] == false);
+    }
+    srv.stop();
+    std::lock_guard<std::mutex> lk(mx);
+    REQUIRE(!events.empty());
+    CHECK(events[0] == "client connected (1 open)");
+}
+
+TEST_CASE("server_goes_inert_when_the_network_thread_throws") {
+    Wsa wsa;
+    server::WsServer srv;
+    std::mutex mx;
+    std::vector<std::string> events;
+    // The event log runs on the network thread; throwing from it stands in for any unexpected
+    // exception there (bad_alloc, system_error). It must not escape the thread.
+    srv.setEventLog([&](const std::string& e) {
+        if (e.rfind("client connected", 0) == 0) throw std::runtime_error("injected");
+        std::lock_guard<std::mutex> lk(mx);
+        events.push_back(e);
+    });
+    REQUIRE(srv.start("127.0.0.1", 0, testInfo()));
+    const uint16_t port = srv.port();
+    TestClient c(port);
+    c.sendRaw(c.request());  // the handshake triggers "client connected"
+    CHECK(c.closedByServer());
+    const auto t0 = Clock::now();
+    while (srv.port() != 0 && Clock::now() - t0 < std::chrono::seconds(2))
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    CHECK(srv.port() == 0);
+    // Nothing listens any more.
+    SOCKET s = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sockaddr_in a{};
+    a.sin_family = AF_INET;
+    a.sin_port = htons(port);
+    inet_pton(AF_INET, "127.0.0.1", &a.sin_addr);
+    CHECK(::connect(s, reinterpret_cast<sockaddr*>(&a), sizeof a) != 0);
+    closesocket(s);
+    // Calls from the runtime thread stay harmless.
+    srv.sendToAll("{}");
+    srv.sendToSubscribers("kh1.spike", "{}");
+    int rate = 0;
+    CHECK_FALSE(srv.hasSubscriber("kh1.spike", rate));
+    server::PendingCommand pc;
+    CHECK_FALSE(srv.pollCommand(pc));
+    srv.stop();
+    std::lock_guard<std::mutex> lk(mx);
+    REQUIRE(events.size() == 1);
+    CHECK(events[0] == "server stopped after an unexpected error; not serving any more");
+}
+
+TEST_CASE("server_busy_reply_has_null_data") {
+    Running r;
+    TestClient c(r.srv.port());
+    REQUIRE(c.handshake());
+    // Nobody polls, so the queue fills; the next command gets an immediate busy result.
+    for (size_t i = 0; i <= server::WsServer::kMaxQueuedCommands; ++i)
+        REQUIRE(c.sendFrame(0x1, "{\"type\":\"command\",\"id\":\"b" + std::to_string(i) +
+                                     "\",\"name\":\"kh1.log\",\"args\":{}}"));
+    std::string text;
+    REQUIRE(c.expect(0x1, text));
+    auto j = nlohmann::json::parse(text);
+    CHECK(j["type"] == "result");
+    CHECK(j["id"] == "b" + std::to_string(server::WsServer::kMaxQueuedCommands));
+    CHECK(j["ok"] == false);
+    CHECK(j["error"] == "busy");
+    REQUIRE(j.contains("data"));
+    CHECK(j["data"].is_null());
+}
+
+TEST_CASE("server_unsolicited_welcome_after_set_info") {
+    Wsa wsa;
+    server::WsServer srv;
+    proto::Info info{"0.0.0-test", "kh1", "unknown", false};
+    REQUIRE(srv.start("127.0.0.1", 0, info));
+    TestClient c(srv.port());
+    REQUIRE(c.handshake());
+    REQUIRE(c.sendFrame(0x1, fixture("hello.json")));
+    std::string text;
+    REQUIRE(c.expect(0x1, text));
+    CHECK(nlohmann::json::parse(text)["supported"] == false);
+    // setInfo + sendToAll(welcome_json) pushes a changed Info to clients already connected.
+    info.gameBuild = "steam-1.0.0.2";
+    info.supported = true;
+    srv.setInfo(info);
+    srv.sendToAll(proto::welcome_json(info));
+    REQUIRE(c.expect(0x1, text));
+    auto j = nlohmann::json::parse(text);
+    CHECK(j["type"] == "welcome");
+    CHECK(j["gameId"] == "kh1");
+    CHECK(j["supported"] == true);
+    srv.stop();
+}

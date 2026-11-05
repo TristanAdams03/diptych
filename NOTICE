@@ -1,0 +1,11 @@
+Diptych
+Copyright (C) 2026 Tristan Adams. Licensed under GPL-3.0-or-later (see LICENSE).
+
+This project uses or derives from:
+
+- KH1-LUA-LIBRARY (gaithern), MIT licence: memory addresses and version gate.
+- KH1FM-Memory-Map, GPL-3.0: memory map reference.
+- KH-1FM-AP-LUA (gaithern), MIT licence: world address.
+- nlohmann/json, MIT licence.
+- doctest, MIT licence.
+- Code reused from ttw-dualscreen (same author).

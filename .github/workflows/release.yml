@@ -1,0 +1,100 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  mod:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure (x64)
+        run: cmake -S mods/kh1 -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure -V
+      - name: Check dinput8.dll (x64, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build/Release/dinput8.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          $names = "DirectInput8Create", "DllCanUnloadNow", "DllGetClassObject", "DllRegisterServer", "DllUnregisterServer", "GetdfDIJoystick"
+          if ($out -notmatch "8664 machine \(x64\)") { throw "DLL is not x64" }
+          foreach ($name in $names) {
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - name: Zip (dinput8.dll only, at the zip root)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/Release/dinput8.dll -DestinationPath "Diptych-KH1-mod-${{ github.ref_name }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mod-zip
+          path: Diptych-KH1-mod-${{ github.ref_name }}.zip
+          if-no-files-found: error
+
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-35 build-tools;35.0.0 platform-tools"
+      - name: Test and assemble
+        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+      - name: Name the APK
+        working-directory: ${{ github.workspace }}
+        run: cp app/app/build/outputs/apk/debug/app-debug.apk "Diptych-${{ github.ref_name }}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-apk
+          path: Diptych-${{ github.ref_name }}.apk
+          if-no-files-found: error
+
+  publish:
+    needs: [mod, app]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          ls -l dist
+          cat > notes.md <<'NOTES'
+          Spike pre-release. Not for general use.
+
+          - PC checklist: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/spike/PC-CHECKLIST.md
+          - Thor checklist: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/spike/THOR-CHECKLIST.md
+
+          Assets:
+          - `Diptych-KH1-mod-${{ github.ref_name }}.zip` holds only `dinput8.dll`.
+          - `Diptych-${{ github.ref_name }}.apk` is the Diptych (spike) app.
+          NOTES
+          gh release create "${{ github.ref_name }}" --prerelease --verify-tag \
+            --title "${{ github.ref_name }}" --notes-file notes.md \
+            "dist/Diptych-KH1-mod-${{ github.ref_name }}.zip" "dist/Diptych-${{ github.ref_name }}.apk"
