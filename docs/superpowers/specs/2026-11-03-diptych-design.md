@@ -275,8 +275,9 @@ current world/room/flags to the problem report, so mistakes found on the Thor ca
 ### 7.2 Actions (writes)
 - **Cast magic** and **use item** only when it's safe: not in a cutscene, menu, Gummi Ship, dialogue or a loading
   screen. Otherwise the button is greyed out with the reason.
-- The mechanism is the builder's call, decided in the KH1 spike: write a shortcut slot and press it through the
-  input address, or call the game's own routine. It must not leave the player's shortcuts changed afterwards, unless
+- The mechanism was decided in the KH1 spike (`docs/spike/RESULTS.md`): writing the input address does nothing;
+  presses go through an in-memory hook of `XInputGetState` (works on PC and Thor). Shortcut spells open a target
+  picker for some spells (Cura), so a cast includes picking the target. It must not leave the player's shortcuts changed afterwards, unless
   that is the intended effect.
 - Never write anything else. No stat, item-count or flag edits.
 
@@ -284,7 +285,9 @@ current world/room/flags to the problem report, so mistakes found on the Thor ca
 
 ## 8. KH1 mod (`dinput8.dll`)
 
-- **One file**, in a zip that GameNative imports into the game folder. GameNative ≥1.3.0 sets the override itself.
+- **One file**, in a zip that GameNative imports into the game folder. GameNative ≥1.3.0 is meant to set the
+  override itself, but on the Thor test (2026-11-04) it did not for KH 1.5+2.5: the user adds
+  `WINEDLLOVERRIDES=dinput8=n,b` in the game's Environment settings (see `docs/spike/RESULTS.md`).
 - **Proxy:**
   - It forwards DirectInput (`DirectInput8Create` and the other exports) to the real system `dinput8.dll`, so
     controls work exactly as before.
@@ -363,6 +366,11 @@ The user is **late in KH1** (Neverland / Hollow Bastion / End of the World), so 
 5. **Shell polish:** the full fold-out, Device and Guide tabs, mod download and update checks, "Show me how".
 6. **TTW companion inside Diptych**, built from the TTW design once its spike passes.
 7. **Guides:** KH1 on the Thor with Diptych, and TTW updated for Diptych.
+
+### Milestone order change (user, 2026-11-04)
+After the spike passed, the user chose **KH1 map first**: the KH1 style mockup and M2 (read-only map, chests, pinned
+party HP for the late worlds) come next, inside a bare-bones app. The M1 shell (Shelf, covers, service polish) moves
+after M2.
 
 ## 12. Answers from the user (2026-11-03)
 1. **PC testing:** yes. The user will install Steam KH 1.5+2.5 on their Windows PC, so most mod and data work is
