@@ -36,7 +36,7 @@ class MapScreenshotTest {
         RegionHex(TestData.SLOTS, "0102"),
     )
 
-    @Test fun hollowBastionLibrary() {
+    @Test fun hollowBastionLiftStop() {
         // Task 4's fixture (room 6, bytes +20/+24) plus Great Crest's two chests (+12 bits 0,1) so a cleared room shows.
         val b = ByteArray(45).also { it[12] = 0x03; it[20] = 0x08; it[24] = 0x05 }
         val regions = listOf(RegionHex(48143040L, hex(b)), RegionHex(48149007L, "00")) + party()
@@ -51,6 +51,10 @@ class MapScreenshotTest {
 
     @Test fun unknownWorld() {
         snap(buildMapView(TestData.data, TestData.state(3, 2, party())))
+    }
+
+    @Test fun unsupported() {
+        paparazzi.snapshot { MapScreen(null, ConnectionLabel.Unsupported, onReport = {}) }
     }
 
     @Test fun waiting() {
