@@ -1,5 +1,5 @@
 #pragma once
-// kh1.probe / kh1.pressInput / kh1.log (protocol/kh1/PROTOCOL.md). Portable; runs on the runtime
+// kh1.probe / kh1.pressInput / kh1.log / kh1.watch (protocol/kh1/PROTOCOL.md). Portable; runs on the runtime
 // thread only, as does the PressScheduler.
 #include <cstdint>
 #include <optional>
@@ -9,6 +9,7 @@
 #include <nlohmann/json.hpp>
 
 #include "core/kh1_fields.h"
+#include "core/kh1_watch.h"
 #include "core/log_ring.h"
 #include "core/xinput_inject.h"
 
@@ -51,8 +52,11 @@ inline constexpr size_t kLogLines = 200;
 // `gate` is the memory the press ticks use (the runtime's DisablingMemory); the press safety
 // check runs on it so a reader that faulted earlier refuses the press up front. Null -> `mem`.
 // Probes always read `mem`, so a faulting probe never turns off a state reader.
+// kh1.watch validates its regions with parse_watch against mem.image_size() and, when ok, stores
+// the new set in *watch (data {count}); the caller keeps it for the sending client. *watch is left
+// empty for every other command and every failure; a null `watch` makes kh1.watch "internal error".
 std::string run_kh1_command(IMemory& mem, bool supported, const std::string& id, const std::string& name,
                             const nlohmann::json& args, PressScheduler& press, const LogRing* log = nullptr,
-                            IMemory* gate = nullptr);
+                            IMemory* gate = nullptr, std::optional<WatchSet>* watch = nullptr);
 
 }  // namespace diptych::core

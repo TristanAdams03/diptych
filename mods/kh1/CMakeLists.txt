@@ -62,7 +62,7 @@ if(NOT EXISTS "${FIXTURES_DIR}/hello.json")
 endif()
 enable_testing()
 add_executable(kh1_tests tests/main.cpp tests/test_net.cpp tests/test_envelope.cpp tests/test_gates.cpp
-  tests/test_kh1_fields.cpp tests/test_kh1_commands.cpp tests/test_xinput_inject.cpp)
+  tests/test_kh1_fields.cpp tests/test_kh1_commands.cpp tests/test_kh1_watch.cpp tests/test_xinput_inject.cpp)
 target_compile_definitions(kh1_tests PRIVATE FIXTURES_DIR="${FIXTURES_DIR}")
 target_link_libraries(kh1_tests PRIVATE kh1_core doctest::doctest)
 kh1_warnings(kh1_tests)

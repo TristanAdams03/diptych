@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <limits>
 
+#include "core/command_args.h"
 #include "proto/envelope.h"
 
 namespace diptych::core {
@@ -49,23 +50,6 @@ std::vector<std::string> PressScheduler::take_log() {
 // ---- commands ---------------------------------------------------------------------------------
 
 namespace {
-struct Fail {
-    const char* error;
-};
-
-// An integer argument. Missing or not an integer -> "bad command"; outside [lo, hi] -> "out of range".
-int64_t int_arg(const json& args, const char* key, int64_t lo, int64_t hi) {
-    auto it = args.find(key);
-    if (it == args.end() || !it->is_number_integer()) throw Fail{"bad command"};
-    if (it->is_number_unsigned()) {
-        const uint64_t u = it->get<uint64_t>();
-        if (u > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) throw Fail{"out of range"};
-    }
-    const int64_t v = it->get<int64_t>();
-    if (v < lo || v > hi) throw Fail{"out of range"};
-    return v;
-}
-
 proto::CommandResult probe(IMemory& mem, const json& args) {
     const int64_t offset = int_arg(args, "offset", 0, std::numeric_limits<int64_t>::max());
     const int64_t length = int_arg(args, "length", 1, 256);
@@ -104,21 +88,34 @@ proto::CommandResult log_lines(const LogRing* log) {
 }  // namespace
 
 std::string run_kh1_command(IMemory& mem, bool supported, const std::string& id, const std::string& name,
-                            const json& args, PressScheduler& press, const LogRing* log, IMemory* gate) {
+                            const json& args, PressScheduler& press, const LogRing* log, IMemory* gate,
+                            std::optional<WatchSet>* watch) {
     proto::CommandResult r;
+    if (watch) watch->reset();
     try {
-        const bool isProbe = name == "kh1.probe", isPress = name == "kh1.pressInput", isLog = name == "kh1.log";
-        if (!isProbe && !isPress && !isLog) throw Fail{"unknown command"};
+        const bool isProbe = name == "kh1.probe", isPress = name == "kh1.pressInput", isLog = name == "kh1.log",
+                   isWatch = name == "kh1.watch";
+        if (!isProbe && !isPress && !isLog && !isWatch) throw Fail{"unknown command"};
         if (!args.is_object()) throw Fail{"bad command"};
         if (isLog) {
             r = log_lines(log);
         } else {
             if (!supported) throw Fail{"unsupported build"};
-            r = isProbe ? probe(mem, args) : press_input(gate ? *gate : mem, args, press);
+            if (isWatch) {
+                if (!watch) throw Fail{"internal error"};  // the caller has nowhere to keep it
+                WatchSet w = parse_watch(args, mem.image_size());
+                const size_t count = w.regions.size();
+                *watch = std::move(w);
+                r = {true, "", json{{"count", count}}};
+            } else {
+                r = isProbe ? probe(mem, args) : press_input(gate ? *gate : mem, args, press);
+            }
         }
     } catch (const Fail& f) {
+        if (watch) watch->reset();
         r = {false, f.error, nullptr};
     } catch (...) {
+        if (watch) watch->reset();
         r = {false, "internal error", nullptr};
     }
     return proto::result_json(id, r);
