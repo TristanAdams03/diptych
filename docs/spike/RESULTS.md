@@ -24,7 +24,7 @@ Steam KH 1.5+2.5, KH1 build steam-1.0.0.2 (PE TimeDateStamp 0x669e37ce, SizeOfIm
 - Loopback socket from the Wine game to the Android app works: ALIVE, ~4.9 seq/s at 5 Hz, rtt 2 ms.
 - XInput hook installs under Wine; presses from the app reach the game (33 rapid presses fine).
 - Wine's dinput8 lacks `GetdfDIJoystick` (logged; harmless unless the game calls it).
-- inCutscene (raw 2) is also set while talking to people: good for the safety gate (spec wants
+- inCutscene (raw 2) is also set while talking to people and during room transitions (loading): good for the safety gate (spec wants
   dialogue gated), but M1 must not label it "cutscene" in the UI.
 - Runtime loop 97-167 Hz idle-mostly.
 
