@@ -98,7 +98,8 @@ def parse_watch(args):
 
 
 class Mock:
-    def __init__(self, unsupported, unsafe, stall_after=None, chests=b""):
+    def __init__(self, unsupported, unsafe, stall_after=None, chests=b"", world=3, room=2):
+        self.world, self.room = world, room
         self.chests = bytes(chests)  # the chest-flag bytes from CHEST_FLAGS on; unset bytes read 0
         self.unsupported = unsupported
         self.unsafe = unsafe
@@ -141,7 +142,7 @@ class Mock:
             p = self.press_active()
             if p:
                 inp[p[0]] |= p[1]
-            d.update(world=3, room=2, worldAlt=3, soraHp=fake_byte(BATTLE_BLOCK),
+            d.update(world=self.world, room=self.room, worldAlt=self.world, soraHp=fake_byte(BATTLE_BLOCK),
                      soraHpMax=fake_byte(BATTLE_BLOCK + 4), inMenu=self.unsafe,
                      inCutscene=False, inGummi=False, inputBytes=inp.hex())
             if watch:
@@ -265,8 +266,8 @@ def process_request(connection, request):
     return None
 
 
-async def serve(port=7970, unsupported=False, unsafe=False, host="127.0.0.1", stall_after=None, chests=b""):
-    mock = Mock(unsupported, unsafe, stall_after, chests)
+async def serve(port=7970, unsupported=False, unsafe=False, host="127.0.0.1", stall_after=None, chests=b"", world=3, room=2):
+    mock = Mock(unsupported, unsafe, stall_after, chests, world, room)
     server = await ws_serve(mock.handler, host, port, process_request=process_request)
     server.mock = mock  # test hook: tests flip mock.unsafe mid-run
     return server
@@ -281,9 +282,11 @@ async def main():
                    help="stop sending state frames this many seconds after start (pongs continue); simulates the mod or whole process freezing, not the game main loop")
     p.add_argument("--chests", type=bytes.fromhex, default=b"", metavar="HEX",
                    help=f"chest-flag bytes from 0x{CHEST_FLAGS:X} on, as hex (default all zero)")
+    p.add_argument("--world", type=int, default=3, help="world id reported in state frames (default 3)")
+    p.add_argument("--room", type=int, default=2, help="room id reported in state frames (default 2)")
     p.add_argument("--host", default="127.0.0.1", help=argparse.SUPPRESS)  # test-only escape hatch
     a = p.parse_args()
-    server = await serve(a.port, a.unsupported, a.unsafe, a.host, a.stall_after, a.chests)
+    server = await serve(a.port, a.unsupported, a.unsafe, a.host, a.stall_after, a.chests, a.world, a.room)
     print(f"kh1 mock listening on ws://{a.host}:{a.port}", flush=True)
     await server.serve_forever()
 

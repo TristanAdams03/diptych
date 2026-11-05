@@ -499,3 +499,11 @@ async def test_watch_unsupported_build():
     async with server, connect(url) as ws:
         r = await rpc(ws, fixture("command_watch.json"))
         assert r["error"] == "unsupported build"
+
+
+async def test_world_and_room_flags_set_the_reported_location():
+    server, url = await start(world=15, room=6)
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps(fixture("subscribe.json")))
+        d = (await collect_states(ws, 0.5))[0]["data"]
+        assert d["world"] == 15 and d["worldAlt"] == 15 and d["room"] == 6
