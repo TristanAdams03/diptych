@@ -86,14 +86,15 @@ jobs:
         run: |
           ls -l dist
           cat > notes.md <<'NOTES'
-          Spike pre-release. Not for general use.
+          Pre-release. Not for general use.
 
+          - KH1 map checklist: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/spike/MAP-CHECKLIST.md
           - PC checklist: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/spike/PC-CHECKLIST.md
           - Thor checklist: https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/docs/spike/THOR-CHECKLIST.md
 
           Assets:
           - `Diptych-KH1-mod-${{ github.ref_name }}.zip` holds only `dinput8.dll`.
-          - `Diptych-${{ github.ref_name }}.apk` is the Diptych (spike) app.
+          - `Diptych-${{ github.ref_name }}.apk` is the Diptych app.
           NOTES
           gh release create "${{ github.ref_name }}" --prerelease --verify-tag \
             --title "${{ github.ref_name }}" --notes-file notes.md \
