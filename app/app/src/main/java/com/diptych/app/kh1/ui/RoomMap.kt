@@ -98,7 +98,7 @@ internal fun centeredPan(target: Offset?, cw: Float, ch: Float, vw: Float, vh: F
 
 /** The map panel: title, pannable room grid, key bar; or "No map for this world yet". */
 @Composable
-fun RoomMap(view: MapView, modifier: Modifier = Modifier) {
+fun RoomMap(view: MapView, modifier: Modifier = Modifier, showSpoilers: Boolean = true) {
     Column(modifier.kh1Panel().padding(2.dp).clip(RoundedCornerShape(12.dp))) {
         Text(
             if (view.chestsTotal == 0) "ROOMS" else "ROOMS · CHESTS ${view.chestsOpened ?: "?"} / ${view.chestsTotal}",
@@ -115,15 +115,15 @@ fun RoomMap(view: MapView, modifier: Modifier = Modifier) {
                     textAlign = TextAlign.Center,
                 )
             } else {
-                PannableGrid(view)
+                PannableGrid(view, showSpoilers)
             }
         }
-        if (view.rooms.isNotEmpty()) KeyBar(Modifier)
+        if (view.rooms.isNotEmpty()) KeyBar(showSpoilers, Modifier)
     }
 }
 
 @Composable
-private fun PannableGrid(view: MapView) {
+private fun PannableGrid(view: MapView, showSpoilers: Boolean) {
     val density = LocalDensity.current
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val px = with(density) { 1.dp.toPx() }
@@ -155,12 +155,13 @@ private fun PannableGrid(view: MapView) {
                     val rb = byId[b] ?: continue
                     fun center(r: RoomView) =
                         Offset((m.boxX(r.col) + m.boxW / 2) * px + pan.x, (m.boxY(r.row) + m.boxH / 2) * px + pan.y)
-                    drawLine(Kh1Colors.Edge, center(ra), center(rb), strokeWidth = 3 * px)
+                    val isGoldEdge = showSpoilers && ((ra.here && rb.next) || (rb.here && ra.next))
+                    drawLine(if (isGoldEdge) Kh1Colors.Gold else Kh1Colors.Edge, center(ra), center(rb), strokeWidth = 3 * px)
                 }
             }
             for (r in view.rooms) {
                 RoomBox(
-                    r, m,
+                    r, m, showSpoilers,
                     Modifier.offset {
                         IntOffset((m.boxX(r.col) * px + pan.x).roundToInt(), (m.boxY(r.row) * px + pan.y).roundToInt())
                     },
@@ -173,12 +174,26 @@ private fun PannableGrid(view: MapView) {
 private val RoomShape = RoundedCornerShape(9.dp)
 
 @Composable
-private fun RoomBox(r: RoomView, m: GridMetrics, modifier: Modifier) {
+private fun RoomBox(r: RoomView, m: GridMetrics, showSpoilers: Boolean, modifier: Modifier) {
+    val isNext = showSpoilers && r.next && !r.here
+    val isLocked = showSpoilers && r.locked && !r.here && !isNext
     val fill = if (r.here) Kh1Colors.You else Kh1Colors.Room
+    val borderMod = when {
+        r.here -> Modifier.border(2.dp, Color.White, RoomShape)
+        isNext -> Modifier.border(2.dp, Kh1Colors.Gold, RoomShape)
+        isLocked -> Modifier.dashedBorder(1.5.dp, Kh1Colors.LockedRim, 9.dp)
+        else -> Modifier.border(1.5.dp, Kh1Colors.RoomRim, RoomShape)
+    }
+    val titleColor = when {
+        r.here -> Color.White
+        isNext -> Kh1Colors.Gold
+        isLocked -> Kh1Colors.Dim
+        else -> Kh1Colors.Text
+    }
     Box(
         modifier.requiredSize(m.boxW.dp, m.boxH.dp)
             .background(fill, RoomShape)
-            .border(if (r.here) 2.dp else 1.5.dp, if (r.here) Color.White else Kh1Colors.RoomRim, RoomShape)
+            .then(borderMod)
             .padding(horizontal = m.innerPad.dp, vertical = 3.dp),
         contentAlignment = Alignment.Center,
     ) {
@@ -186,18 +201,21 @@ private fun RoomBox(r: RoomView, m: GridMetrics, modifier: Modifier) {
             Text(
                 buildAnnotatedString {
                     append(r.label)
-                    if (r.here) withStyle(SpanStyle(fontWeight = FontWeight.W800)) { append(" · you") }
+                    when {
+                        r.here -> withStyle(SpanStyle(fontWeight = FontWeight.W800)) { append(" · you") }
+                        isNext -> withStyle(SpanStyle(fontWeight = FontWeight.W800)) { append(" · next") }
+                    }
                 },
-                color = if (r.here) Color.White else Kh1Colors.Text,
-                fontFamily = Nunito, fontWeight = if (r.here) FontWeight.W800 else FontWeight.W700,
+                color = titleColor,
+                fontFamily = Nunito, fontWeight = if (r.here || isNext) FontWeight.W800 else FontWeight.W700,
                 fontSize = m.labelSp.sp, lineHeight = (m.labelSp + 2).sp, textAlign = TextAlign.Center,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
             Text(
-                chestText(r.opened, r.total),
+                if (isLocked) "not yet" else chestText(r.opened, r.total),
                 color = when {
                     r.here -> Kh1Colors.YouCount
-                    r.total == 0 -> Kh1Colors.Dim
+                    isLocked || r.total == 0 -> Kh1Colors.Dim
                     else -> Kh1Colors.Gold
                 },
                 fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 11.sp, lineHeight = 13.sp,
@@ -208,7 +226,7 @@ private fun RoomBox(r: RoomView, m: GridMetrics, modifier: Modifier) {
 }
 
 @Composable
-private fun KeyBar(modifier: Modifier) {
+private fun KeyBar(showSpoilers: Boolean, modifier: Modifier) {
     val shape = RoundedCornerShape(8.dp)
     Row(
         modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp).fillMaxWidth().height(28.dp)
@@ -223,7 +241,22 @@ private fun KeyBar(modifier: Modifier) {
                     .border(1.5.dp, Color.White, RoundedCornerShape(3.dp)),
             )
         }
-        KeyItem("Cleared") { KeyText("✓", Kh1Colors.Gold) }
+        if (showSpoilers) {
+            KeyItem("Next") {
+                Box(
+                    Modifier.size(14.dp, 9.dp).background(Kh1Colors.Room, RoundedCornerShape(3.dp))
+                        .border(1.5.dp, Kh1Colors.Gold, RoundedCornerShape(3.dp)),
+                )
+            }
+            KeyItem("Locked") {
+                Box(
+                    Modifier.size(14.dp, 9.dp).background(Kh1Colors.Room, RoundedCornerShape(3.dp))
+                        .dashedBorder(1.5.dp, Kh1Colors.KeyLockedRim, 3.dp),
+                )
+            }
+        } else {
+            KeyItem("Cleared") { KeyText("✓", Kh1Colors.Gold) }
+        }
         KeyItem("Chests") { KeyText("2 / 4", Kh1Colors.Gold) }
     }
 }

@@ -1,18 +1,4060 @@
 {
  "sources": [
-  "Rooms: AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs lines 211-286 (MIT); room byte == list index, confirmed live for Deep Jungle 12/14",
+  "Rooms: AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs lines 10-286 (MIT); room byte == list index, confirmed live for Deep Jungle 12/14",
   "World ids: AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Worlds.cs lines 14-86 (MIT); sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts (MIT)",
   "Chest names: ArchipelagoMW/Archipelago@c835bff5 worlds/kh1/Locations.py (MIT)",
   "Chest bit flags: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 723-727 and 1652-1673 (MIT); opened = (u8[offset] >> bit) & 1, confirmed live by pattern 2026-11-04",
+  "Atlantica Clams: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 829-850 and 1763-1773 (MIT)",
+  "Olympus Coliseum Olympia Chest: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 993 (MIT)",
   "Neverland Hold Aero Chest: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 967 (MIT)",
   "Hollow Bastion Emblem Piece (Chest): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 1013 (MIT); collected when u8[offset] >= atLeast",
   "Chest contents: Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua and rewards.lua (Unlicense)",
+  "Story progress bytes and thresholds: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 623-718, 784-794 and 1fmAPFixWarps.lua lines 10-338 (MIT); Denhonator/KHPCSpeedrunTools@aeb4972e 1fmRandoSomeLogic.lua lines 236, 1960-2486 (Unlicense); gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua lines 9, 199 (MIT)",
   "Edges: guesses from game knowledge (docs/research/kh1-data-draft/rooms.json adjacency); not sourced",
   "Layout: hand-authored, tools/data/layouts/kh1_layouts.json",
   "Per-row citations: docs/research/kh1-data-draft/*.json and docs/research/kh1-late-worlds.md"
  ],
  "version": 1,
  "worlds": [
+  {
+   "chests": [
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Awakening Chest",
+     "offset": 48143144,
+     "room": 3,
+     "roomConfidence": "guess"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 0,
+   "name": "Dive into the Heart",
+   "rooms": [
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 0,
+     "name": "Disembark",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 1,
+     "name": "Cinderalla Platform",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Alice Platform",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 3,
+     "name": "Awakening (3)",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 4,
+     "name": "Awakening (4)",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 5,
+     "name": "Destiny Islands (5)",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Destiny Islands (6)",
+     "row": 2
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146529,
+    "steps": [
+     {
+      "below": 13,
+      "hint": "choose your power on the Awakening platform",
+      "lockedRooms": [
+       4
+      ],
+      "nextRoom": 3
+     },
+     {
+      "below": 30,
+      "hint": "defeat Darkside on the Awakening platform",
+      "lockedRooms": [],
+      "nextRoom": 4
+     },
+     {
+      "below": 256,
+      "hint": "step into the light toward Destiny Islands",
+      "lockedRooms": [],
+      "nextRoom": 5
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 1,
+     "offset": 48143144
+    },
+    {
+     "length": 1,
+     "offset": 48146529
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Protect Chain",
+     "contentsConfidence": "derived",
+     "name": "Destiny Islands Chest",
+     "offset": 48142636,
+     "room": 0,
+     "roomConfidence": "guess"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     7
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     8,
+     11
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 1,
+   "name": "Destiny Islands",
+   "rooms": [
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 0,
+     "name": "Seashore (0)",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 1,
+     "name": "Seaside Shack (1)",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 2,
+     "name": "Cove",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 3,
+     "name": "Seashore (3)",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 4,
+     "name": "Seaside Shack (4)",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 5,
+     "name": "Seashore (5)",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 6,
+     "name": "Seaside Shack (6)",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 7,
+     "name": "Secret Place (7)",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 8,
+     "name": "Island Remains",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 9,
+     "name": "Sora's Room",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 10,
+     "name": "Secret Place (10)",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 11,
+     "name": "Secret Place (11)",
+     "row": 2
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146528,
+    "steps": [
+     {
+      "below": 26,
+      "hint": "gather raft supplies along the Seashore and Cove",
+      "lockedRooms": [
+       8
+      ],
+      "nextRoom": 0
+     },
+     {
+      "below": 190,
+      "hint": "explore the Cove and Secret Place to finish Day 2",
+      "lockedRooms": [
+       8
+      ],
+      "nextRoom": 2
+     },
+     {
+      "below": 220,
+      "hint": "brave the storm at the Secret Place and Island Remains",
+      "lockedRooms": [],
+      "nextRoom": 7
+     },
+     {
+      "below": 256,
+      "hint": "Destiny Islands complete",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 1,
+     "offset": 48142636
+    },
+    {
+     "length": 1,
+     "offset": 48146528
+    }
+   ]
+  },
+  {
+   "chests": [],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     4
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 2,
+   "name": "Disney Castle",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Audience Chamber",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "Colonnade",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Library",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 3,
+     "name": "Courtyard",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 4,
+     "name": "Spiral Stairs",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 5,
+     "name": "Gummi Hangar",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 6,
+     "name": "Outside Spiral Stairs Area",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 7,
+     "name": "Path to the Crossroads",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 8,
+     "name": "Disney Castle World",
+     "row": 2
+    }
+   ],
+   "watch": []
+  },
+  {
+   "chests": [
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Defense Up",
+     "contentsConfidence": "derived",
+     "name": "Traverse Town 1st District Candle Puzzle Chest",
+     "offset": 48142656,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Postcard",
+     "contentsConfidence": "source",
+     "name": "Traverse Town 1st District Accessory Shop Roof Chest",
+     "offset": 48142656,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Postcard",
+     "contentsConfidence": "source",
+     "name": "Traverse Town 2nd District Boots and Shoes Awning Chest",
+     "offset": 48142656,
+     "room": 1,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Traverse Town 2nd District Rooftop Chest",
+     "offset": 48142656,
+     "room": 1,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "source",
+     "name": "Traverse Town 2nd District Gizmo Shop Facade Chest",
+     "offset": 48142660,
+     "room": 1,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Potion",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Alleyway Balcony Chest",
+     "offset": 48142660,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Pretty Stone",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Alleyway Blue Room Awning Chest",
+     "offset": 48142660,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Potion",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Alleyway Corner Chest",
+     "offset": 48142660,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Green Room Clock Puzzle Chest",
+     "offset": 48142664,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "derived",
+     "name": "Traverse Town Green Room Table Chest",
+     "offset": 48142664,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Pretty Stone",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Red Room Chest",
+     "offset": 48142664,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "AP Up",
+     "contentsConfidence": "derived",
+     "name": "Traverse Town Mystical House Yellow Trinity Chest",
+     "offset": 48142668,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Accessory Shop Chest",
+     "offset": 48142668,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "derived",
+     "name": "Traverse Town Secret Waterway White Trinity Chest",
+     "offset": 48142668,
+     "room": 22,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Wishing Star",
+     "contentsConfidence": "derived",
+     "name": "Traverse Town Geppetto's House Chest",
+     "offset": 48142668,
+     "room": 12,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Traverse Town Item Workshop Right Chest",
+     "offset": 48142672,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Postcard",
+     "contentsConfidence": "source",
+     "name": "Traverse Town 1st District Blue Trinity Balcony Chest",
+     "offset": 48142676,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 1)",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Mystical House Glide Chest",
+     "offset": 48142724,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 2)",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Alleyway Behind Crates Chest",
+     "offset": 48142724,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 3)",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Item Workshop Left Chest",
+     "offset": 48142724,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 4)",
+     "contentsConfidence": "source",
+     "name": "Traverse Town Secret Waterway Near Stairs Chest",
+     "offset": 48142724,
+     "room": 22,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     9
+    ],
+    [
+     0,
+     10
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     1,
+     7
+    ],
+    [
+     1,
+     12
+    ],
+    [
+     1,
+     17
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     2,
+     22
+    ],
+    [
+     4,
+     12
+    ],
+    [
+     5,
+     7
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     8,
+     18
+    ],
+    [
+     9,
+     11
+    ],
+    [
+     13,
+     17
+    ],
+    [
+     18,
+     19
+    ],
+    [
+     18,
+     22
+    ],
+    [
+     19,
+     20
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 3,
+   "name": "Traverse Town",
+   "rooms": [
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 0,
+     "name": "1st District",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "2nd District",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 2,
+     "name": "3rd District (2)",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 3,
+     "name": "Vacant House",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 4,
+     "name": "Alleyway",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 5,
+     "name": "Green Room",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 6,
+     "name": "Red Room",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 7,
+     "name": "Hallway",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 8,
+     "name": "Mystical House",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 9,
+     "name": "Item Shop",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 10,
+     "name": "Accessory Shop",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 11,
+     "name": "Item Workshop",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 12,
+     "name": "Geppetto's House",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 13,
+     "name": "Dalmatians' Den",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 14,
+     "name": "Dining Room",
+     "row": 4
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 15,
+     "name": "Living Room",
+     "row": 5
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 16,
+     "name": "Piano Room",
+     "row": 5
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 17,
+     "name": "Gizmo Shop",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 18,
+     "name": "Merlin's House",
+     "row": 4
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 19,
+     "name": "Magician's Study",
+     "row": 5
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 20,
+     "name": "Magician's Lab",
+     "row": 6
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 21,
+     "name": "??? (21)",
+     "row": 5
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 22,
+     "name": "Secret Waterway",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 23,
+     "name": "??? (23)",
+     "row": 6
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 24,
+     "name": "3rd District (24)",
+     "row": 4
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 25,
+     "name": "Small House",
+     "row": 4
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146532,
+    "steps": [
+     {
+      "below": 23,
+      "hint": "visit Cid in the Accessory Shop and patrol the 2nd District",
+      "lockedRooms": [
+       18,
+       19,
+       22
+      ],
+      "nextRoom": 10
+     },
+     {
+      "below": 35,
+      "hint": "regroup with Leon and Aerith in the Green Room",
+      "lockedRooms": [
+       18,
+       19
+      ],
+      "nextRoom": 5
+     },
+     {
+      "below": 49,
+      "hint": "defeat Guard Armor in the 3rd District",
+      "lockedRooms": [
+       18,
+       19
+      ],
+      "nextRoom": 2
+     },
+     {
+      "below": 62,
+      "hint": "head through the Secret Waterway to deliver the Old Book to Merlin",
+      "lockedRooms": [],
+      "nextRoom": 18
+     },
+     {
+      "below": 110,
+      "hint": "ring the Gizmo Shop bell and defeat Opposite Armor in the 3rd District",
+      "lockedRooms": [],
+      "nextRoom": 2
+     },
+     {
+      "below": 140,
+      "hint": "speak with Kairi in the Secret Waterway for Oathkeeper",
+      "lockedRooms": [],
+      "nextRoom": 22
+     },
+     {
+      "below": 256,
+      "hint": "Traverse Town Keyhole sealed · visit Merlin's House or the Item Workshop",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 69,
+     "offset": 48142656
+    },
+    {
+     "length": 1,
+     "offset": 48146532
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Rabbit Hole Green Trinity Chest",
+     "offset": 48142728,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Camping Set",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Rabbit Hole Defeat Heartless 1 Chest",
+     "offset": 48142728,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Rabbit Hole Defeat Heartless 2 Chest",
+     "offset": 48142728,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Rabbit Hole Defeat Heartless 3 Chest",
+     "offset": 48142728,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Bizarre Room Green Trinity Chest",
+     "offset": 48142732,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Wonderland Queen's Castle Hedge Left Red Chest",
+     "offset": 48142736,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 5)",
+     "contentsConfidence": "source",
+     "name": "Wonderland Queen's Castle Hedge Right Blue Chest",
+     "offset": 48142736,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Meteor-G",
+     "contentsConfidence": "source",
+     "name": "Wonderland Queen's Castle Hedge Right Red Chest",
+     "offset": 48142736,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Wonderland Lotus Forest Thunder Plant Chest",
+     "offset": 48142736,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 20)",
+     "contentsConfidence": "source",
+     "name": "Wonderland Lotus Forest Through the Painting Thunder Plant Chest",
+     "offset": 48142740,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Lotus Forest Glide Chest",
+     "offset": 48142740,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 6)",
+     "contentsConfidence": "source",
+     "name": "Wonderland Lotus Forest Nut Chest",
+     "offset": 48142740,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Scan-G",
+     "contentsConfidence": "source",
+     "name": "Wonderland Lotus Forest Corner Chest",
+     "offset": 48142740,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Defense Up",
+     "contentsConfidence": "source",
+     "name": "Wonderland Bizarre Room Lamp Chest",
+     "offset": 48142744,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Flare-G",
+     "contentsConfidence": "source",
+     "name": "Wonderland Tea Party Garden Above Lotus Forest Entrance 2nd Chest",
+     "offset": 48142744,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 7)",
+     "contentsConfidence": "source",
+     "name": "Wonderland Tea Party Garden Above Lotus Forest Entrance 1st Chest",
+     "offset": 48142744,
+     "room": 4,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Tea Party Garden Bear and Clock Puzzle Chest",
+     "offset": 48142748,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Tea Party Garden Across From Bizarre Room Entrance Chest",
+     "offset": 48142748,
+     "room": 1,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Lady Luck",
+     "contentsConfidence": "derived",
+     "name": "Wonderland Lotus Forest Through the Painting White Trinity Chest",
+     "offset": 48142748,
+     "room": 4,
+     "roomConfidence": "guess"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     1,
+     4
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     9
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 4,
+   "name": "Wonderland",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Rabitt Hole",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "Bizarre Room (1)",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 2,
+     "name": "Bizarre Room (2)",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 3,
+     "name": "Queen's Castle",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 4,
+     "name": "Lotus Forest (4)",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 5,
+     "name": "Lotus Forest (5)",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 6,
+     "name": "Bizarre Room (6)",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 7,
+     "name": "Bizarre Room (7)",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 8,
+     "name": "Bizarre Room (8)",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 9,
+     "name": "Tea Party Garden",
+     "row": 0
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146535,
+    "steps": [
+     {
+      "below": 17,
+      "hint": "enter the Bizarre Room and speak to the Doorknob",
+      "lockedRooms": [
+       9
+      ],
+      "nextRoom": 1
+     },
+     {
+      "below": 30,
+      "hint": "search the Lotus Forest for the evidence boxes",
+      "lockedRooms": [],
+      "nextRoom": 4
+     },
+     {
+      "below": 46,
+      "hint": "defeat Trickmaster in the Bizarre Room to seal the Keyhole",
+      "lockedRooms": [],
+      "nextRoom": 1
+     },
+     {
+      "below": 256,
+      "hint": "Wonderland Keyhole sealed",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 21,
+     "offset": 48142728
+    },
+    {
+     "length": 1,
+     "offset": 48146535
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "derived",
+     "name": "Deep Jungle Tree House Beneath Tree House Chest",
+     "offset": 48142756,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Protect Chain",
+     "contentsConfidence": "derived",
+     "name": "Deep Jungle Tree House Rooftop Chest",
+     "offset": 48142756,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 9)",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Hippo's Lagoon Center Chest",
+     "offset": 48142760,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Hippo's Lagoon Left Chest",
+     "offset": 48142760,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Meteor-G",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Hippo's Lagoon Right Chest",
+     "offset": 48142760,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Vines Chest",
+     "offset": 48142764,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 10)",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Vines 2 Chest",
+     "offset": 48142764,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Climbing Trees Blue Trinity Chest",
+     "offset": 48142764,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Tunnel Chest",
+     "offset": 48142768,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "derived",
+     "name": "Deep Jungle Cavern of Hearts White Trinity Chest",
+     "offset": 48142768,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 12)",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Camp Blue Trinity Chest",
+     "offset": 48142768,
+     "room": 12,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Tent Chest",
+     "offset": 48142768,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Waterfall Cavern Low Chest",
+     "offset": 48142772,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 11)",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Waterfall Cavern Middle Chest",
+     "offset": 48142772,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Waterfall Cavern High Wall Chest",
+     "offset": 48142772,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "source",
+     "name": "Deep Jungle Waterfall Cavern High Middle Chest",
+     "offset": 48142772,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "derived",
+     "name": "Deep Jungle Cliff Right Cliff Left Chest",
+     "offset": 48142776,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "Deep Jungle Cliff Right Cliff Right Chest",
+     "offset": 48142776,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "derived",
+     "name": "Deep Jungle Tree House Suspended Boat Chest",
+     "offset": 48142776,
+     "room": 0,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     7
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     2,
+     12
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     9,
+     11
+    ],
+    [
+     11,
+     12
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     12,
+     14
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 5,
+   "name": "Deep Jungle",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Tree House",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 1,
+     "name": "Camp (1)",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 2,
+     "name": "Bamboo Thicket (2)",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 3,
+     "name": "Jungle: Vines",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 4,
+     "name": "Jungle: Vines 2",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 5,
+     "name": "Hippos' Lagoon",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Climbing Trees",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 7,
+     "name": "Treetop",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 8,
+     "name": "Jungle: Tunnel",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 9,
+     "name": "Waterfall Cavern",
+     "row": 3
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 10,
+     "name": "Cavern of Hearts",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 11,
+     "name": "Jungle: Cliff",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 12,
+     "name": "Camp (12)",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 13,
+     "name": "Bamboo Thicket (13)",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 14,
+     "name": "Camp: Tent",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 15,
+     "name": "Mini Game: Green Serpent",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 16,
+     "name": "Mini Game: Splash Tunnel",
+     "row": 4
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 17,
+     "name": "Mini Game: Jade Spiral",
+     "row": 4
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 18,
+     "name": "Mini Game: Panic Fall",
+     "row": 4
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 19,
+     "name": "Mini Game: Shadow Cavern",
+     "row": 4
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146533,
+    "steps": [
+     {
+      "below": 23,
+      "hint": "head down from the Tree House to the Camp: Tent to meet Jane",
+      "lockedRooms": [
+       9,
+       10,
+       11
+      ],
+      "nextRoom": 14
+     },
+     {
+      "below": 43,
+      "hint": "collect the 6 slides around Camp and view them at the Tent",
+      "lockedRooms": [
+       9,
+       10
+      ],
+      "nextRoom": 12
+     },
+     {
+      "below": 66,
+      "hint": "climb to the Tree House and defeat Sabor in the Bamboo Thicket",
+      "lockedRooms": [
+       9,
+       10
+      ],
+      "nextRoom": 2
+     },
+     {
+      "below": 86,
+      "hint": "head to the Jungle: Cliff to defeat Clayton and the Stealth Sneak",
+      "lockedRooms": [
+       10
+      ],
+      "nextRoom": 11
+     },
+     {
+      "below": 110,
+      "hint": "climb the Waterfall Cavern to seal the Cavern of Hearts",
+      "lockedRooms": [],
+      "nextRoom": 10
+     },
+     {
+      "below": 256,
+      "hint": "Deep Jungle Keyhole sealed · Jungle Slider courses open in the Tunnel",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 21,
+     "offset": 48142756
+    },
+    {
+     "length": 1,
+     "offset": 48146533
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "100 Acre Wood Meadow Inside Log Chest",
+     "offset": 48142800,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "100 Acre Wood Bouncing Spot Left Cliff Chest",
+     "offset": 48142804,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "100 Acre Wood Bouncing Spot Right Tree Alcove Chest",
+     "offset": 48142804,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "AP Up",
+     "contentsConfidence": "derived",
+     "name": "100 Acre Wood Bouncing Spot Under Giant Pot Chest",
+     "offset": 48142804,
+     "room": 7,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     6
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 6,
+   "name": "100 Acre Wood",
+   "rooms": [
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 0,
+     "name": "Pooh's House",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 1,
+     "name": "Pooh's Room",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 2,
+     "name": "Rabbit's House",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 3,
+     "name": "Rabbit's Room",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 4,
+     "name": "Hunny Tree",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 5,
+     "name": "Wood: Hill (5)",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Wood: Meadow",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 7,
+     "name": "Bouncing Spot",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 8,
+     "name": "Muddy Path",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 9,
+     "name": "Wood: Hill (9)",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 10,
+     "name": "100 Acre Wood",
+     "row": 0
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48148648,
+    "steps": [
+     {
+      "below": 2,
+      "hint": "visit Pooh's House and help Pooh at the Hunny Tree",
+      "lockedRooms": [
+       7,
+       8
+      ],
+      "nextRoom": 4
+     },
+     {
+      "below": 4,
+      "hint": "protect Rabbit's garden at Rabbit's House and Wood: Meadow",
+      "lockedRooms": [
+       8
+      ],
+      "nextRoom": 2
+     },
+     {
+      "below": 6,
+      "hint": "join Tigger at the Bouncing Spot and guide Pooh on the Muddy Path",
+      "lockedRooms": [],
+      "nextRoom": 7
+     },
+     {
+      "below": 256,
+      "hint": "find Pooh at Wood: Hill to seal the 100 Acre Wood book",
+      "lockedRooms": [],
+      "nextRoom": 5
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 5,
+     "offset": 48142800
+    },
+    {
+     "length": 1,
+     "offset": 48148648
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "source",
+     "name": "Agrabah Plaza By Storage Chest",
+     "offset": 48142832,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Agrabah Plaza Raised Terrace Chest",
+     "offset": 48142832,
+     "room": 2,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Plaza Top Corner Chest",
+     "offset": 48142832,
+     "room": 2,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "source",
+     "name": "Agrabah Alley Chest",
+     "offset": 48142836,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Bazaar Across Windows Chest",
+     "offset": 48142836,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Fire Ring",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Bazaar High Corner Chest",
+     "offset": 48142836,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Agrabah Main Street Right Palace Entrance Chest",
+     "offset": 48142836,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Main Street High Above Alley Entrance Chest",
+     "offset": 48142840,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Main Street High Above Palace Gates Entrance Chest",
+     "offset": 48142840,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Protera Chain",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Palace Gates Low Chest",
+     "offset": 48142840,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 18)",
+     "contentsConfidence": "source",
+     "name": "Agrabah Palace Gates High Opposite Palace Chest",
+     "offset": 48142840,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Osmose-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Palace Gates High Close to Palace Chest",
+     "offset": 48142844,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Storage Green Trinity Chest",
+     "offset": 48142844,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "source",
+     "name": "Agrabah Storage Behind Barrel Chest",
+     "offset": 48142844,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Entrance Left Chest",
+     "offset": 48142844,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 17)",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Entrance Tall Tower Chest",
+     "offset": 48142848,
+     "room": 8,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Hall High Left Chest",
+     "offset": 48142848,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Hall Near Bottomless Hall Chest",
+     "offset": 48142848,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Bottomless Hall Raised Platform Chest",
+     "offset": 48142848,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Cave of Wonders Bottomless Hall Pillar Chest",
+     "offset": 48142852,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Cave of Wonders Bottomless Hall Across Chasm Chest",
+     "offset": 48142852,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 13)",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Treasure Room Across Platforms Chest",
+     "offset": 48142852,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Treasure Room Small Treasure Pile Chest",
+     "offset": 48142852,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Treasure Room Large Treasure Pile Chest",
+     "offset": 48142856,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Defense Up",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Treasure Room Above Fire Chest",
+     "offset": 48142856,
+     "room": 11,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Relic Chamber Jump from Stairs Chest",
+     "offset": 48142856,
+     "room": 12,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Thunder Ring",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Cave of Wonders Relic Chamber Stairs Chest",
+     "offset": 48142856,
+     "room": 12,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Protera Chain",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Cave of Wonders Dark Chamber Abu Gem Chest",
+     "offset": 48142860,
+     "room": 13,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Meteor-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Dark Chamber Across from Relic Chamber Entrance Chest",
+     "offset": 48142860,
+     "room": 12,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Torn Page 3",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Dark Chamber Bridge Chest",
+     "offset": 48142860,
+     "room": 13,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Dark Chamber Near Save Chest",
+     "offset": 48142860,
+     "room": 13,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Silent Chamber Blue Trinity Chest",
+     "offset": 48142864,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Haste2-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Hidden Room Right Chest",
+     "offset": 48142864,
+     "room": 15,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 16)",
+     "contentsConfidence": "source",
+     "name": "Agrabah Cave of Wonders Hidden Room Left Chest",
+     "offset": 48142864,
+     "room": 15,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Scissors-G",
+     "contentsConfidence": "source",
+     "name": "Agrabah Aladdin's House Main Street Entrance Chest",
+     "offset": 48142864,
+     "room": 18,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "Agrabah Aladdin's House Plaza Entrance Chest",
+     "offset": 48142868,
+     "room": 18,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Ifrit Belt",
+     "contentsConfidence": "derived",
+     "name": "Agrabah Cave of Wonders Entrance White Trinity Chest",
+     "offset": 48142868,
+     "room": 8,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     2
+    ],
+    [
+     1,
+     8
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     5
+    ],
+    [
+     2,
+     7
+    ],
+    [
+     3,
+     18
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     18
+    ],
+    [
+     8,
+     9
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     9,
+     13
+    ],
+    [
+     10,
+     11
+    ],
+    [
+     11,
+     16
+    ],
+    [
+     12,
+     13
+    ],
+    [
+     12,
+     17
+    ],
+    [
+     13,
+     14
+    ],
+    [
+     14,
+     15
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 8,
+   "name": "Agrabah",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Desert",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 1,
+     "name": "Desert: Cave",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 2,
+     "name": "Agrabah: Plaza",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 3,
+     "name": "Agrabah: Alley",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 4,
+     "name": "Agrabah: Bazaar",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 5,
+     "name": "Agrabah: Main Street",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 6,
+     "name": "Palace Gates",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 7,
+     "name": "Agrabah: Storage",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 8,
+     "name": "Cave: Entrance",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 9,
+     "name": "Cave: Hall",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 10,
+     "name": "Bottomless Hall",
+     "row": 2
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 11,
+     "name": "Treasure Room",
+     "row": 3
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 12,
+     "name": "Relic Chamber",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 13,
+     "name": "Dark Chamber",
+     "row": 3
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 14,
+     "name": "Silent Chamber",
+     "row": 4
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 15,
+     "name": "Hidden Room",
+     "row": 4
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 16,
+     "name": "Lamp Chamber",
+     "row": 4
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 17,
+     "name": "Cave: Core",
+     "row": 4
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 18,
+     "name": "Aladdin's House",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 19,
+     "name": "Agrabah",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 20,
+     "name": "Escaping from the Cave",
+     "row": 5
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146536,
+    "steps": [
+     {
+      "below": 30,
+      "hint": "rescue Jasmine in the Alley and release Carpet at Aladdin's House",
+      "lockedRooms": [
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17
+      ],
+      "nextRoom": 18
+     },
+     {
+      "below": 53,
+      "hint": "defeat the Pot Centipede at the Palace Gates",
+      "lockedRooms": [
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17
+      ],
+      "nextRoom": 6
+     },
+     {
+      "below": 73,
+      "hint": "enter the Cave of Wonders and activate the Cave: Core",
+      "lockedRooms": [
+       16
+      ],
+      "nextRoom": 17
+     },
+     {
+      "below": 120,
+      "hint": "defeat Jafar and Genie Jafar in the Lamp Chamber",
+      "lockedRooms": [],
+      "nextRoom": 16
+     },
+     {
+      "below": 256,
+      "hint": "Agrabah Keyhole sealed",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 37,
+     "offset": 48142832
+    },
+    {
+     "length": 1,
+     "offset": 48146536
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Sunken Ship In Flipped Boat Chest",
+     "offset": 48142888,
+     "room": 6,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Sunken Ship Seabed Chest",
+     "offset": 48142888,
+     "room": 6,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Sunken Ship Inside Ship Chest",
+     "offset": 48142888,
+     "room": 6,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Ariel's Grotto High Chest",
+     "offset": 48142888,
+     "room": 13,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Ariel's Grotto Middle Chest",
+     "offset": 48142892,
+     "room": 13,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Ariel's Grotto Low Chest",
+     "offset": 48142892,
+     "room": 13,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Ursula's Lair Use Fire on Urchin Chest",
+     "offset": 48142892,
+     "room": 12,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Undersea Gorge Jammed by Ariel's Grotto Chest",
+     "offset": 48142892,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": null,
+     "name": "Atlantica Triton's Palace White Trinity Chest",
+     "offset": 48142896,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Gorge Blizzard Clam",
+     "offset": 48148745,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Gorge Ocean Floor Clam",
+     "offset": 48148745,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Valley Higher Cave Clam",
+     "offset": 48148745,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Valley Lower Cave Clam",
+     "offset": 48148745,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 4,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Valley Fire Clam",
+     "offset": 48148745,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 5,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Valley Wall Clam",
+     "offset": 48148745,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 6,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Valley Pillar Clam",
+     "offset": 48148745,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 7,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Valley Ocean Floor Clam",
+     "offset": 48148745,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Triton's Palace Thunder Clam",
+     "offset": 48148746,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Triton's Palace Wall Right Clam",
+     "offset": 48148746,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Triton's Palace Near Path Clam",
+     "offset": 48148746,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Triton's Palace Wall Left Clam",
+     "offset": 48148746,
+     "room": 14,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 4,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Cavern Nook Clam",
+     "offset": 48148746,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 5,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Below Deck Clam",
+     "offset": 48148746,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 6,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Garden Clam",
+     "offset": 48148746,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 7,
+     "confidence": "source",
+     "contents": null,
+     "name": "Atlantica Undersea Cave Clam",
+     "offset": 48148746,
+     "room": 4,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     3
+    ],
+    [
+     2,
+     6
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     3,
+     6
+    ],
+    [
+     3,
+     13
+    ],
+    [
+     3,
+     14
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     6,
+     9
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     9,
+     11
+    ],
+    [
+     11,
+     12
+    ],
+    [
+     14,
+     15
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 9,
+   "name": "Atlantica",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Atlantica",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "Tranquil Grotto",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Calm Depths",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 3,
+     "name": "Undersea Gorge",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 4,
+     "name": "Undersea Cave",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 5,
+     "name": "Undersea Garden",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Sunken Ship (6)",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 7,
+     "name": "Below Deck",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 8,
+     "name": "Sunken Ship (8)",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 9,
+     "name": "Den of Tides",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 10,
+     "name": "Cavern Nook",
+     "row": 3
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 11,
+     "name": "Tidal Abyss",
+     "row": 3
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 12,
+     "name": "Ursula's Lair",
+     "row": 4
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 13,
+     "name": "Ariel's Grotto",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 14,
+     "name": "Triton's Palace",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 15,
+     "name": "Triton's Throne",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 16,
+     "name": "Ursula Battle",
+     "row": 3
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146538,
+    "steps": [
+     {
+      "below": 30,
+      "hint": "follow the tridents through the Undersea Gorge to Triton's Palace",
+      "lockedRooms": [
+       9,
+       10,
+       11,
+       12,
+       16
+      ],
+      "nextRoom": 14
+     },
+     {
+      "below": 50,
+      "hint": "retrieve the Crystal Trident from the Sunken Ship",
+      "lockedRooms": [
+       11,
+       12,
+       16
+      ],
+      "nextRoom": 6
+     },
+     {
+      "below": 83,
+      "hint": "swim through the Den of Tides to confront Ursula in Ursula's Lair",
+      "lockedRooms": [
+       16
+      ],
+      "nextRoom": 12
+     },
+     {
+      "below": 93,
+      "hint": "pursue giant Ursula past the Tidal Abyss",
+      "lockedRooms": [],
+      "nextRoom": 16
+     },
+     {
+      "below": 100,
+      "hint": "return to Ariel's Grotto to seal the Keyhole",
+      "lockedRooms": [],
+      "nextRoom": 13
+     },
+     {
+      "below": 256,
+      "hint": "Atlantica Keyhole sealed",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 9,
+     "offset": 48142888
+    },
+    {
+     "length": 1,
+     "offset": 48146538
+    },
+    {
+     "length": 2,
+     "offset": 48148745
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 23)",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Moonlight Hill White Trinity Chest",
+     "offset": 48142936,
+     "room": 3,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Fira-G",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Bridge Under Bridge",
+     "offset": 48142940,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Jack-In-The-Box",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Boneyard Tombstone Puzzle Chest",
+     "offset": 48142940,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Defense Up",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Bridge Right of Gate Chest",
+     "offset": 48142940,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Halloween Town Cemetery Behind Grave Chest",
+     "offset": 48142940,
+     "room": 2,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 22)",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Cemetery By Cat Shape Chest",
+     "offset": 48142944,
+     "room": 2,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Gummi",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Cemetery Between Graves Chest",
+     "offset": 48142944,
+     "room": 2,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Orichalcum",
+     "contentsConfidence": "derived",
+     "name": "Halloween Town Oogie's Manor Lower Iron Cage Chest",
+     "offset": 48142944,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Oogie's Manor Upper Iron Cage Chest",
+     "offset": 48142944,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 14)",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Oogie's Manor Hollow Chest",
+     "offset": 48142948,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Oogie's Manor Grounds Red Trinity Chest",
+     "offset": 48142948,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Power Up",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Guillotine Square High Tower Chest",
+     "offset": 48142948,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Elixir",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Guillotine Square Pumpkin Structure Left Chest",
+     "offset": 48142948,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Ether",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Oogie's Manor Entrance Steps Chest",
+     "offset": 48142952,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Ether",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Oogie's Manor Inside Entrance Chest",
+     "offset": 48142952,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Meteor-G",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Bridge Left of Gate Chest",
+     "offset": 48142964,
+     "room": 4,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Holy-G",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Cemetery By Striped Grave Chest",
+     "offset": 48142964,
+     "room": 2,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Thundara-G",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Guillotine Square Under Jack's House Stairs Chest",
+     "offset": 48142964,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 24)",
+     "contentsConfidence": "source",
+     "name": "Halloween Town Guillotine Square Pumpkin Structure Right Chest",
+     "offset": 48142964,
+     "room": 0,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ],
+    [
+     1,
+     10
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     7,
+     9
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 10,
+   "name": "Halloween Town",
+   "rooms": [
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 0,
+     "name": "Guillotine Square",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "Lab Entryway",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 2,
+     "name": "Graveyard",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 3,
+     "name": "Moonlight Hill",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 4,
+     "name": "Bridge",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 5,
+     "name": "Boneyard",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Oogie's Manor",
+     "row": 2
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 7,
+     "name": "Torture Chamber",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 8,
+     "name": "Manor Ruins",
+     "row": 3
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 9,
+     "name": "Evil Playroom",
+     "row": 2
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 10,
+     "name": "Research Lab",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 11,
+     "name": "Guillotine Gate",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 12,
+     "name": "Cemetary",
+     "row": 1
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146540,
+    "steps": [
+     {
+      "below": 30,
+      "hint": "visit Dr. Finkelstein in the Research Lab and check the Graveyard",
+      "lockedRooms": [
+       4,
+       5,
+       6,
+       7,
+       8,
+       9
+      ],
+      "nextRoom": 10
+     },
+     {
+      "below": 43,
+      "hint": "find the Surprise in the Boneyard and return to the Research Lab",
+      "lockedRooms": [
+       6,
+       7,
+       8,
+       9
+      ],
+      "nextRoom": 5
+     },
+     {
+      "below": 80,
+      "hint": "cross the Bridge to Oogie's Manor and climb to the Evil Playroom",
+      "lockedRooms": [
+       7,
+       8
+      ],
+      "nextRoom": 9
+     },
+     {
+      "below": 98,
+      "hint": "drop to the Torture Chamber to defeat Oogie Boogie",
+      "lockedRooms": [
+       8
+      ],
+      "nextRoom": 7
+     },
+     {
+      "below": 110,
+      "hint": "destroy the dark orbs at the Manor Ruins to seal the Keyhole",
+      "lockedRooms": [],
+      "nextRoom": 8
+     },
+     {
+      "below": 256,
+      "hint": "Halloween Town Keyhole sealed",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 29,
+     "offset": 48142936
+    },
+    {
+     "length": 1,
+     "offset": 48146540
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Mega-Potion",
+     "contentsConfidence": "source",
+     "name": "Olympus Coliseum Coliseum Gates Left Behind Columns Chest",
+     "offset": 48142968,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 8)",
+     "contentsConfidence": "source",
+     "name": "Olympus Coliseum Coliseum Gates Right Blue Trinity Chest",
+     "offset": 48142968,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "Olympus Coliseum Coliseum Gates Left Blue Trinity Chest",
+     "offset": 48142968,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Violetta",
+     "contentsConfidence": "derived",
+     "name": "Olympus Coliseum Coliseum Gates White Trinity Chest",
+     "offset": 48142972,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Gummi",
+     "contentsConfidence": "source",
+     "name": "Olympus Coliseum Coliseum Gates Blizzara Chest",
+     "offset": 48142972,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Shiva Belt",
+     "contentsConfidence": "derived",
+     "name": "Olympus Coliseum Coliseum Gates Blizzaga Chest",
+     "offset": 48142972,
+     "room": 0,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "source",
+     "contents": "Olympia",
+     "contentsConfidence": "source",
+     "name": "Olympus Coliseum Olympia Chest",
+     "offset": 48145033,
+     "room": 0,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     2
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 11,
+   "name": "Olympus Coliseum",
+   "rooms": [
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 0,
+     "name": "Coliseum Gates",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 1,
+     "name": "Coliseum: Lobby",
+     "row": 0
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 2,
+     "name": "Coliseum: Arena (2)",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 3,
+     "name": "Main Gates",
+     "row": 1
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 4,
+     "name": "???",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 5,
+     "name": "Coliseum: Arena (5)",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 6,
+     "name": "Coliseum: Arena (6)",
+     "row": 2
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146534,
+    "steps": [
+     {
+      "below": 13,
+      "hint": "complete Phil's barrel trials in the Coliseum: Lobby for Thunder",
+      "lockedRooms": [
+       2
+      ],
+      "nextRoom": 1
+     },
+     {
+      "below": 37,
+      "hint": "enter the Coliseum: Arena prelims and face Cloud and Cerberus",
+      "lockedRooms": [],
+      "nextRoom": 2
+     },
+     {
+      "below": 256,
+      "hint": "speak to Phil in the Coliseum: Lobby to enter the tournament cups",
+      "lockedRooms": [],
+      "nextRoom": 1
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 5,
+     "offset": 48142968
+    },
+    {
+     "length": 1,
+     "offset": 48145033
+    },
+    {
+     "length": 1,
+     "offset": 48146534
+    }
+   ]
+  },
+  {
+   "chests": [
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 6 Other Platform Chest",
+     "offset": 48142876,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Torn Page 2",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 6 Platform Near Chamber 5 Entrance Chest",
+     "offset": 48142876,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "derived",
+     "name": "Monstro Chamber 6 Raised Area Near Chamber 1 Entrance Chest",
+     "offset": 48142880,
+     "room": 5,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 26)",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 6 Low Chest",
+     "offset": 48142880,
+     "room": 10,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "High Jump",
+     "contentsConfidence": "derived",
+     "name": "Monstro Mouth Boat Deck Chest",
+     "offset": 48142980,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "source",
+     "name": "Monstro Mouth High Platform Boat Side Chest",
+     "offset": 48142984,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 25)",
+     "contentsConfidence": "source",
+     "name": "Monstro Mouth High Platform Across from Boat Chest",
+     "offset": 48142984,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Scan-G",
+     "contentsConfidence": "source",
+     "name": "Monstro Mouth Near Ship Chest",
+     "offset": 48142984,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mythril Shard",
+     "contentsConfidence": "derived",
+     "name": "Monstro Mouth Green Trinity Top of Boat Chest",
+     "offset": 48142984,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Cottage",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 2 Ground Chest",
+     "offset": 48142988,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Megalixir",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 2 Platform Chest",
+     "offset": 48142992,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Mythril",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 5 Platform Chest",
+     "offset": 48142996,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 3 Ground Chest",
+     "offset": 48142996,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 19)",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 3 Platform Above Chamber 2 Entrance Chest",
+     "offset": 48143000,
+     "room": 6,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Osmose-G",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 3 Near Chamber 6 Entrance Chest",
+     "offset": 48143000,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Flare-G",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 3 Platform Near Chamber 6 Entrance Chest",
+     "offset": 48143000,
+     "room": 7,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Watergleam",
+     "contentsConfidence": "derived",
+     "name": "Monstro Mouth High Platform Near Teeth Chest",
+     "offset": 48143008,
+     "room": 0,
+     "roomConfidence": "guess"
+    },
+    {
+     "bit": 2,
+     "confidence": "derived",
+     "contents": "Dalmatian puppies (set 27)",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 5 Atop Barrel Chest",
+     "offset": 48143008,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 3,
+     "confidence": "derived",
+     "contents": "Mega-Ether",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 5 Low 2nd Chest",
+     "offset": 48143008,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 0,
+     "confidence": "derived",
+     "contents": "Thundaga-G",
+     "contentsConfidence": "source",
+     "name": "Monstro Chamber 5 Low 1st Chest",
+     "offset": 48143012,
+     "room": 9,
+     "roomConfidence": "derived"
+    },
+    {
+     "bit": 1,
+     "confidence": "derived",
+     "contents": "Dark Matter",
+     "contentsConfidence": "derived",
+     "name": "Monstro Chamber 6 White Trinity Chest",
+     "offset": 48143144,
+     "room": 10,
+     "roomConfidence": "derived"
+    }
+   ],
+   "edges": [
+    [
+     0,
+     5
+    ],
+    [
+     2,
+     3
+    ],
+    [
+     2,
+     8
+    ],
+    [
+     3,
+     4
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     7,
+     9
+    ],
+    [
+     8,
+     10
+    ],
+    [
+     9,
+     10
+    ]
+   ],
+   "edgesConfidence": "guess",
+   "id": 12,
+   "name": "Monstro",
+   "rooms": [
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 0,
+     "name": "Monstro: Mouth (0)",
+     "row": 0
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 1,
+     "name": "Monstro: Mouth (1)",
+     "row": 0
+    },
+    {
+     "col": 1,
+     "confidence": "source",
+     "id": 2,
+     "name": "Monstro: Stomach",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 3,
+     "name": "Monstro: Throat",
+     "row": 1
+    },
+    {
+     "col": 0,
+     "confidence": "source",
+     "id": 4,
+     "name": "Monstro: Bowels",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 5,
+     "name": "Monstro: Chamber 1",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 6,
+     "name": "Monstro: Chamber 2",
+     "row": 0
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 7,
+     "name": "Monstro: Chamber 3",
+     "row": 1
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 8,
+     "name": "Monstro: Chamber 4",
+     "row": 1
+    },
+    {
+     "col": 3,
+     "confidence": "source",
+     "id": 9,
+     "name": "Monstro: Chamber 5",
+     "row": 2
+    },
+    {
+     "col": 2,
+     "confidence": "source",
+     "id": 10,
+     "name": "Monstro: Chamber 6",
+     "row": 2
+    }
+   ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146537,
+    "steps": [
+     {
+      "below": 46,
+      "hint": "follow Riku through Chambers 1–6 to the Bowels for Parasite Cage",
+      "lockedRooms": [
+       2,
+       3
+      ],
+      "nextRoom": 4
+     },
+     {
+      "below": 70,
+      "hint": "climb from Monstro: Mouth through the Throat to the Stomach",
+      "lockedRooms": [],
+      "nextRoom": 2
+     },
+     {
+      "below": 256,
+      "hint": "Monstro complete",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
+   "watch": [
+    {
+     "length": 137,
+     "offset": 48142876
+    },
+    {
+     "length": 1,
+     "offset": 48143144
+    },
+    {
+     "length": 1,
+     "offset": 48146537
+    }
+   ]
+  },
   {
    "chests": [
     {
@@ -233,10 +4275,59 @@
      "row": 0
     }
    ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146541,
+    "steps": [
+     {
+      "below": 53,
+      "hint": "climb from the Hold through the Galley to the Cabin to fight Anti-Sora",
+      "lockedRooms": [
+       6,
+       8,
+       9
+      ],
+      "nextRoom": 5
+     },
+     {
+      "below": 63,
+      "hint": "rejoin Peter Pan and clear the Ship: Hold for Cure",
+      "lockedRooms": [
+       8,
+       9
+      ],
+      "nextRoom": 0
+     },
+     {
+      "below": 86,
+      "hint": "confront Captain Hook on the Pirate Ship deck",
+      "lockedRooms": [
+       9
+      ],
+      "nextRoom": 8
+     },
+     {
+      "below": 110,
+      "hint": "fly to the Clock Tower to seal the Keyhole",
+      "lockedRooms": [],
+      "nextRoom": 9
+     },
+     {
+      "below": 256,
+      "hint": "Neverland Keyhole sealed · check the Clock Tower doors on the hour",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
    "watch": [
     {
      "length": 29,
      "offset": 48143012
+    },
+    {
+     "length": 1,
+     "offset": 48146541
     },
     {
      "length": 1,
@@ -818,10 +4909,90 @@
      "row": 0
     }
    ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146542,
+    "steps": [
+     {
+      "below": 30,
+      "hint": "ride the Rising Falls bubbles up to the Castle Gates",
+      "lockedRooms": [
+       4,
+       5,
+       6,
+       11,
+       14,
+       15
+      ],
+      "nextRoom": 1
+     },
+     {
+      "below": 50,
+      "hint": "open the Waterway gate from the Base Level and enter the Entrance Hall",
+      "lockedRooms": [
+       5,
+       6,
+       11,
+       14,
+       15
+      ],
+      "nextRoom": 4
+     },
+     {
+      "below": 80,
+      "hint": "head up to the Lift Stop and take the lift to the Base Level",
+      "lockedRooms": [
+       11,
+       14,
+       15
+      ],
+      "nextRoom": 6
+     },
+     {
+      "below": 110,
+      "hint": "ascend the High Tower to the Castle Chapel and defeat Maleficent",
+      "lockedRooms": [
+       14,
+       15
+      ],
+      "nextRoom": 11
+     },
+     {
+      "below": 130,
+      "hint": "proceed past the Castle Chapel to the Grand Hall to face Riku",
+      "lockedRooms": [
+       15
+      ],
+      "nextRoom": 14
+     },
+     {
+      "below": 185,
+      "hint": "return through the Grand Hall to the Dark Depths to seal the Keyhole",
+      "lockedRooms": [],
+      "nextRoom": 15
+     },
+     {
+      "below": 195,
+      "hint": "speak with the Princesses in the Castle Chapel and Belle in the Library",
+      "lockedRooms": [],
+      "nextRoom": 11
+     },
+     {
+      "below": 256,
+      "hint": "Hollow Bastion Keyhole sealed",
+      "lockedRooms": [],
+      "nextRoom": null
+     }
+    ]
+   },
    "watch": [
     {
      "length": 45,
      "offset": 48143040
+    },
+    {
+     "length": 1,
+     "offset": 48146542
     },
     {
      "length": 1,
@@ -1441,10 +5612,36 @@
      "row": 4
     }
    ],
+   "story": {
+    "confidence": "source",
+    "offset": 48146543,
+    "steps": [
+     {
+      "below": 51,
+      "hint": "cross the Final Dimension and World Terminus to Evil Grounds",
+      "lockedRooms": [
+       28,
+       29,
+       32
+      ],
+      "nextRoom": 26
+     },
+     {
+      "below": 256,
+      "hint": "descend through Linked Worlds to Final Rest and the Final Door",
+      "lockedRooms": [],
+      "nextRoom": 29
+     }
+    ]
+   },
    "watch": [
     {
      "length": 25,
      "offset": 48143088
+    },
+    {
+     "length": 1,
+     "offset": 48146543
     }
    ]
   }

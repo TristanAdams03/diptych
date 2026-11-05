@@ -27,6 +27,32 @@ for _m, _vals in enumerate(((55, 57, 5, 5), (42, 42, 8, 8), (63, 63, 4, 4))):
         FAKE_BYTES.update({BATTLE_BLOCK + 0x100 * _m + 4 * _i + k: b for k, b in enumerate(_v.to_bytes(4, "little"))})
 PARTY_SLOTS = 0x2DE97EF  # slot 1 / slot 2 char ids: 1 Donald, 2 Goofy
 FAKE_BYTES.update({PARTY_SLOTS: 1, PARTY_SLOTS + 1: 2})
+# Sora stats (0x2DE9364), magic tiers (0x2DE97F2) and stock items (0x2DE97F9) for companion UI testing:
+SORA_STATS = 0x2DE9364
+FAKE_BYTES.update({
+    SORA_STATS + 0: 42,       # Level 42
+    SORA_STATS + 5: 38,       # AP 38
+    SORA_STATS + 6: 34,       # Strength 34
+    SORA_STATS + 7: 32,       # Defense 32
+    SORA_STATS + 33: 4,       # 4 item slots
+    SORA_STATS + 34: 1,       # Potion equipped
+    SORA_STATS + 35: 2,       # Hi-Potion equipped
+    SORA_STATS + 36: 3,       # Ether equipped
+    SORA_STATS + 50: 91,      # Divine Rose (91)
+    SORA_STATS + 112: 0x5F,   # Fire, Blizzard, Thunder, Cure, Gravity, Aero unlocked
+    0x2DE97F2 + 0: 3,         # Firaga
+    0x2DE97F2 + 1: 2,         # Blizzara
+    0x2DE97F2 + 2: 2,         # Thundara
+    0x2DE97F2 + 3: 2,         # Cura
+    0x2DE97F2 + 4: 2,         # Gravira
+    0x2DE97F2 + 6: 2,         # Aerora
+    0x2DE97F9 + 1: 6,         # Potion x6
+    0x2DE97F9 + 2: 3,         # Hi-Potion x3
+    0x2DE97F9 + 3: 4,         # Ether x4
+    0x2DE97F9 + 4: 1,         # Elixir x1
+    0x2DE97F9 + 142: 2,       # Tent x2
+    0x2DEA86E: 60,            # Hollow Bastion story progress: Library -> Lift Stop
+})
 WATCH_MAX_REGIONS, WATCH_MAX_LENGTH, WATCH_MAX_TOTAL = 8, 256, 1024
 
 

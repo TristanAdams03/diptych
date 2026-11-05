@@ -23,12 +23,27 @@ data class Chest(
 )
 
 @Serializable
+data class StoryStep(
+    val below: Int,
+    val hint: String,
+    val nextRoom: Int? = null,
+    val lockedRooms: List<Int> = emptyList(),
+)
+
+@Serializable
+data class StoryDef(
+    val offset: Long,
+    val steps: List<StoryStep> = emptyList(),
+)
+
+@Serializable
 data class WorldDef(
     val id: Int,
     val name: String,
     val rooms: List<RoomDef> = emptyList(),
     val edges: List<List<Int>> = emptyList(),
     val chests: List<Chest> = emptyList(),
+    val story: StoryDef? = null,
     val watch: List<Region> = emptyList(),
 )
 
@@ -48,15 +63,77 @@ data class BattleBlock(val offset: Long, val stride: Int, val members: Int, val 
 data class SlotsDef(val offset: Long, val length: Int, val empty: Int)
 
 @Serializable
-data class PartyConfig(val battleBlock: BattleBlock, val slots: SlotsDef, val names: Map<String, String>) {
+data class SoraStatsDef(
+    val offset: Long,
+    val length: Int,
+    val levelAt: Int = 0,
+    val apAt: Int = 5,
+    val strengthAt: Int = 6,
+    val defenseAt: Int = 7,
+    val itemCountAt: Int = 33,
+    val itemsAt: Int = 34,
+    val itemsMax: Int = 8,
+    val weaponAt: Int = 50,
+    val magicUnlockAt: Int = 112,
+)
+
+@Serializable
+data class SpellDef(
+    val key: String,
+    val bit: Int,
+    val mpCost: Int,
+    val needsTarget: Boolean = false,
+    val tiers: List<String> = emptyList(),
+)
+
+@Serializable
+data class MagicConfig(
+    val levelsOffset: Long,
+    val spells: List<SpellDef> = emptyList(),
+)
+
+@Serializable
+data class ItemDef(
+    val id: Int,
+    val name: String,
+    val needsTarget: Boolean = false,
+)
+
+@Serializable
+data class InventoryConfig(
+    val offset: Long,
+    val length: Int,
+    val items: List<ItemDef> = emptyList(),
+    val weapons: Map<String, String> = emptyMap(),
+)
+
+@Serializable
+data class PartyConfig(
+    val battleBlock: BattleBlock,
+    val slots: SlotsDef,
+    val names: Map<String, String>,
+    val soraStats: SoraStatsDef? = null,
+    val magic: MagicConfig? = null,
+    val inventory: InventoryConfig? = null,
+) {
     /** Bytes read per battle member: up to the end of the last field. */
     val memberSpan: Int
         get() = battleBlock.fields.let { listOf(it.hp, it.maxHp, it.mp, it.maxMp) }.maxOf { it.at + it.width }
 
-    /** The party watch: one span per battle member, then the slot bytes. */
+    /** The party watch: one span per battle member, optional Sora stats block, and slots..inventory span. */
     val watch: List<Region>
-        get() = (0 until battleBlock.members).map { Region(battleBlock.offset + it.toLong() * battleBlock.stride, memberSpan) } +
-            Region(slots.offset, slots.length)
+        get() {
+            val members = (0 until battleBlock.members).map {
+                Region(battleBlock.offset + it.toLong() * battleBlock.stride, memberSpan)
+            }
+            val stats = listOfNotNull(soraStats?.let { Region(it.offset, it.length) })
+            val tailEnd = maxOf(
+                slots.offset + slots.length,
+                inventory?.let { it.offset + it.length } ?: 0L,
+                magic?.let { it.levelsOffset + it.spells.size } ?: 0L,
+            )
+            return members + stats + Region(slots.offset, (tailEnd - slots.offset).toInt())
+        }
 }
 
 data class Kh1Data(val worlds: List<WorldDef>, val party: PartyConfig) {

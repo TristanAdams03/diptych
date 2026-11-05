@@ -29,10 +29,33 @@ class MapModelTest {
     }
 
     @Test fun worldWithoutDataKeepsParty() {
-        val v = buildMapView(data, state(3, 2, TestData.partyRegions()))
-        assertEquals("World 3", v.worldName)
+        val v = buildMapView(data, state(99, 2, TestData.partyRegions()))
+        assertEquals("World 99", v.worldName)
         assertTrue(v.rooms.isEmpty())
         assertEquals(57, v.party[0].hp)
+    }
+
+    @Test fun allFifteenPlayableWorldsHaveMaps() {
+        val expectedIds = listOf(0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16)
+        assertEquals(expectedIds, data.worlds.map { it.id })
+        for (w in data.worlds) {
+            assertTrue("world ${w.name} has no rooms", w.rooms.isNotEmpty())
+        }
+    }
+
+    @Test fun hollowBastionStoryHighlightsNextAndLockedRooms() {
+        val v = buildMapView(data, state(15, 5, TestData.hbRegions(storyByte = 60) + TestData.partyRegions()))
+        assertEquals("Library", v.roomName)
+        assertTrue(v.nextHint!!.contains("Lift Stop"))
+        assertEquals(listOf(6), v.rooms.filter { it.next }.map { it.id })
+        assertTrue(14 in v.rooms.filter { it.locked }.map { it.id })
+    }
+
+    @Test fun busyMenuAndCutsceneDisableActions() {
+        val menuState = state(15, 4, TestData.partyRegions()).copy(inMenu = true)
+        val menuView = buildMapView(data, menuState)
+        assertEquals(false, menuView.canAct)
+        assertEquals("In game menu", menuView.busyReason)
     }
 
     @Test fun unknownRoomIsNamedByNumber() {

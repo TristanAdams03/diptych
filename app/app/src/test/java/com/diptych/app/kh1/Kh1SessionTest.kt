@@ -48,9 +48,10 @@ class Kh1SessionTest {
         welcome()
         assertEquals(1, link.sent.size)
         assertEquals(data.party.watch, link.sent[0])
-        assertEquals(4, link.sent[0].size)
+        assertEquals(5, link.sent[0].size)
         assertEquals(Region(TestData.PARTY_BASE + 256, 16), link.sent[0][1])
-        assertEquals(Region(TestData.SLOTS, 2), link.sent[0][3])
+        assertEquals(Region(TestData.SORA_STATS, 113), link.sent[0][3])
+        assertEquals(Region(TestData.SLOTS, 155), link.sent[0][4])
     }
 
     @Test fun worldChangeResendsWithNewSpans() {

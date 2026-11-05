@@ -64,3 +64,91 @@ fun chestOpened(chest: Chest, regions: List<RegionHex>): Boolean? {
         else -> null
     }
 }
+
+/** First [StoryStep] whose `below` exceeds the world's story progress byte, or null when absent/unreadable/completed. */
+fun decodeStoryStep(story: StoryDef?, regions: List<RegionHex>): StoryStep? {
+    if (story == null || story.steps.isEmpty()) return null
+    val v = (readBytes(regions, story.offset, 1) ?: return null)[0].toInt() and 0xFF
+    return story.steps.firstOrNull { v < it.below }
+}
+
+data class LearnedSpell(
+    val key: String,
+    val name: String,
+    val mpCost: Int,
+    val needsTarget: Boolean,
+)
+
+data class StockItem(
+    val id: Int,
+    val name: String,
+    val count: Int,
+    val equipped: Boolean,
+    val needsTarget: Boolean,
+)
+
+data class SoraStatus(
+    val level: Int? = null,
+    val ap: Int? = null,
+    val strength: Int? = null,
+    val defense: Int? = null,
+    val weapon: String? = null,
+    val spells: List<LearnedSpell> = emptyList(),
+    val items: List<StockItem> = emptyList(),
+)
+
+private fun ByteArray.u8(at: Int): Int? = if (at in indices) this[at].toInt() and 0xFF else null
+
+/** Decodes Sora's stats, equipped weapon, unlocked magic tiers, and usable inventory items. */
+fun decodeSoraStatus(party: PartyConfig, regions: List<RegionHex>): SoraStatus {
+    val statsDef = party.soraStats ?: return SoraStatus()
+    val stats = readBytes(regions, statsDef.offset, statsDef.length)
+    val level = stats?.u8(statsDef.levelAt)?.takeIf { it > 0 }
+    val ap = stats?.u8(statsDef.apAt)
+    val strength = stats?.u8(statsDef.strengthAt)
+    val defense = stats?.u8(statsDef.defenseAt)
+    val weaponId = stats?.u8(statsDef.weaponAt)
+    val weapon = weaponId?.let { party.inventory?.weapons?.get(it.toString()) }
+
+    val unlockMask = stats?.u8(statsDef.magicUnlockAt)
+    val spells = party.magic?.let { magic ->
+        val mask = unlockMask ?: return@let emptyList()
+        val levels = readBytes(regions, magic.levelsOffset, magic.spells.size)
+        magic.spells.mapNotNull { spell ->
+            if (((mask shr spell.bit) and 1) == 0 || spell.tiers.isEmpty()) return@mapNotNull null
+            val rawTier = levels?.u8(spell.bit) ?: 1
+            val tierIdx = (rawTier - 1).coerceIn(0, spell.tiers.lastIndex)
+            LearnedSpell(spell.key, spell.tiers[tierIdx], spell.mpCost, spell.needsTarget)
+        }
+    }.orEmpty()
+
+    val equippedCounts = mutableMapOf<Int, Int>()
+    if (stats != null) {
+        val slotCount = (stats.u8(statsDef.itemCountAt) ?: 0).coerceIn(0, statsDef.itemsMax)
+        for (i in 0 until slotCount) {
+            val id = stats.u8(statsDef.itemsAt + i) ?: continue
+            if (id in 1..254) equippedCounts[id] = (equippedCounts[id] ?: 0) + 1
+        }
+    }
+
+    val items = party.inventory?.let { inv ->
+        val stock = readBytes(regions, inv.offset, inv.length)
+        inv.items.mapNotNull { def ->
+            val stockCount = stock?.u8(def.id) ?: 0
+            val eqCount = equippedCounts[def.id] ?: 0
+            val total = maxOf(stockCount, eqCount)
+            if (total <= 0) null
+            else StockItem(def.id, def.name, total, eqCount > 0, def.needsTarget)
+        }
+    }.orEmpty()
+
+    return SoraStatus(
+        level = level,
+        ap = ap,
+        strength = strength,
+        defense = defense,
+        weapon = weapon,
+        spells = spells,
+        items = items,
+    )
+}

@@ -23,10 +23,179 @@
   "offset": 47565900,
   "stride": 256
  },
+ "inventory": {
+  "confidence": "source",
+  "items": [
+   {
+    "id": 1,
+    "name": "Potion",
+    "needsTarget": true
+   },
+   {
+    "id": 2,
+    "name": "Hi-Potion",
+    "needsTarget": true
+   },
+   {
+    "id": 3,
+    "name": "Ether",
+    "needsTarget": true
+   },
+   {
+    "id": 4,
+    "name": "Elixir",
+    "needsTarget": true
+   },
+   {
+    "id": 6,
+    "name": "Mega-Potion",
+    "needsTarget": false
+   },
+   {
+    "id": 7,
+    "name": "Mega-Ether",
+    "needsTarget": false
+   },
+   {
+    "id": 8,
+    "name": "Megalixir",
+    "needsTarget": false
+   },
+   {
+    "id": 142,
+    "name": "Tent",
+    "needsTarget": false
+   },
+   {
+    "id": 143,
+    "name": "Camping Set",
+    "needsTarget": false
+   },
+   {
+    "id": 144,
+    "name": "Cottage",
+    "needsTarget": false
+   }
+  ],
+  "length": 145,
+  "offset": 48142329,
+  "weapons": {
+   "100": "Ultima Weapon",
+   "101": "Diamond Dust",
+   "102": "One-Winged Angel",
+   "81": "Kingdom Key",
+   "82": "Dream Sword",
+   "83": "Dream Shield",
+   "84": "Dream Rod",
+   "85": "Wooden Sword",
+   "86": "Jungle King",
+   "87": "Three Wishes",
+   "88": "Fairy Harp",
+   "89": "Pumpkinhead",
+   "90": "Crabclaw",
+   "91": "Divine Rose",
+   "92": "Spellbinder",
+   "93": "Olympia",
+   "94": "Lionheart",
+   "95": "Metal Chocobo",
+   "96": "Oathkeeper",
+   "97": "Oblivion",
+   "98": "Lady Luck",
+   "99": "Wishing Star"
+  }
+ },
+ "magic": {
+  "confidence": "source",
+  "levelsOffset": 48142322,
+  "spells": [
+   {
+    "bit": 0,
+    "key": "fire",
+    "mpCost": 1,
+    "needsTarget": false,
+    "tiers": [
+     "Fire",
+     "Fira",
+     "Firaga"
+    ]
+   },
+   {
+    "bit": 1,
+    "key": "blizzard",
+    "mpCost": 1,
+    "needsTarget": false,
+    "tiers": [
+     "Blizzard",
+     "Blizzara",
+     "Blizzaga"
+    ]
+   },
+   {
+    "bit": 2,
+    "key": "thunder",
+    "mpCost": 1,
+    "needsTarget": false,
+    "tiers": [
+     "Thunder",
+     "Thundara",
+     "Thundaga"
+    ]
+   },
+   {
+    "bit": 3,
+    "key": "cure",
+    "mpCost": 1,
+    "needsTarget": true,
+    "tiers": [
+     "Cure",
+     "Cura",
+     "Curaga"
+    ]
+   },
+   {
+    "bit": 4,
+    "key": "gravity",
+    "mpCost": 1,
+    "needsTarget": false,
+    "tiers": [
+     "Gravity",
+     "Gravira",
+     "Graviga"
+    ]
+   },
+   {
+    "bit": 5,
+    "key": "stop",
+    "mpCost": 2,
+    "needsTarget": false,
+    "tiers": [
+     "Stop",
+     "Stopra",
+     "Stopga"
+    ]
+   },
+   {
+    "bit": 6,
+    "key": "aero",
+    "mpCost": 2,
+    "needsTarget": true,
+    "tiers": [
+     "Aero",
+     "Aerora",
+     "Aeroga"
+    ]
+   }
+  ]
+ },
  "names": {
   "0": "Sora",
   "1": "Donald",
   "2": "Goofy",
+  "3": "Tarzan",
+  "4": "Pooh",
+  "5": "Aladdin",
+  "6": "Ariel",
+  "7": "Jack",
   "8": "Peter Pan",
   "9": "Beast"
  },
@@ -34,8 +203,13 @@
   "0": "live",
   "1": "live",
   "2": "live",
-  "8": "guess",
-  "9": "guess"
+  "3": "source",
+  "4": "source",
+  "5": "source",
+  "6": "source",
+  "7": "source",
+  "8": "source",
+  "9": "source"
  },
  "slots": {
   "confidence": "live",
@@ -44,12 +218,25 @@
   "length": 2,
   "offset": 48142319
  },
+ "soraStats": {
+  "apAt": 5,
+  "confidence": "source",
+  "defenseAt": 7,
+  "itemCountAt": 33,
+  "itemsAt": 34,
+  "itemsMax": 8,
+  "length": 113,
+  "levelAt": 0,
+  "magicUnlockAt": 112,
+  "offset": 48141156,
+  "strengthAt": 6,
+  "weaponAt": 50
+ },
  "sources": [
   "Battle block and party slots: live check on Steam 1.0.0.2, docs/research/kh1-live-check-2026-11-04.md",
   "Battle block layout: AmirulAndalib/MultiPresence@81cf9ac2 Presence/KH1.cs (MIT); Julumisan/kh-qol-manager@f35bfef6 KH_QoL/docs/FEATURE_RESEARCH.md lines 32-35 (MIT)",
-  "Party slot ids (1 Donald, 2 Goofy, 0xFF empty): Denhonator/KHPCSpeedrunTools@aeb4972e SteamGlobal_1_0_0_2.lua line 237 (Unlicense)",
-  "Peter Pan = 8: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua line 266 (MIT)",
-  "Beast = 9: Denhonator/KHPCSpeedrunTools@aeb4972e 1fmRandoSomeLogic.lua lines 2284-2292 (Unlicense)"
+  "Party slot ids (0 Sora .. 9 Beast, 0xFF empty): Denhonator/KHPCSpeedrunTools@aeb4972e SteamGlobal_1_0_0_2.lua line 237 and 1fmRandoSomeLogic.lua lines 2284-2292 (Unlicense); gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua line 266 (MIT); Xeeynamo/KingdomSaveEditor KHSave.Lib1/Types/PlayableCharacterType.cs (documented enum values only)",
+  "Sora character struct, magic unlock bitmask (0x2DE93D4), magic levels (0x2DE97F2) and inventory counts (0x2DE97F9): gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua lines 51, 183, 191, 244 (MIT); gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 730-753, 899 (MIT); sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts lines 68-160 (MIT)"
  ],
  "version": 1
 }

@@ -23,6 +23,39 @@ class DecodeTest {
         assertEquals(listOf("Sora", "Donald"), decodeParty(data.party, TestData.partyRegions("01ff")).map { it.name })
         assertEquals(listOf("Sora", "Guest", "Goofy"), decodeParty(data.party, TestData.partyRegions("5a02")).map { it.name })
         assertEquals(listOf("Sora", "Peter Pan"), decodeParty(data.party, TestData.partyRegions("08ff")).map { it.name })
+        assertEquals(listOf("Sora", "Tarzan", "Ariel"), decodeParty(data.party, TestData.partyRegions("0306")).map { it.name })
+        assertEquals(listOf("Sora", "Aladdin", "Jack"), decodeParty(data.party, TestData.partyRegions("0507")).map { it.name })
+        assertEquals(listOf("Sora", "Pooh", "Beast"), decodeParty(data.party, TestData.partyRegions("0409")).map { it.name })
+    }
+
+    @Test fun storyStepDecodesFirstStepAboveProgressByte() {
+        val hbStory = data.world(15)!!.story!!
+        val step0 = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "00")))!!
+        assertEquals(1, step0.nextRoom)
+        val step60 = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "3c")))!!
+        assertEquals(6, step60.nextRoom)
+        val stepDone = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "ff")))!!
+        assertNull(stepDone.nextRoom)
+        assertNull(decodeStoryStep(hbStory, emptyList()))
+    }
+
+    @Test fun soraStatusDecodesStatsSpellsAndStockItems() {
+        val status = decodeSoraStatus(data.party, TestData.soraStatusRegions())
+        assertEquals(42, status.level)
+        assertEquals(38, status.ap)
+        assertEquals(34, status.strength)
+        assertEquals(32, status.defense)
+        assertEquals("Divine Rose", status.weapon)
+        assertEquals(
+            listOf("Firaga", "Blizzara", "Thundara", "Cura", "Gravira", "Stopra"),
+            status.spells.map { it.name },
+        )
+        assertEquals(
+            listOf("Potion" to 6, "Hi-Potion" to 3, "Ether" to 4, "Elixir" to 1, "Tent" to 2),
+            status.items.map { it.name to it.count },
+        )
+        assertEquals(true, status.items.first { it.name == "Potion" }.equipped)
+        assertEquals(false, status.items.first { it.name == "Tent" }.equipped)
     }
 
     @Test fun nullHexGivesNullFields() {

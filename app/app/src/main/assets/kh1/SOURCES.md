@@ -11,13 +11,14 @@ citation (file and line) is kept in the drafts; this page lists the repositories
 
 | Key | Repo @ commit | Used for | License |
 |---|---|---|---|
-| MP | AmirulAndalib/MultiPresence @ 81cf9ac2 | World ids (`Models/KH1/Worlds.cs` 14–86), room names (`Models/KH1/Rooms.cs` 211–286), Sora's battle-block HP/MP (`Presence/KH1.cs`) | MIT |
-| KHT | sagezaugg/kh-tracker @ bb0dda01 | World-id cross-check (`src/games/kh1/data/constants.ts`) | MIT |
-| APW | ArchipelagoMW/Archipelago @ c835bff5 | Chest names (`worlds/kh1/Locations.py`) | MIT |
-| AP | gaithern/KH-1FM-AP-LUA @ 4fe14a54 | Chest bit array and id→bit rule (`1fmAPConnector.lua` 723–727, 1652–1673), Neverland Hold Aero Chest (967), HB Emblem Piece (1013), Peter Pan id 8 (`1fmAPFixWarps.lua` 266) | MIT |
-| DEN | Denhonator/KHPCSpeedrunTools @ aeb4972e | Vanilla chest contents (`Rando/chests.lua`, `Rando/rewards.lua`), party slot ids (`SteamGlobal_1_0_0_2.lua` 237), Beast id 9 (`1fmRandoSomeLogic.lua` 2284–2292) | Unlicense |
+| MP | AmirulAndalib/MultiPresence @ 81cf9ac2 | World ids (`Models/KH1/Worlds.cs` 14–86), room names (`Models/KH1/Rooms.cs` 10–286), Sora's battle-block HP/MP (`Presence/KH1.cs`) | MIT |
+| KHT | sagezaugg/kh-tracker @ bb0dda01 | World-id cross-check, magic tiers/offsets, Keyblades/staves/shields (`src/games/kh1/data/constants.ts`) | MIT |
+| APW | ArchipelagoMW/Archipelago @ c835bff5 | Chest and clam names (`worlds/kh1/Locations.py`) | MIT |
+| AP | gaithern/KH-1FM-AP-LUA @ 4fe14a54 | Chest bit array and id→bit rule (`1fmAPConnector.lua` 723–727, 1652–1673), Atlantica clams (829–850, 1763–1773), Olympia Chest (993), Neverland Hold Aero Chest (967), HB Emblem Piece (1013), story progress bytes and thresholds (623–718, 784–794, `1fmAPFixWarps.lua` 10–338), Peter Pan id 8 (`1fmAPFixWarps.lua` 266) | MIT |
+| DEN | Denhonator/KHPCSpeedrunTools @ aeb4972e | Vanilla chest contents (`Rando/chests.lua`, `Rando/rewards.lua`), party slot ids (`SteamGlobal_1_0_0_2.lua` 237), story flags and Beast id 9 (`1fmRandoSomeLogic.lua` 236, 1960–2486) | Unlicense |
 | JUL | Julumisan/kh-qol-manager @ f35bfef6 | Battle-block layout (`KH_QoL/docs/FEATURE_RESEARCH.md` 32–35) | MIT |
-| LIB | gaithern/KH1-LUA-LIBRARY @ e387282a | World/room bytes (not used in these files) | MIT |
+| LIB | gaithern/KH1-LUA-LIBRARY @ e387282a | World/room bytes, `cutsceneFlagBase`, `poohProgress`, `magicUnlock`, `magicLevels`, `inventory` (`SteamGlobal_1_0_0_2.lua`) | MIT |
+| KSE | Xeeynamo/KingdomSaveEditor | Documented character enum ids `0..9` (`PlayableCharacterType.cs`), character struct offsets (`Character.cs`), consumable item ids (`EquipmentType.cs`) — documented values only, no code | GPL-3.0 (documented values only) |
 | CMIX | Drflash55/KH1-Critical-Mix-Additions @ f705c7c0 | Cited by the research for stat addresses only. No code or data copied. | AGPL-3.0 (cite only) |
 
 ## Live check
@@ -37,10 +38,11 @@ authoritative for `party.json`:
   links. Unknown links are left out, not invented.
 - **Layout** (`col`, `row`) is hand-authored for display.
 - **Neverland rooms 10–11** exist (map files `pp11`/`pp12`) but no source names them, so they are not listed.
-- **Peter Pan (8) and Beast (9)** char ids are `guess`.
-- **Contents** are `null` for the 12 chests the randomizer source does not list.
-- A chest whose draft lists several rooms (Neverland "Ship: Hold", HB Waterway, EotW Final Dimension)
-  is put in the first one, with `roomConfidence: "guess"` when the sub-room is unknown.
+- **Contents** are `null` for chests the randomizer source does not list (e.g. Atlantica chests/clams,
+  Library carousel chests, Final Dimension 2nd/3rd/4th/7th/8th/10th).
+- A chest whose draft lists several rooms (Neverland "Ship: Hold", HB Waterway, EotW Final Dimension,
+  Wonderland "Bizarre Room"/"Lotus Forest", Monstro "Mouth", etc.) is put in the first one, with
+  `roomConfidence: "guess"` when the sub-room is unknown.
 
 ## Confidence values
 

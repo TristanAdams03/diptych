@@ -32,8 +32,8 @@ internal fun hpColor(fraction: Float?): Color = if (fraction != null && fraction
 @Composable
 fun PartyPanel(party: List<PartyMember>, modifier: Modifier = Modifier) {
     Column(
-        modifier.kh1Panel().padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(9.dp),
+        modifier.kh1Panel().padding(horizontal = 12.dp, vertical = 7.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text("PARTY", color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp, letterSpacing = 1.5.sp)
         if (party.isEmpty()) {
@@ -46,20 +46,21 @@ fun PartyPanel(party: List<PartyMember>, modifier: Modifier = Modifier) {
 @Composable
 private fun MemberRow(m: PartyMember) {
     val hp = barFraction(m.hp, m.maxHp)
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 m.name, Modifier.weight(1f, fill = false).padding(end = 6.dp),
                 color = Kh1Colors.Text, fontFamily = Nunito, fontWeight = FontWeight.W800, fontSize = 13.sp,
-                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                lineHeight = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
             Text(
                 "${m.hp ?: "--"} / ${m.maxHp ?: "--"}",
-                color = Kh1Colors.Text, fontFamily = Nunito, fontWeight = FontWeight.W800, fontSize = 13.sp, maxLines = 1,
+                color = Kh1Colors.Text, fontFamily = Nunito, fontWeight = FontWeight.W800, fontSize = 13.sp,
+                lineHeight = 15.sp, maxLines = 1,
             )
         }
-        Bar(hp, hpColor(hp), 8.dp)
-        Bar(barFraction(m.mp, m.maxMp), Kh1Colors.Mp, 6.dp)
+        Bar(hp, hpColor(hp), 7.dp)
+        Bar(barFraction(m.mp, m.maxMp), Kh1Colors.Mp, 5.dp)
     }
 }
 

@@ -25,6 +25,7 @@ import com.diptych.app.net.SpikeClient
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,10 +84,18 @@ class MainActivity : ComponentActivity() {
                         onCopyReport = ::copyReport,
                     )
                 } else {
-                    MapScreen(view, connectionLabel(ui), onReport = ::reportWrong)
+                    MapScreen(
+                        view = view,
+                        connection = connectionLabel(ui),
+                        onReport = ::reportWrong,
+                        onAction = { mask, durationMs -> client.testPress(mask, durationMs) },
+                    )
                 }
                 // Long-press (>= 1 s) on the header strip toggles between the map and the spike diagnostics.
-                LongPressStrip(Modifier.align(Alignment.TopStart)) { showDiagnostics.value = !showDiagnostics.value }
+                // Leave 72 dp on the right so the 44 dp spoiler-toggle button in the header receives taps normally.
+                LongPressStrip(Modifier.align(Alignment.TopStart).padding(end = 72.dp)) {
+                    showDiagnostics.value = !showDiagnostics.value
+                }
             }
         }
     }

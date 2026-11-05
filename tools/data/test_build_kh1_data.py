@@ -19,7 +19,23 @@ MAX_REGIONS = 8
 MAX_SPAN = 256
 MAX_TOTAL = 1024
 
-COUNTS = {"Neverland": 12, "Hollow Bastion": 39, "End of the World": 26}
+EXPECTED_WORLDS = {
+    "Dive into the Heart": (0, 1),
+    "Destiny Islands": (1, 1),
+    "Disney Castle": (2, 0),
+    "Traverse Town": (3, 21),
+    "Wonderland": (4, 19),
+    "Deep Jungle": (5, 19),
+    "100 Acre Wood": (6, 4),
+    "Agrabah": (8, 37),
+    "Atlantica": (9, 25),
+    "Halloween Town": (10, 19),
+    "Olympus Coliseum": (11, 7),
+    "Monstro": (12, 21),
+    "Neverland": (13, 12),
+    "Hollow Bastion": (15, 39),
+    "End of the World": (16, 26),
+}
 CONFIDENCE = {"live", "source", "derived", "guess"}
 
 
@@ -39,6 +55,13 @@ def per_world(fn):
 
 def chest_byte(chest):
     return chest["offset"]
+
+
+def watched_bytes(world):
+    offs = {chest_byte(c) for c in world["chests"]}
+    if "story" in world and world["story"] is not None:
+        offs.add(world["story"]["offset"])
+    return offs
 
 
 def in_spans(offset, spans):
@@ -61,9 +84,7 @@ def test_generator_output_matches_committed_assets():
 
 
 def test_world_ids_and_counts():
-    assert {w["name"]: w["id"] for w in WORLD_LIST} == {
-        "Neverland": 13, "Hollow Bastion": 15, "End of the World": 16}
-    assert {w["name"]: len(w["chests"]) for w in WORLD_LIST} == COUNTS
+    assert {w["name"]: (w["id"], len(w["chests"])) for w in WORLD_LIST} == EXPECTED_WORLDS
 
 
 # --- rooms, edges, layout -------------------------------------------------
@@ -88,7 +109,7 @@ def test_room_cells_unique(world):
     assert all(r["col"] >= 0 and r["row"] >= 0 for r in world["rooms"])
 
 
-@pytest.mark.parametrize("name", ["Neverland", "Hollow Bastion"])
+@pytest.mark.parametrize("name", [w for w in EXPECTED_WORLDS if w != "End of the World"])
 def test_small_worlds_fit_four_columns(name):
     world = next(w for w in WORLD_LIST if w["name"] == name)
     assert max(r["col"] for r in world["rooms"]) <= 3
@@ -138,6 +159,28 @@ def test_edges_do_not_pass_through_other_rooms(world):
 @per_world
 def test_rooms_carry_confidence(world):
     assert all(r["confidence"] in CONFIDENCE for r in world["rooms"])
+
+
+# --- story steps ----------------------------------------------------------
+
+
+@per_world
+def test_story_steps_reference_valid_rooms_and_watched_offset(world):
+    story = world.get("story")
+    if story is None:
+        assert world["name"] == "Disney Castle"
+        return
+    assert story["confidence"] in CONFIDENCE
+    assert in_spans(story["offset"], world["watch"])
+    room_ids = {r["id"] for r in world["rooms"]}
+    prev_below = 0
+    for step in story["steps"]:
+        assert step["below"] > prev_below
+        prev_below = step["below"]
+        assert isinstance(step["hint"], str) and step["hint"]
+        if step["nextRoom"] is not None:
+            assert step["nextRoom"] in room_ids
+        assert set(step["lockedRooms"]).issubset(room_ids)
 
 
 # --- chests and watch spans -----------------------------------------------
@@ -192,11 +235,11 @@ def test_watch_spans_within_limits(world):
 
 @per_world
 def test_watch_spans_are_tight(world):
-    # Every span starts and ends on a chest byte (nothing wasted at the edges).
-    chest_bytes = {chest_byte(c) for c in world["chests"]}
+    # Every span starts and ends on a watched byte (nothing wasted at the edges).
+    target_bytes = watched_bytes(world)
     for s in world["watch"]:
-        assert s["offset"] in chest_bytes
-        assert s["offset"] + s["length"] - 1 in chest_bytes
+        assert s["offset"] in target_bytes
+        assert s["offset"] + s["length"] - 1 in target_bytes
 
 
 @per_world
@@ -226,7 +269,10 @@ def test_party_matches_live_check():
     slots = PARTY["slots"]
     assert (slots["offset"], slots["length"], slots["confidence"]) == (0x2DE97EF, 2, "live")
     names = PARTY["names"]
-    assert {k: names[k] for k in ("0", "1", "2")} == {"0": "Sora", "1": "Donald", "2": "Goofy"}
+    assert names == {
+        "0": "Sora", "1": "Donald", "2": "Goofy", "3": "Tarzan", "4": "Pooh",
+        "5": "Aladdin", "6": "Ariel", "7": "Jack", "8": "Peter Pan", "9": "Beast",
+    }
     assert set(PARTY["namesConfidence"]) == set(names)
     assert all(v in CONFIDENCE for v in PARTY["namesConfidence"].values())
 
@@ -236,5 +282,6 @@ def test_party_regions():
         {"offset": 0x2D5CC4C, "length": 16},
         {"offset": 0x2D5CD4C, "length": 16},
         {"offset": 0x2D5CE4C, "length": 16},
-        {"offset": 0x2DE97EF, "length": 2},
+        {"offset": 0x2DE9364, "length": 113},
+        {"offset": 0x2DE97EF, "length": 155},
     ]
