@@ -33,6 +33,7 @@ fun buildReport(ui: SpikeUi, log: List<String>, device: String, displays: List<D
         appendLine("inCutscene=${s?.inCutscene ?: "-"}")
         appendLine("inGummi=${s?.inGummi ?: "-"}")
         appendLine("inputBytes=${s?.inputBytes ?: "-"}")
+        s?.regions?.forEach { appendLine("region ${it.offset} ${it.hex ?: "unreadable"}") }
         appendLine("lastResult=${ui.lastResult ?: "-"}")
         ui.modLog?.let { lines ->
             appendLine("--- mod log (${lines.size}) ---")

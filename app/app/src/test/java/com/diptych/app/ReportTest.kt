@@ -1,8 +1,11 @@
 package com.diptych.app
 
 import com.diptych.app.display.DisplayInfo
+import com.diptych.app.kh1.ui.ConnectionLabel
+import com.diptych.app.net.RegionHex
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.net.parseServer
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -44,5 +47,24 @@ class ReportTest {
         assertKeys(r)
         assertTrue(r, r.contains("loop=SOCKET DEAD"))
         assertTrue(r, r.contains("hp=-/-"))
+    }
+
+    @Test fun reportIncludesWorldRoomAndRegions() {
+        val st = (parseServer(Fixtures.load("state_spike.json")) as ServerMsg.State).data.copy(
+            world = 15, room = 6,
+            regions = listOf(RegionHex(48142992, "00ff10"), RegionHex(48142999, null)),
+        )
+        val r = buildReport(SpikeUi(connected = true, state = st), emptyList(), "x", emptyList())
+        for (want in listOf("world=15", "room=6", "region 48142992 00ff10", "region 48142999 unreadable"))
+            assertTrue("missing '$want' in:\n$r", r.lines().contains(want))
+    }
+
+    @Test fun connectionLabelFollowsWelcome() {
+        val ok = parseServer(Fixtures.load("welcome_steam.json")) as ServerMsg.Welcome
+        assertEquals(ConnectionLabel.Waiting, connectionLabel(SpikeUi()))
+        assertEquals(ConnectionLabel.Waiting, connectionLabel(SpikeUi(connected = true)))
+        assertEquals(ConnectionLabel.Waiting, connectionLabel(SpikeUi(connected = false, welcome = ok)))
+        assertEquals(ConnectionLabel.Connected, connectionLabel(SpikeUi(connected = true, welcome = ok)))
+        assertEquals(ConnectionLabel.Unsupported, connectionLabel(SpikeUi(connected = true, welcome = ok.copy(supported = false))))
     }
 }
