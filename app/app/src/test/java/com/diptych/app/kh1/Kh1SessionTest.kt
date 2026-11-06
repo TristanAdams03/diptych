@@ -59,8 +59,7 @@ class Kh1SessionTest {
         welcome()
         frame(13, 0, TestData.partyRegions())
         assertEquals(2, link.sent.size)
-        // Neverland has 3 spans: 5 + 3 would leave no slot for M3, so the info-only stats block is dropped (chests kept).
-        assertEquals(data.party.essentialWatch + data.world(13)!!.watch, link.sent[1])
+        assertEquals(data.party.watch + data.world(13)!!.watch, link.sent[1]) // 5 + 3 = 8 regions: fits, nothing dropped
         frame(13, 1, TestData.partyRegions())
         assertEquals(2, link.sent.size)
         frame(15, 6, TestData.partyRegions())
@@ -119,34 +118,29 @@ class Kh1SessionTest {
         val logs = mutableListOf<String>()
         val l = FakeLink()
         val s = CoroutineScope(Dispatchers.Unconfined)
-        Kh1Session(l, data, s, logs::add)
+        val far = WorldDef(98, "Far", watch = List(4) { Region(48143000L + it * 1000L, 10) }) // 5 + 4 = 9 > 8
+        Kh1Session(l, data.copy(worlds = data.worlds + far), s, logs::add)
         l.bus.tryEmit(ServerMsg.Welcome("0.1.0", 0, "kh1", "steam-1.0.0.2", true, listOf("watch")))
-        l.bus.tryEmit(ServerMsg.State("kh1.spike", state(15, 0, null)))
+        l.bus.tryEmit(ServerMsg.State("kh1.spike", state(98, 0, null)))
         assertEquals(1, logs.size)
         assertTrue(logs[0], logs[0].contains("dropped 1") && logs[0].contains("chests kept"))
         s.cancel()
     }
 
-    @Test fun everyShippedWorldKeepsItsChestsAndAFreeSlotForM3() {
+    @Test fun everyShippedWorldKeepsItsChestsAndStatsWithinLimits() {
         for (w in data.worlds) {
             val plan = planWatch(data.party, w)
             val r = plan.regions
             val label = "world ${w.id} ${w.name}: $r"
             assertTrue(label, plan.chestsFit)
             assertTrue(label, withinWatchLimits(r))
-            assertTrue(label, r.size <= MAX_WATCH_REGIONS - 1)
+            assertTrue(label, r.size <= MAX_WATCH_REGIONS)
+            assertTrue(label, r.sumOf { it.length } <= MAX_WATCH_TOTAL_BYTES)
+            assertTrue(label, plan.dropped.isEmpty()) // Sora's stats stay watched in every shipped world
             for (c in w.chests) assertTrue("$label misses ${c.name}", covered(r, c.offset))
             w.story?.let { assertTrue("$label misses the story byte", covered(r, it.offset)) }
             // Party HP/MP and slot bytes are never dropped.
             for (p in data.party.essentialWatch) assertTrue("$label misses party $p", covered(r, p.offset))
-        }
-    }
-
-    @Test fun m3ShortcutRegionStillFitsEveryWorld() {
-        val shortcuts = Region(0x2DE9BA4L, 3) // Denhonator SteamGlobal_1_0_0_2.lua:205
-        for (w in data.worlds) {
-            val r = combinedWatch(data.party, w) + shortcuts
-            assertTrue("world ${w.id} ${w.name}", withinWatchLimits(r))
         }
     }
 
@@ -157,17 +151,17 @@ class Kh1SessionTest {
     }
 
     @Test fun closeSpansMergeBeforeAnythingIsDropped() {
-        // 4 party essentials + stats + 3 world spans = 8 > 7; two world spans 40 bytes apart merge into one.
-        val w = WorldDef(1, "x", watch = listOf(Region(48143000L, 10), Region(48143050L, 10), Region(48146000L, 1)))
+        // 4 party essentials + stats + 4 world spans = 9 > 8; two world spans 40 bytes apart merge into one.
+        val w = WorldDef(1, "x", watch = listOf(Region(48143000L, 10), Region(48143050L, 10), Region(48146000L, 1), Region(48147000L, 1)))
         val plan = planWatch(data.party, w)
         assertEquals(1, plan.merged)
         assertTrue(plan.dropped.isEmpty())
         assertTrue(Region(48143000L, 60) in plan.regions)
-        assertEquals(7, plan.regions.size)
+        assertEquals(8, plan.regions.size)
     }
 
     @Test fun farSpansDropStatsNotChests() {
-        val w = WorldDef(1, "x", watch = listOf(Region(48143000L, 10), Region(48144000L, 10), Region(48146000L, 1)))
+        val w = WorldDef(1, "x", watch = listOf(Region(48143000L, 10), Region(48144000L, 10), Region(48146000L, 1), Region(48147000L, 1)))
         val plan = planWatch(data.party, w)
         assertEquals(data.party.extraWatch, plan.dropped)
         assertTrue(plan.chestsFit)

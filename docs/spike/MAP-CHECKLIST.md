@@ -51,9 +51,7 @@ This build replaces v0.2.0. The bottom screen only shows information. Nothing on
 ## The other tabs
 
 24. Tap **Magic & Items**. It lists the spells you have learned with their MP cost, and the items in Sora's item slots. Nothing there can be tapped.
-    - In Atlantica, Olympus Coliseum, Monstro, Neverland and Hollow Bastion it says "Not shown in this world yet". That is expected for now.
 25. Tap **Party**. It shows Sora's level, keyblade, Strength, Defense and AP.
-    - In the same five worlds these show "--" for now.
 26. Tap **Journal**. It lists every world with its chest total.
 27. Tap **Map** to go back.
 

@@ -51,7 +51,7 @@ class MapScreenshotTest {
     }
 
     @Test fun magicAndItemsTab() {
-        // Traverse Town (2 world spans): the Sora stats block is watched live there (3-span worlds drop it, I7).
+        // Traverse Town: Sora's stats block is watched in every shipped world.
         val view = buildMapView(TestData.data, safe(3, 2, party()))
         paparazzi.snapshot { MapScreen(view, ConnectionLabel.Connected, onReport = {}, initialTab = Kh1Tab.MagicItems) }
     }

@@ -169,8 +169,8 @@ fun withinWatchLimits(regions: List<Region>): Boolean =
     regions.size <= MAX_WATCH_REGIONS && regions.all { it.length in 1..MAX_WATCH_REGION_BYTES } &&
         regions.sumOf { it.length } <= MAX_WATCH_TOTAL_BYTES
 
-/** Watch regions kept free for M3 (the shortcut slots at 0x2DE9BA4 need one). */
-const val WATCH_REGIONS_RESERVED = 1
+/** Watch regions kept free. 0: Sora's stats beat a spare slot; M3 raises the mod's region limit instead. */
+const val WATCH_REGIONS_RESERVED = 0
 
 /** Two regions at most this far apart may be merged into one span. */
 const val WATCH_MERGE_GAP = 64
