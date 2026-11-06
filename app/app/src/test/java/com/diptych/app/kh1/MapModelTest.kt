@@ -62,11 +62,46 @@ class MapModelTest {
         assertTrue(hint(0x82).contains("Behemoth"))
     }
 
-    @Test fun busyMenuAndCutsceneDisableActions() {
-        val menuState = state(15, 4, TestData.partyRegions()).copy(inMenu = true)
-        val menuView = buildMapView(data, menuState)
-        assertEquals(false, menuView.canAct)
-        assertEquals("In game menu", menuView.busyReason)
+    private fun safe() = state(15, 4, TestData.partyRegions()).copy(inMenu = false, inCutscene = false, inGummi = false)
+
+    @Test fun canActOnlyWhenEveryFlagReadsFalseAndMpIsKnown() {
+        val v = buildMapView(data, safe())
+        assertEquals(true, v.canAct)
+        assertNull(v.busyReason)
+    }
+
+    @Test fun busyFlagsDisableActionsWithNeutralReasons() {
+        val cases = mapOf(
+            safe().copy(inCutscene = true) to BUSY_GAME,
+            safe().copy(inMenu = true) to BUSY_MENU,
+            safe().copy(inGummi = true) to BUSY_GUMMI,
+        )
+        for ((s, reason) in cases) {
+            val v = buildMapView(data, s)
+            assertEquals(false, v.canAct)
+            assertEquals(reason, v.busyReason)
+        }
+        assertEquals("Game busy (cutscene, dialogue or loading)", BUSY_GAME)
+        assertEquals("Menu open", BUSY_MENU)
+        assertEquals("Gummi Ship", BUSY_GUMMI)
+    }
+
+    @Test fun unknownFlagsOrMpAreNotSafe() {
+        for (s in listOf(safe().copy(inCutscene = null), safe().copy(inMenu = null), safe().copy(inGummi = null))) {
+            val v = buildMapView(data, s)
+            assertEquals(false, v.canAct)
+            assertEquals(BUSY_UNKNOWN, v.busyReason)
+        }
+        val noMp = buildMapView(data, safe().copy(regions = emptyList()))
+        assertEquals(false, noMp.canAct)
+        assertEquals(BUSY_NO_MP, noMp.busyReason)
+        assertEquals(false, buildMapView(data, state(15, 4, TestData.partyRegions())).canAct) // no flags at all
+    }
+
+    @Test fun noReasonEverSaysCutscenePlaying() {
+        for (r in listOf(BUSY_GAME, BUSY_MENU, BUSY_GUMMI, BUSY_UNKNOWN, BUSY_NO_MP)) {
+            assertTrue(r, !r.contains("Cutscene playing", ignoreCase = true))
+        }
     }
 
     @Test fun unknownRoomIsNamedByNumber() {

@@ -33,7 +33,8 @@ data class MapView(
     val party: List<PartyMember>,
     val nextHint: String? = null,
     val sora: SoraStatus = SoraStatus(),
-    val canAct: Boolean = true,
+    /** Status only until M3: true when every safety flag reads false and Sora's MP is known. Nothing sends presses. */
+    val canAct: Boolean = false,
     val busyReason: String? = null,
     val worlds: List<WorldSummary> = emptyList(),
 )
@@ -43,13 +44,8 @@ fun buildMapView(data: Kh1Data, state: SpikeData): MapView {
     val world = data.world(state.world)
     val party = decodeParty(data.party, regions)
     val sora = decodeSoraStatus(data.party, regions)
-    val busyReason = when {
-        state.inCutscene == true -> "Cutscene playing"
-        state.inMenu == true -> "In game menu"
-        state.inGummi == true -> "In Gummi Ship"
-        else -> null
-    }
-    val canAct = busyReason == null && state.world != null
+    val busyReason = busyReason(state, party.firstOrNull()?.mp)
+    val canAct = busyReason == null
     val worldName = world?.name ?: "World ${state.world ?: "?"}"
     if (world == null) {
         val summaries = data.worlds.map { w -> WorldSummary(w.id, w.name, w.rooms.size, w.chests.size) }
@@ -115,6 +111,25 @@ fun buildMapView(data: Kh1Data, state: SpikeData): MapView {
         busyReason = busyReason,
         worlds = summaries,
     )
+}
+
+const val BUSY_GAME = "Game busy (cutscene, dialogue or loading)"
+const val BUSY_MENU = "Menu open"
+const val BUSY_GUMMI = "Gummi Ship"
+const val BUSY_UNKNOWN = "Can't tell if the game is busy"
+const val BUSY_NO_MP = "Can't read Sora's MP"
+
+/**
+ * Why actions would be unsafe now, or null when every safety flag reads false and MP is known.
+ * Unknown (null) counts as unsafe. inCutscene is also set while talking and loading, so it is never called a cutscene.
+ */
+fun busyReason(state: SpikeData, soraMp: Int?): String? = when {
+    state.inCutscene == true -> BUSY_GAME
+    state.inMenu == true -> BUSY_MENU
+    state.inGummi == true -> BUSY_GUMMI
+    state.inCutscene == null || state.inMenu == null || state.inGummi == null || state.world == null -> BUSY_UNKNOWN
+    soraMp == null -> BUSY_NO_MP
+    else -> null
 }
 
 private fun roomLabel(name: String?, id: Int?) = name ?: "Room ${id ?: "?"}"
