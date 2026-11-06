@@ -333,7 +333,7 @@ def build_party():
 
 
 def party_regions(party):
-    """The kh1.watch regions the app sends for the party, stats, magic and inventory."""
+    """The party's kh1.watch regions before the app's budget (Kh1Data.planWatch may merge spans or drop stats)."""
     bb = party["battleBlock"]
     width = max(f["at"] + f["width"] for f in bb["fields"].values())
     regions = [{"offset": bb["offset"] + i * bb["stride"], "length": width}

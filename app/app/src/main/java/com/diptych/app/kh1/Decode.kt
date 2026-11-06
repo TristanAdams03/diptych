@@ -95,6 +95,8 @@ data class SoraStatus(
     val weapon: String? = null,
     val spells: List<LearnedSpell> = emptyList(),
     val items: List<StockItem> = emptyList(),
+    /** False when the stats block is not watched or unreadable: spells and items are unknown, not empty. */
+    val known: Boolean = false,
 )
 
 private fun ByteArray.u8(at: Int): Int? = if (at in indices) this[at].toInt() and 0xFF else null
@@ -151,5 +153,6 @@ fun decodeSoraStatus(party: PartyConfig, regions: List<RegionHex>): SoraStatus {
         weapon = weapon,
         spells = spells,
         items = items,
+        known = stats != null,
     )
 }

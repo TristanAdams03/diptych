@@ -227,6 +227,9 @@ private fun SpoilerToggleButton(showSpoilers: Boolean, onToggle: () -> Unit) {
 /** Shown where tap-to-cast will go (M3). Nothing here is clickable. */
 internal const val QUICK_COMING_NEXT = "Tap-to-cast is coming next"
 
+/** Sora's stats block is not watched in this world (watch budget) or could not be read. */
+internal const val NOT_READ_HERE = "Not shown in this world yet"
+
 /** The status line under the quick panel: the busy reason, or "Game ready" when every safety check passes. */
 internal fun statusLine(view: MapView): String? = view.busyReason ?: if (view.canAct) "Game ready" else null
 
@@ -270,7 +273,9 @@ private fun MagicItemsTabContent(view: MapView) {
     val soraMp = view.party.firstOrNull()?.mp
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         InfoPanel("MAGIC · MP COST", Modifier.weight(1f)) {
-            if (view.sora.spells.isEmpty()) {
+            if (!view.sora.known) {
+                EmptyNote(NOT_READ_HERE)
+            } else if (view.sora.spells.isEmpty()) {
                 EmptyNote("No spells learned yet")
             } else {
                 for (rowSpells in view.sora.spells.chunked(2)) {
@@ -287,7 +292,9 @@ private fun MagicItemsTabContent(view: MapView) {
             EmptyNote(QUICK_COMING_NEXT)
         }
         InfoPanel("ITEMS · EQUIPPED", Modifier.weight(1f)) {
-            if (view.sora.items.isEmpty()) {
+            if (!view.sora.known) {
+                EmptyNote(NOT_READ_HERE)
+            } else if (view.sora.items.isEmpty()) {
                 EmptyNote("No items equipped")
             } else {
                 for (rowItems in view.sora.items.chunked(2)) {
@@ -370,7 +377,7 @@ private fun PartyTabContent(view: MapView, onReport: () -> Unit) {
             StatRow("Strength", sora.strength?.toString() ?: "--", Kh1Colors.Text)
             StatRow("Defense", sora.defense?.toString() ?: "--", Kh1Colors.Text)
             StatRow("Ability Points (AP)", sora.ap?.toString() ?: "--", Kh1Colors.Mp)
-            StatRow("Spells Learned", "${sora.spells.size} / 7", Kh1Colors.Gold)
+            StatRow("Spells Learned", if (sora.known) "${sora.spells.size} / 7" else "--", Kh1Colors.Gold)
         }
     }
 }

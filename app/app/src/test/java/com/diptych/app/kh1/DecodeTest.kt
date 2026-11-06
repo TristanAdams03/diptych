@@ -54,6 +54,8 @@ class DecodeTest {
         // Equipped slots only: Ether, Elixir and Tent are stocked but not equipped, so they are not listed.
         assertEquals(listOf("Potion" to 6, "Hi-Potion" to 3), status.items.map { it.name to it.count })
         assertTrue(status.items.all { it.equipped })
+        assertTrue(status.known)
+        assertEquals(false, decodeSoraStatus(data.party, TestData.partyRegions()).known) // stats not watched
     }
 
     @Test fun nullHexGivesNullFields() {

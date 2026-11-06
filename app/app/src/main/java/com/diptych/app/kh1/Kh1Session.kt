@@ -63,9 +63,12 @@ class Kh1Session(
 
     private fun sendWatch(w: Int?) {
         val def = data.world(w)
-        val regions = combinedWatch(data.party, def) ?: run {
-            log("kh1 watch for world $w exceeds the watch limits; watching party only")
-            data.party.watch
+        val plan = planWatch(data.party, def)
+        val regions = plan.regions
+        if (!plan.chestsFit) log("kh1 watch: world $w chests exceed the watch limits; watching party only")
+        else if (plan.merged > 0 || plan.dropped.isNotEmpty()) {
+            log("kh1 watch: world $w merged ${plan.merged} span(s), dropped ${plan.dropped.size} info region(s) " +
+                "${plan.dropped.map { "0x%X+%d".format(it.offset, it.length) }}; chests kept")
         }
         if (link.watch(regions) != null) {
             sentOffsets = regions.map { it.offset }.toSet()

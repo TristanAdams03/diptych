@@ -120,20 +120,27 @@ data class PartyConfig(
     val memberSpan: Int
         get() = battleBlock.fields.let { listOf(it.hp, it.maxHp, it.mp, it.maxMp) }.maxOf { it.at + it.width }
 
-    /** The party watch: one span per battle member, optional Sora stats block, and slots..inventory span. */
-    val watch: List<Region>
+    /** Party regions that are never dropped: one span per battle member (HP/MP) and the slots..inventory span. */
+    val essentialWatch: List<Region>
         get() {
             val members = (0 until battleBlock.members).map {
                 Region(battleBlock.offset + it.toLong() * battleBlock.stride, memberSpan)
             }
-            val stats = listOfNotNull(soraStats?.let { Region(it.offset, it.length) })
             val tailEnd = maxOf(
                 slots.offset + slots.length,
                 inventory?.let { it.offset + it.length } ?: 0L,
                 magic?.let { it.levelsOffset + it.spells.size } ?: 0L,
             )
-            return members + stats + Region(slots.offset, (tailEnd - slots.offset).toInt())
+            return members + Region(slots.offset, (tailEnd - slots.offset).toInt())
         }
+
+    /** Info-only party regions, lowest priority first: dropped before any chest when the watch is over budget. */
+    val extraWatch: List<Region>
+        get() = listOfNotNull(soraStats?.let { Region(it.offset, it.length) })
+
+    /** The full party watch: battle members, the Sora stats block (Magic & Items, Party stats), slots..inventory. */
+    val watch: List<Region>
+        get() = essentialWatch.let { it.dropLast(1) + extraWatch + it.last() }
 }
 
 data class Kh1Data(val worlds: List<WorldDef>, val party: PartyConfig) {
@@ -162,6 +169,68 @@ fun withinWatchLimits(regions: List<Region>): Boolean =
     regions.size <= MAX_WATCH_REGIONS && regions.all { it.length in 1..MAX_WATCH_REGION_BYTES } &&
         regions.sumOf { it.length } <= MAX_WATCH_TOTAL_BYTES
 
-/** Party regions plus [world]'s watch, or null when the combination is over the limits. */
-fun combinedWatch(party: PartyConfig, world: WorldDef?): List<Region>? =
-    (party.watch + world?.watch.orEmpty()).takeIf(::withinWatchLimits)
+/** Watch regions kept free for M3 (the shortcut slots at 0x2DE9BA4 need one). */
+const val WATCH_REGIONS_RESERVED = 1
+
+/** Two regions at most this far apart may be merged into one span. */
+const val WATCH_MERGE_GAP = 64
+
+/** The regions to send, plus what was merged or dropped to fit (for the log). */
+data class WatchPlan(val regions: List<Region>, val merged: Int = 0, val dropped: List<Region> = emptyList(), val chestsFit: Boolean = true)
+
+/**
+ * Merges the closest pair of regions (gap ≤ [WATCH_MERGE_GAP], merged span ≤ 256 bytes, total ≤ 1024) until at most
+ * [target] remain or no pair can merge. Returns [regions] unchanged when already within [target], else sorted by
+ * offset; and the number of merges.
+ */
+internal fun coalesce(regions: List<Region>, target: Int): Pair<List<Region>, Int> {
+    if (regions.size <= target) return regions to 0
+    val list = regions.sortedBy { it.offset }.toMutableList()
+    var merges = 0
+    while (list.size > target) {
+        var best = -1
+        var bestGap = Long.MAX_VALUE
+        for (i in 0 until list.lastIndex) {
+            val a = list[i]
+            val b = list[i + 1]
+            val gap = b.offset - (a.offset + a.length)
+            val end = maxOf(a.offset + a.length, b.offset + b.length)
+            val span = end - a.offset
+            val total = list.sumOf { it.length.toLong() } - a.length - b.length + span
+            if (gap <= WATCH_MERGE_GAP && span <= MAX_WATCH_REGION_BYTES && total <= MAX_WATCH_TOTAL_BYTES && gap < bestGap) {
+                best = i
+                bestGap = gap
+            }
+        }
+        if (best < 0) break
+        val a = list[best]
+        val b = list.removeAt(best + 1)
+        list[best] = Region(a.offset, (maxOf(a.offset + a.length, b.offset + b.length) - a.offset).toInt())
+        merges++
+    }
+    return list to merges
+}
+
+/**
+ * Party plus [world]'s watch in at most `8 - [reserve]` regions and 1024 bytes. Chests and the story byte are never
+ * dropped: first close regions are merged, then the party's info-only extras (Sora stats: magic and items) go, lowest
+ * priority first. Only when the chests alone cannot fit (no shipped world) is the world left out, with chestsFit false.
+ */
+fun planWatch(party: PartyConfig, world: WorldDef?, reserve: Int = WATCH_REGIONS_RESERVED): WatchPlan {
+    val target = MAX_WATCH_REGIONS - reserve
+    val worldWatch = world?.watch.orEmpty()
+    val extras = party.extraWatch
+    for (dropCount in 0..extras.size) {
+        val kept = extras.drop(dropCount)
+        val all = party.essentialWatch.let { it.dropLast(1) + kept + it.last() } + worldWatch
+        val (regions, merges) = coalesce(all, target)
+        if (regions.size <= target && withinWatchLimits(regions)) {
+            return WatchPlan(regions, merges, extras.take(dropCount))
+        }
+    }
+    if (world == null) return WatchPlan(coalesce(party.essentialWatch, target).first, dropped = extras)
+    return planWatch(party, null, reserve).let { it.copy(dropped = it.dropped + worldWatch, chestsFit = false) }
+}
+
+/** The planned regions for [world] (see [planWatch]). */
+fun combinedWatch(party: PartyConfig, world: WorldDef?): List<Region> = planWatch(party, world).regions
