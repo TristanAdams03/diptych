@@ -21,7 +21,7 @@ object TestData {
     )
 
     /** Realistic Sora stats + magic tiers + inventory counts matching Magic.dc.html. */
-    fun soraStatusRegions(slots: String = "0109"): List<RegionHex> {
+    fun soraStatusRegions(slots: String = "0102"): List<RegionHex> {
         val stats = ByteArray(113).also {
             it[0] = 42 // Level
             it[5] = 38 // AP

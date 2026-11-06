@@ -88,8 +88,8 @@ class MainActivity : ComponentActivity() {
                         view = view,
                         connection = connectionLabel(ui),
                         onReport = ::reportWrong,
-                        onAction = { mask, durationMs -> client.testPress(mask, durationMs) },
-                    )
+                    ) // read-only: only the diagnostics screen's Test press buttons send input
+
                 }
                 // Long-press (>= 1 s) on the header strip toggles between the map and the spike diagnostics.
                 // Leave 72 dp on the right so the 44 dp spoiler-toggle button in the header receives taps normally.

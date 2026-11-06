@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,9 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.diptych.app.kh1.LearnedSpell
 import com.diptych.app.kh1.MapView
-import com.diptych.app.kh1.StockItem
 
 enum class ConnectionLabel { Connected, Waiting, Unsupported }
 
@@ -54,21 +53,20 @@ enum class Kh1Tab { Map, MagicItems, Party, Journal }
 
 /**
  * The KH1 companion screen (bottom display). Shows a centered banner while [connection] is not Connected, or before the
- * first [view] arrives.
+ * first [view] arrives. Read-only: nothing on this screen sends input to the game (tap-to-cast is M3).
  */
 @Composable
 fun MapScreen(
     view: MapView?,
     connection: ConnectionLabel,
     onReport: () -> Unit,
-    onAction: (mask: Int, durationMs: Int) -> Unit = { _, _ -> },
     initialTab: Kh1Tab = Kh1Tab.Map,
 ) {
     Box(Modifier.fillMaxSize().background(Kh1Colors.Ground)) {
         when {
             connection == ConnectionLabel.Unsupported -> Banner("This KH1 build isn't supported yet (needs Steam 1.0.0.2)")
             connection == ConnectionLabel.Waiting || view == null -> Banner("Waiting for Kingdom Hearts…")
-            else -> MapLayout(view, onReport, onAction, initialTab)
+            else -> MapLayout(view, onReport, initialTab)
         }
     }
 }
@@ -77,68 +75,27 @@ fun MapScreen(
 private fun MapLayout(
     view: MapView,
     onReport: () -> Unit,
-    onAction: (mask: Int, durationMs: Int) -> Unit,
     initialTab: Kh1Tab,
 ) {
     var activeTab by remember { mutableStateOf(initialTab) }
     var showSpoilers by remember { mutableStateOf(true) }
-    var pickingTargetFor by remember { mutableStateOf<String?>(null) }
 
-    fun triggerEntry(name: String, needsTarget: Boolean) {
-        if (!view.canAct) return
-        if (needsTarget && view.party.isNotEmpty()) {
-            pickingTargetFor = name
-            // Open shortcut/command menu on top screen while user picks target
-            onAction(0x10, 150)
-        } else {
-            pickingTargetFor = null
-            onAction(0x14, 240)
-        }
-    }
-
-    Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Header(
-                view = view,
-                activeTab = activeTab,
-                showSpoilers = showSpoilers,
-                onToggleSpoilers = { showSpoilers = !showSpoilers },
-            )
-            Box(Modifier.weight(1f).fillMaxWidth()) {
-                when (activeTab) {
-                    Kh1Tab.Map -> MapTabContent(
-                        view = view,
-                        showSpoilers = showSpoilers,
-                        onReport = onReport,
-                        onQuickTrigger = ::triggerEntry,
-                    )
-                    Kh1Tab.MagicItems -> MagicItemsTabContent(
-                        view = view,
-                        pickingTargetFor = pickingTargetFor,
-                        onTrigger = ::triggerEntry,
-                    )
-                    Kh1Tab.Party -> PartyTabContent(view = view, onReport = onReport)
-                    Kh1Tab.Journal -> JournalTabContent(view = view)
-                }
+    Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Header(
+            view = view,
+            activeTab = activeTab,
+            showSpoilers = showSpoilers,
+            onToggleSpoilers = { showSpoilers = !showSpoilers },
+        )
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            when (activeTab) {
+                Kh1Tab.Map -> MapTabContent(view = view, showSpoilers = showSpoilers, onReport = onReport)
+                Kh1Tab.MagicItems -> MagicItemsTabContent(view = view)
+                Kh1Tab.Party -> PartyTabContent(view = view, onReport = onReport)
+                Kh1Tab.Journal -> JournalTabContent(view = view)
             }
-            Tabs(activeTab = activeTab, onSelect = {
-                activeTab = it
-                pickingTargetFor = null
-            })
         }
-
-        val targetAction = pickingTargetFor
-        if (targetAction != null) {
-            TargetPickerOverlay(
-                actionName = targetAction,
-                view = view,
-                onPickMember = {
-                    pickingTargetFor = null
-                    onAction(0x14, 240)
-                },
-                onCancel = { pickingTargetFor = null },
-            )
-        }
+        Tabs(activeTab = activeTab, onSelect = { activeTab = it })
     }
 }
 
@@ -147,13 +104,12 @@ private fun MapTabContent(
     view: MapView,
     showSpoilers: Boolean,
     onReport: () -> Unit,
-    onQuickTrigger: (name: String, needsTarget: Boolean) -> Unit,
 ) {
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         RoomMap(view, Modifier.weight(1f).fillMaxSize(), showSpoilers = showSpoilers)
         Column(Modifier.width(196.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             PartyPanel(view.party, Modifier.fillMaxWidth())
-            QuickMagicPanel(view, onQuickTrigger, Modifier.weight(1f).fillMaxWidth())
+            QuickMagicPanel(view, Modifier.weight(1f).fillMaxWidth())
             ReportButton(onReport)
         }
     }
@@ -189,7 +145,7 @@ private fun Header(
                     color = Kh1Colors.Gold, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 13.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
-            } else if (!view.canAct && view.busyReason != null) {
+            } else if (activeTab != Kh1Tab.Map && view.busyReason != null) {
                 Text(
                     view.busyReason,
                     color = Kh1Colors.Muted, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp,
@@ -268,42 +224,14 @@ private fun SpoilerToggleButton(showSpoilers: Boolean, onToggle: () -> Unit) {
     }
 }
 
-private data class QuickEntry(
-    val label: String,
-    val needsTarget: Boolean,
-    val enabled: Boolean,
-)
+/** Shown where tap-to-cast will go (M3). Nothing here is clickable. */
+internal const val QUICK_COMING_NEXT = "Tap-to-cast is coming next"
+
+/** The status line under the quick panel: the busy reason, or "Game ready" when every safety check passes. */
+internal fun statusLine(view: MapView): String? = view.busyReason ?: if (view.canAct) "Game ready" else null
 
 @Composable
-private fun QuickMagicPanel(
-    view: MapView,
-    onTrigger: (name: String, needsTarget: Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val soraMp = view.party.firstOrNull()?.mp
-    val entries = remember(view.sora, soraMp, view.canAct) {
-        val preferredOrder = listOf("cure", "fire", "thunder", "blizzard", "aero", "gravity", "stop")
-        val sortedSpells = view.sora.spells.sortedBy { preferredOrder.indexOf(it.key).let { idx -> if (idx < 0) 99 else idx } }
-        val firstItem = view.sora.items.firstOrNull()
-        val chosen = mutableListOf<QuickEntry>()
-        val spellLimit = if (firstItem != null) 3 else 4
-        for (s in sortedSpells.take(spellLimit)) {
-            val enoughMp = soraMp == null || soraMp >= s.mpCost
-            chosen += QuickEntry(s.name, s.needsTarget, view.canAct && enoughMp)
-        }
-        if (firstItem != null && chosen.size < 4) {
-            chosen += QuickEntry("${firstItem.name} ×${firstItem.count}", firstItem.needsTarget, view.canAct && firstItem.count > 0)
-        }
-        val fallbacks = listOf("Cure" to true, "Fire" to false, "Thunder" to false, "Potion" to true)
-        for ((name, target) in fallbacks) {
-            if (chosen.size >= 4) break
-            if (chosen.none { it.label.startsWith(name.take(3)) }) {
-                chosen += QuickEntry(name, target, enabled = false)
-            }
-        }
-        chosen.take(4)
-    }
-
+private fun QuickMagicPanel(view: MapView, modifier: Modifier = Modifier) {
     Column(
         modifier.kh1Panel().padding(horizontal = 10.dp, vertical = 7.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -313,114 +241,59 @@ private fun QuickMagicPanel(
             color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
             letterSpacing = 1.5.sp,
         )
-        for (rowEntries in entries.chunked(2)) {
-            Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                for (entry in rowEntries) {
-                    QuickButton(
-                        entry = entry,
-                        onClick = { onTrigger(entry.label.substringBefore(" ×"), entry.needsTarget) },
-                        modifier = Modifier.weight(1f).fillMaxSize(),
-                    )
-                }
-                if (rowEntries.size == 1) Spacer(Modifier.weight(1f))
-            }
+        Box(
+            Modifier.weight(1f).fillMaxWidth()
+                .background(Kh1Colors.Room, RoundedCornerShape(10.dp))
+                .dashedBorder(1.5.dp, Kh1Colors.LockedRim, 10.dp)
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                QUICK_COMING_NEXT,
+                color = Kh1Colors.Dim, fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 13.sp,
+                textAlign = TextAlign.Center,
+            )
+        }
+        statusLine(view)?.let {
+            Text(
+                it,
+                color = if (view.canAct) Kh1Colors.Muted else Kh1Colors.Gold,
+                fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp, lineHeight = 14.sp,
+                maxLines = 2, overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
 
 @Composable
-private fun QuickButton(entry: QuickEntry, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val shape = RoundedCornerShape(10.dp)
-    val borderMod = if (entry.enabled) {
-        Modifier.border(2.dp, Kh1Colors.ActionRim, shape)
-    } else {
-        Modifier.dashedBorder(1.5.dp, Kh1Colors.LockedRim, 10.dp)
-    }
-    Box(
-        modifier
-            .clip(shape)
-            .background(if (entry.enabled) Kh1Colors.ActionFill else Kh1Colors.Room, shape)
-            .then(borderMod)
-            .then(if (entry.enabled) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            entry.label,
-            color = if (entry.enabled) Color.White else Kh1Colors.Dim,
-            fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 13.sp,
-            maxLines = 1, overflow = TextOverflow.Ellipsis,
-        )
-    }
-}
-
-@Composable
-private fun MagicItemsTabContent(
-    view: MapView,
-    pickingTargetFor: String?,
-    onTrigger: (name: String, needsTarget: Boolean) -> Unit,
-) {
+private fun MagicItemsTabContent(view: MapView) {
     val soraMp = view.party.firstOrNull()?.mp
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        // MAGIC · TAP TO CAST
-        Column(
-            Modifier.weight(1f).fillMaxSize().kh1Panel().padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                "MAGIC · TAP TO CAST",
-                color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
-                letterSpacing = 1.5.sp,
-            )
+        InfoPanel("MAGIC · MP COST", Modifier.weight(1f)) {
             if (view.sora.spells.isEmpty()) {
-                Text(
-                    "No spells learned yet",
-                    color = Kh1Colors.Dim, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 13.sp,
-                )
+                EmptyNote("No spells learned yet")
             } else {
                 for (rowSpells in view.sora.spells.chunked(2)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (spell in rowSpells) {
-                            SpellTile(
-                                spell = spell,
-                                soraMp = soraMp,
-                                canAct = view.canAct,
-                                picking = pickingTargetFor == spell.name,
-                                onClick = { onTrigger(spell.name, spell.needsTarget) },
-                                modifier = Modifier.weight(1f),
-                            )
+                            val sub = if (soraMp != null && soraMp < spell.mpCost) "needs ${spell.mpCost} MP" else "${spell.mpCost} MP"
+                            InfoTile(spell.name, sub, Modifier.weight(1f))
                         }
                         if (rowSpells.size == 1) Spacer(Modifier.weight(1f))
                     }
                 }
             }
+            Spacer(Modifier.weight(1f))
+            EmptyNote(QUICK_COMING_NEXT)
         }
-
-        // ITEMS · TAP TO USE
-        Column(
-            Modifier.weight(1f).fillMaxSize().kh1Panel().padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                "ITEMS · TAP TO USE",
-                color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
-                letterSpacing = 1.5.sp,
-            )
+        InfoPanel("ITEMS · EQUIPPED", Modifier.weight(1f)) {
             if (view.sora.items.isEmpty()) {
-                Text(
-                    "No usable items in stock",
-                    color = Kh1Colors.Dim, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 13.sp,
-                )
+                EmptyNote("No items equipped")
             } else {
                 for (rowItems in view.sora.items.chunked(2)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (item in rowItems) {
-                            ItemTile(
-                                item = item,
-                                canAct = view.canAct,
-                                picking = pickingTargetFor == item.name,
-                                onClick = { onTrigger(item.name, item.needsTarget) },
-                                modifier = Modifier.weight(1f),
-                            )
+                            InfoTile(item.name, if (item.count <= 0) "none left" else "× ${item.count}", Modifier.weight(1f))
                         }
                         if (rowItems.size == 1) Spacer(Modifier.weight(1f))
                     }
@@ -431,189 +304,47 @@ private fun MagicItemsTabContent(
 }
 
 @Composable
-private fun SpellTile(
-    spell: LearnedSpell,
-    soraMp: Int?,
-    canAct: Boolean,
-    picking: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val enoughMp = soraMp == null || soraMp >= spell.mpCost
-    val enabled = canAct && enoughMp
-    val shape = RoundedCornerShape(12.dp)
-    val borderMod = when {
-        picking -> Modifier.border(3.dp, Kh1Colors.Gold, shape)
-        enabled -> Modifier.border(2.dp, Kh1Colors.ActionRim, shape)
-        else -> Modifier.dashedBorder(2.dp, Kh1Colors.LockedRim, 12.dp)
-    }
-    val subText = when {
-        picking -> "${spell.mpCost} MP · picking"
-        !enoughMp -> "needs ${spell.mpCost} MP"
-        else -> "${spell.mpCost} MP"
-    }
+private fun InfoPanel(title: String, modifier: Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier.height(52.dp)
-            .clip(shape)
-            .background(if (enabled || picking) Kh1Colors.ActionFill else Kh1Colors.Room, shape)
-            .then(borderMod)
-            .then(if (enabled) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+        modifier.fillMaxSize().kh1Panel().padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
-            spell.name,
-            color = if (enabled || picking) Color.White else Kh1Colors.Dim,
-            fontFamily = Fredoka, fontWeight = if (picking) FontWeight.W700 else FontWeight.W600, fontSize = 15.sp,
-            lineHeight = 17.sp, maxLines = 1,
+            title,
+            color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
+            letterSpacing = 1.5.sp,
         )
-        Text(
-            subText,
-            color = when {
-                picking -> Kh1Colors.YouCount
-                enabled -> Kh1Colors.ActionSub
-                else -> Kh1Colors.Dim
-            },
-            fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 11.sp, lineHeight = 13.sp, maxLines = 1,
-        )
+        content()
     }
 }
 
 @Composable
-private fun ItemTile(
-    item: StockItem,
-    canAct: Boolean,
-    picking: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val enabled = canAct && item.count > 0
+private fun EmptyNote(text: String) {
+    Text(text, color = Kh1Colors.Dim, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 13.sp)
+}
+
+/** A read-only tile in the existing disabled style (dashed rim, dim text). Not clickable. */
+@Composable
+private fun InfoTile(title: String, sub: String, modifier: Modifier = Modifier) {
     val shape = RoundedCornerShape(12.dp)
-    val borderMod = when {
-        picking -> Modifier.border(3.dp, Kh1Colors.Gold, shape)
-        enabled -> Modifier.border(2.dp, Kh1Colors.ActionRim, shape)
-        else -> Modifier.dashedBorder(2.dp, Kh1Colors.LockedRim, 12.dp)
-    }
-    val subText = when {
-        picking -> "× ${item.count} · picking"
-        item.count <= 0 -> "none left"
-        item.equipped -> "× ${item.count} · eq"
-        else -> "× ${item.count}"
-    }
     Column(
         modifier.height(52.dp)
             .clip(shape)
-            .background(if (enabled || picking) Kh1Colors.ActionFill else Kh1Colors.Room, shape)
-            .then(borderMod)
-            .then(if (enabled) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier),
+            .background(Kh1Colors.Room, shape)
+            .dashedBorder(2.dp, Kh1Colors.LockedRim, 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
-            item.name,
-            color = if (enabled || picking) Color.White else Kh1Colors.Dim,
-            fontFamily = Fredoka, fontWeight = if (picking) FontWeight.W700 else FontWeight.W600, fontSize = 15.sp,
-            lineHeight = 17.sp, maxLines = 1,
+            title,
+            color = Kh1Colors.Dim, fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 15.sp,
+            lineHeight = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
         )
         Text(
-            subText,
-            color = when {
-                picking -> Kh1Colors.YouCount
-                enabled -> Kh1Colors.ActionSub
-                else -> Kh1Colors.Dim
-            },
-            fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 11.sp, lineHeight = 13.sp, maxLines = 1,
+            sub,
+            color = Kh1Colors.Dim, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 11.sp,
+            lineHeight = 13.sp, maxLines = 1,
         )
-    }
-}
-
-@Composable
-private fun TargetPickerOverlay(
-    actionName: String,
-    view: MapView,
-    onPickMember: (Int) -> Unit,
-    onCancel: () -> Unit,
-) {
-    val lowestIdx = view.party.indices.minByOrNull { idx ->
-        val m = view.party[idx]
-        barFraction(m.hp, m.maxHp) ?: 1f
-    }
-    Box(
-        Modifier.fillMaxSize()
-            .background(Kh1Colors.Scrim)
-            .clickable(onClick = onCancel),
-    ) {
-        val cardShape = RoundedCornerShape(18.dp)
-        Column(
-            Modifier.align(Alignment.BottomCenter)
-                .padding( start = 48.dp, end = 48.dp, bottom = 74.dp)
-                .fillMaxWidth()
-                .background(Kh1Colors.Panel, cardShape)
-                .border(3.dp, Kh1Colors.Gold, cardShape)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Text(
-                    "$actionName · who needs it?",
-                    color = Kh1Colors.Gold, fontFamily = Fredoka, fontWeight = FontWeight.W700, fontSize = 19.sp,
-                )
-                Text(
-                    "the game's own picker is open on the top screen",
-                    color = Kh1Colors.Muted, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                view.party.forEachIndexed { idx, m ->
-                    val frac = barFraction(m.hp, m.maxHp)
-                    val isLowest = idx == lowestIdx && frac != null && frac < 1f
-                    val btnShape = RoundedCornerShape(14.dp)
-                    Column(
-                        Modifier.weight(1f).height(64.dp)
-                            .clip(btnShape)
-                            .background(Kh1Colors.ActionFill, btnShape)
-                            .border(if (isLowest) 3.dp else 2.dp, if (isLowest) Kh1Colors.HpLow else Kh1Colors.ActionRim, btnShape)
-                            .clickable(role = Role.Button) { onPickMember(idx) },
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Text(
-                            m.name,
-                            color = Color.White, fontFamily = Fredoka,
-                            fontWeight = if (isLowest) FontWeight.W700 else FontWeight.W600, fontSize = 16.sp,
-                        )
-                        Text(
-                            buildString {
-                                append("${m.hp ?: "--"} / ${m.maxHp ?: "--"}")
-                                if (isLowest) append(" · lowest")
-                            },
-                            color = if (isLowest) Kh1Colors.HpLow else hpColor(frac),
-                            fontFamily = Nunito, fontWeight = FontWeight.W800, fontSize = 12.sp,
-                        )
-                    }
-                }
-            }
-            val cancelShape = RoundedCornerShape(12.dp)
-            Box(
-                Modifier.align(Alignment.CenterHorizontally)
-                    .height(44.dp)
-                    .clip(cancelShape)
-                    .background(Kh1Colors.Ground, cancelShape)
-                    .border(2.dp, Kh1Colors.RoomRim, cancelShape)
-                    .clickable(role = Role.Button, onClick = onCancel)
-                    .padding(horizontal = 28.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    "Cancel",
-                    color = Kh1Colors.TabText, fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 14.sp,
-                )
-            }
-        }
     }
 }
 
@@ -635,7 +366,7 @@ private fun PartyTabContent(view: MapView, onReport: () -> Unit) {
             )
             val sora = view.sora
             StatRow("Level", sora.level?.toString() ?: "--", Kh1Colors.Gold)
-            StatRow("Keyblade", sora.weapon ?: "Kingdom Key", Kh1Colors.Text)
+            StatRow("Keyblade", sora.weapon ?: "--", Kh1Colors.Text)
             StatRow("Strength", sora.strength?.toString() ?: "--", Kh1Colors.Text)
             StatRow("Defense", sora.defense?.toString() ?: "--", Kh1Colors.Text)
             StatRow("Ability Points (AP)", sora.ap?.toString() ?: "--", Kh1Colors.Mp)
@@ -666,7 +397,7 @@ private fun JournalTabContent(view: MapView) {
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
-            "JIMINY'S JOURNAL · 15 WORLDS · $totalAllChests TREASURES",
+            "JIMINY'S JOURNAL · ${view.worlds.size} WORLDS · $totalAllChests TREASURES",
             color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
             letterSpacing = 1.5.sp,
         )

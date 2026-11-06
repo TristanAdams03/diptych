@@ -70,4 +70,11 @@ class MapUiLogicTest {
         assertTrue("last row bottom $lastBottom > $viewportH", lastBottom <= viewportH)
         assertTrue(m.boxY(rows - 1) + pan >= 0f)
     }
+
+    @Test fun statusLineShowsTheReasonOrReady() {
+        val base = com.diptych.app.kh1.buildMapView(TestData.data, TestData.state(15, 5, TestData.partyRegions()))
+        assertEquals(com.diptych.app.kh1.BUSY_UNKNOWN, statusLine(base))
+        assertEquals("Game ready", statusLine(base.copy(canAct = true, busyReason = null)))
+        assertEquals("Tap-to-cast is coming next", QUICK_COMING_NEXT)
+    }
 }

@@ -4,6 +4,7 @@ import com.diptych.app.kh1.TestData.data
 import com.diptych.app.net.RegionHex
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DecodeTest {
@@ -39,7 +40,7 @@ class DecodeTest {
         assertNull(decodeStoryStep(hbStory, emptyList()))
     }
 
-    @Test fun soraStatusDecodesStatsSpellsAndStockItems() {
+    @Test fun soraStatusDecodesStatsSpellsAndEquippedItems() {
         val status = decodeSoraStatus(data.party, TestData.soraStatusRegions())
         assertEquals(42, status.level)
         assertEquals(38, status.ap)
@@ -50,12 +51,9 @@ class DecodeTest {
             listOf("Firaga", "Blizzara", "Thundara", "Cura", "Gravira", "Stopra"),
             status.spells.map { it.name },
         )
-        assertEquals(
-            listOf("Potion" to 6, "Hi-Potion" to 3, "Ether" to 4, "Elixir" to 1, "Tent" to 2),
-            status.items.map { it.name to it.count },
-        )
-        assertEquals(true, status.items.first { it.name == "Potion" }.equipped)
-        assertEquals(false, status.items.first { it.name == "Tent" }.equipped)
+        // Equipped slots only: Ether, Elixir and Tent are stocked but not equipped, so they are not listed.
+        assertEquals(listOf("Potion" to 6, "Hi-Potion" to 3), status.items.map { it.name to it.count })
+        assertTrue(status.items.all { it.equipped })
     }
 
     @Test fun nullHexGivesNullFields() {

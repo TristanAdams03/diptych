@@ -99,7 +99,7 @@ data class SoraStatus(
 
 private fun ByteArray.u8(at: Int): Int? = if (at in indices) this[at].toInt() and 0xFF else null
 
-/** Decodes Sora's stats, equipped weapon, unlocked magic tiers, and usable inventory items. */
+/** Decodes Sora's stats, equipped weapon, unlocked magic tiers, and the items in his equipped slots. */
 fun decodeSoraStatus(party: PartyConfig, regions: List<RegionHex>): SoraStatus {
     val statsDef = party.soraStats ?: return SoraStatus()
     val stats = readBytes(regions, statsDef.offset, statsDef.length)
@@ -137,7 +137,8 @@ fun decodeSoraStatus(party: PartyConfig, regions: List<RegionHex>): SoraStatus {
             val stockCount = stock?.u8(def.id) ?: 0
             val eqCount = equippedCounts[def.id] ?: 0
             val total = maxOf(stockCount, eqCount)
-            if (total <= 0) null
+            // Only Sora's equipped slots (spec §7): stocked-only and save-point items (Tent etc.) are left out.
+            if (eqCount <= 0 || total <= 0) null
             else StockItem(def.id, def.name, total, eqCount > 0, def.needsTarget)
         }
     }.orEmpty()
