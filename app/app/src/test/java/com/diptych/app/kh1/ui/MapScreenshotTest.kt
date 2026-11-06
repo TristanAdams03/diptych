@@ -51,13 +51,8 @@ class MapScreenshotTest {
     }
 
     @Test fun magicAndItemsTab() {
-        val b = ByteArray(45).also { it[12] = 0x03; it[20] = 0x08; it[24] = 0x05 }
-        val regions = listOf(
-            RegionHex(48143040L, hex(b)),
-            RegionHex(TestData.HB_STORY, "3c"),
-            RegionHex(48149007L, "00"),
-        ) + party()
-        val view = buildMapView(TestData.data, safe(15, 5, regions))
+        // Traverse Town (2 world spans): the Sora stats block is watched live there (3-span worlds drop it, I7).
+        val view = buildMapView(TestData.data, safe(3, 2, party()))
         paparazzi.snapshot { MapScreen(view, ConnectionLabel.Connected, onReport = {}, initialTab = Kh1Tab.MagicItems) }
     }
 
