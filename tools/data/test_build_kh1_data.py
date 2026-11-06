@@ -5,6 +5,7 @@ CI also regenerates the assets and fails on any diff.
 """
 
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -285,3 +286,64 @@ def test_party_regions():
         {"offset": 0x2DE9364, "length": 113},
         {"offset": 0x2DE97EF, "length": 155},
     ]
+
+
+# --- story thresholds (reviewed tables from 4fac287) ------------------------
+
+REVIEWED = json.loads((Path(__file__).parent / "fixtures/story_thresholds_4fac287.json").read_text(encoding="utf-8"))
+REVIEWED_WORLDS = {"Neverland": "neverland", "Hollow Bastion": "hollow_bastion",
+                   "End of the World": "end_of_the_world"}
+STORY_DRAFT = b.load_draft("story_flags.json")
+
+
+def table_values(table):
+    """Every byte value named in a threshold table's labels ("0x17/0x1E", "0x28-0x32", "<=0x0A")."""
+    return {int(h, 16) for label, _, _ in table["thresholds"] for h in re.findall(r"0x[0-9A-Fa-f]+", label)}
+
+
+@per_world
+def test_story_thresholds_strictly_increasing(world):
+    story = world.get("story")
+    if story is None:
+        return
+    belows = [s["below"] for s in story["steps"]]
+    assert belows == sorted(set(belows)), belows
+    assert all(1 <= v <= 256 for v in belows)
+
+
+def test_reviewed_threshold_tables_are_restored():
+    for key in REVIEWED_WORLDS.values():
+        assert STORY_DRAFT[key] == REVIEWED[key], key
+
+
+@pytest.mark.parametrize("name", sorted(REVIEWED_WORLDS))
+def test_late_world_thresholds_match_reviewed_table(name):
+    world = next(w for w in WORLD_LIST if w["name"] == name)
+    allowed = table_values(REVIEWED[REVIEWED_WORLDS[name]])
+    steps = world["story"]["steps"]
+    assert steps[-1]["below"] == 256  # terminal "complete" step
+    for s in steps[:-1]:
+        assert s["below"] in allowed, (name, s["below"], s["hint"])
+        assert s["confidence"] == "source" and s["source"], (name, s["below"])
+
+
+def test_hollow_bastion_hints_follow_the_table():
+    hb = next(w for w in WORLD_LIST if w["name"] == "Hollow Bastion")
+    by_below = {s["below"]: s["hint"] for s in hb["story"]["steps"]}
+    assert "Riku" in by_below[0x32]
+    assert "Maleficent" in by_below[0x5A] and "Dragon" not in by_below[0x5A]
+    assert "Dragon Maleficent" in by_below[0x6E]
+    assert "Riku" in by_below[0x82]
+    assert "Behemoth" in by_below[0xB9]
+    assert "Princesses" in by_below[0xC3]
+
+
+@per_world
+def test_story_steps_without_citation_are_guesses(world):
+    story = world.get("story")
+    if story is None:
+        return
+    for s in story["steps"]:
+        assert s["confidence"] in CONFIDENCE
+        if s["confidence"] != "guess":
+            assert s.get("source"), (world["name"], s["below"])

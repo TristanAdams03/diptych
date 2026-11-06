@@ -33,7 +33,7 @@ class DecodeTest {
         val step0 = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "00")))!!
         assertEquals(1, step0.nextRoom)
         val step60 = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "3c")))!!
-        assertEquals(6, step60.nextRoom)
+        assertEquals(11, step60.nextRoom) // 0x3C < 0x46: Ansem/Riku cutscene, Castle Chapel (11)
         val stepDone = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "ff")))!!
         assertNull(stepDone.nextRoom)
         assertNull(decodeStoryStep(hbStory, emptyList()))

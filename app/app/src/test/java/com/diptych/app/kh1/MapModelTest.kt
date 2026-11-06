@@ -46,9 +46,20 @@ class MapModelTest {
     @Test fun hollowBastionStoryHighlightsNextAndLockedRooms() {
         val v = buildMapView(data, state(15, 5, TestData.hbRegions(storyByte = 60) + TestData.partyRegions()))
         assertEquals("Library", v.roomName)
-        assertTrue(v.nextHint!!.contains("Lift Stop"))
-        assertEquals(listOf(6), v.rooms.filter { it.next }.map { it.id })
+        // 0x3C: Riku I beaten (0x32), before the Ansem/Riku cutscene in the Castle Chapel (0x46).
+        assertTrue(v.nextHint!!.contains("Castle Chapel"))
+        assertEquals(listOf(11), v.rooms.filter { it.next }.map { it.id })
         assertTrue(14 in v.rooms.filter { it.locked }.map { it.id })
+    }
+
+    @Test fun hollowBastionHintsFollowTheSourcedThresholds() {
+        fun hint(b: Int) = buildMapView(data, state(15, 5, TestData.hbRegions(storyByte = b))).nextHint!!
+        assertTrue(hint(0x31).contains("Riku"))
+        assertTrue(hint(0x50).contains("Maleficent") && !hint(0x50).contains("Dragon"))
+        assertTrue(hint(0x5A).contains("Dragon Maleficent"))
+        assertTrue(hint(0x6D).contains("Dragon Maleficent"))
+        assertTrue(hint(0x6E).contains("Riku"))
+        assertTrue(hint(0x82).contains("Behemoth"))
     }
 
     @Test fun busyMenuAndCutsceneDisableActions() {

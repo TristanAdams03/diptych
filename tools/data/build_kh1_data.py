@@ -63,6 +63,8 @@ SOURCES_WORLDS = [
     "784-794 and 1fmAPFixWarps.lua lines 10-338 (MIT); Denhonator/KHPCSpeedrunTools@aeb4972e "
     "1fmRandoSomeLogic.lua lines 236, 1960-2486 (Unlicense); gaithern/KH1-LUA-LIBRARY@e387282a "
     "SteamGlobal_1_0_0_2.lua lines 9, 199 (MIT)",
+    "Story hints (text, nextRoom, lockedRooms): hand-written. A step is 'source' only when its threshold cites "
+    "a line (Neverland, Hollow Bastion, End of the World tables in story_flags.json); all other steps are 'guess'",
     "Edges: guesses from game knowledge (docs/research/kh1-data-draft/rooms.json adjacency); not sourced",
     "Layout: hand-authored, tools/data/layouts/kh1_layouts.json",
     "Per-row citations: docs/research/kh1-data-draft/*.json and docs/research/kh1-late-worlds.md",
@@ -159,12 +161,19 @@ def _story(name, story_draft, room_ids):
         locked = sorted(set(s.get("lockedRooms", [])))
         if not set(locked).issubset(room_ids):
             raise ValueError(f"{name}: story lockedRooms {locked} not in rooms")
-        steps.append({
+        step = {
             "below": s["below"],
             "hint": s["hint"],
             "nextRoom": nr,
             "lockedRooms": locked,
-        })
+            # Hint text and rooms are hand-written; "source" means the threshold cites a source line.
+            "confidence": conf(s["confidence"]),
+        }
+        if step["confidence"] == "source":
+            if not s.get("source"):
+                raise ValueError(f"{name}: story step below {s['below']} is 'source' without a citation")
+            step["source"] = s["source"]
+        steps.append(step)
     return {
         "offset": int(sd["address"], 16),
         "confidence": conf(sd["confidence"]),
