@@ -82,9 +82,15 @@ try {
     }
 } finally { Pop-Location }
 
+# Labels live in config.yaml so they can change without re-registering. windows-msvc is Diptych's;
+# windows-latest / windows-2025 let other repos (RefinedEmulation) use this machine too.
+Set-Content -Encoding ascii -Path (Join-Path $Dir "config.yaml") -Value @(
+    "log:", "  level: info", "runner:", "  file: .runner", "  capacity: 1", "  timeout: 3h", "  labels:",
+    "    - windows-msvc:host", "    - windows-latest:host", "    - windows-2025:host")
+
 # Start the runner at boot as SYSTEM, restarting if it stops.
 $taskName = "Gitea act_runner"
-$action = New-ScheduledTaskAction -Execute $exe -Argument "daemon" -WorkingDirectory $Dir
+$action = New-ScheduledTaskAction -Execute $exe -Argument "daemon -c config.yaml" -WorkingDirectory $Dir
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $settings = New-ScheduledTaskSettingsSet -RestartCount 999 -RestartInterval (New-TimeSpan -Minutes 1) `
     -ExecutionTimeLimit ([TimeSpan]::Zero) -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
