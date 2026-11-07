@@ -1,5 +1,5 @@
 # Sets up a Windows machine as a Gitea Actions runner for the Diptych mod build
-# (jobs with runs-on: windows-latest). Run once, in an elevated PowerShell:
+# (jobs with runs-on: windows-msvc). Run once, in an elevated PowerShell:
 #
 #   Set-ExecutionPolicy -Scope Process Bypass
 #   .\setup-windows-runner.ps1 -Token <registration token>
@@ -54,7 +54,7 @@ Push-Location $Dir
 try {
     if (-not (Test-Path ".runner")) {
         & $exe register --no-interactive --instance $GiteaUrl --token $Token --name $RunnerName `
-            --labels "windows-latest:host,windows-2025:host"
+            --labels "windows-msvc:host"
         if ($LASTEXITCODE -ne 0) { throw "act_runner register failed ($LASTEXITCODE)" }
     } else {
         Write-Host "ok   already registered (.runner exists)"

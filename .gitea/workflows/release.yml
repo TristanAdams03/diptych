@@ -1,0 +1,108 @@
+# Gitea Actions copy of .github/workflows/release.yml: publishes through the Gitea API.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  mod:
+    runs-on: windows-msvc
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure (x64)
+        run: cmake -S mods/kh1 -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure -V
+      - name: Check dinput8.dll (x64, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build/Release/dinput8.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          $names = "DirectInput8Create", "DllCanUnloadNow", "DllGetClassObject", "DllRegisterServer", "DllUnregisterServer", "GetdfDIJoystick"
+          if ($out -notmatch "8664 machine \(x64\)") { throw "DLL is not x64" }
+          foreach ($name in $names) {
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - name: Zip (dinput8.dll only, at the zip root)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/Release/dinput8.dll -DestinationPath "Diptych-KH1-mod-${{ github.ref_name }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mod-zip
+          path: Diptych-KH1-mod-${{ github.ref_name }}.zip
+          if-no-files-found: error
+
+  app:
+    runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-22.04
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-35 build-tools;35.0.0 platform-tools"
+      - name: Test and assemble
+        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+      - name: Name the APK
+        working-directory: ${{ github.workspace }}
+        run: cp app/app/build/outputs/apk/debug/app-debug.apk "Diptych-${{ github.ref_name }}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-apk
+          path: Diptych-${{ github.ref_name }}.apk
+          if-no-files-found: error
+
+  publish:
+    needs: [mod, app]
+    runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create pre-release (Gitea API)
+        env:
+          TOKEN: ${{ github.token }}
+          API: ${{ github.server_url }}/api/v1/repos/${{ github.repository }}
+          WEB: ${{ github.server_url }}/${{ github.repository }}/src/tag/${{ github.ref_name }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          ls -l dist
+          cat > notes.md <<NOTES
+          Pre-release. Not for general use.
+
+          - KH1 map checklist: ${WEB}/docs/spike/MAP-CHECKLIST.md
+          - PC checklist: ${WEB}/docs/spike/PC-CHECKLIST.md
+          - Thor checklist: ${WEB}/docs/spike/THOR-CHECKLIST.md
+
+          Assets:
+          - \`Diptych-KH1-mod-${TAG}.zip\` holds only \`dinput8.dll\`.
+          - \`Diptych-${TAG}.apk\` is the Diptych app.
+          NOTES
+          body=$(python3 -c 'import json,sys;print(json.dumps({"tag_name":sys.argv[1],"name":sys.argv[1],"body":open("notes.md").read(),"prerelease":True,"draft":False}))' "$TAG")
+          id=$(curl -fsS -X POST -H "Authorization: token $TOKEN" -H "Content-Type: application/json" "$API/releases" -d "$body" | python3 -c 'import json,sys;print(json.load(sys.stdin)["id"])')
+          for f in "dist/Diptych-KH1-mod-${TAG}.zip" "dist/Diptych-${TAG}.apk"; do
+            curl -fsS -X POST -H "Authorization: token $TOKEN" -F "attachment=@$f" "$API/releases/$id/assets?name=$(basename "$f")" >/dev/null
+            echo "uploaded $(basename "$f")"
+          done
