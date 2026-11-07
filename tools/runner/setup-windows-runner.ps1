@@ -5,7 +5,7 @@
 #   .\setup-windows-runner.ps1 -Token <registration token>
 #
 # Get the token in Gitea: Site Administration -> Actions -> Runners -> Create new runner.
-# Installs: VS 2022 Build Tools (C++ workload), CMake, Git, PowerShell 7, Node.js LTS (for JS actions),
+# Installs (direct downloads): VS 2022 Build Tools (C++ workload), CMake, Git, PowerShell 7, Node.js 20 (for JS actions),
 # and Gitea's act_runner as a startup task. Safe to re-run: installed tools are skipped and an
 # existing registration is kept.
 param(
@@ -16,23 +16,44 @@ param(
     [string]$Dir = "C:\act_runner"
 )
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"   # Invoke-WebRequest is far faster without the progress bar
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-function Install-Winget([string]$Id, [string]$Override = "") {
-    $have = winget list --id $Id -e --accept-source-agreements 2>$null | Select-String -SimpleMatch $Id
-    if ($have) { Write-Host "ok   $Id already installed"; return }
-    Write-Host "get  $Id"
-    $wargs = @("install", "--id", $Id, "-e", "--silent", "--accept-package-agreements", "--accept-source-agreements")
-    if ($Override) { $wargs += @("--override", $Override) }
-    winget @wargs
-    if ($LASTEXITCODE -ne 0) { throw "winget install $Id failed ($LASTEXITCODE)" }
+# Direct downloads from each project's official release URL. winget is not used: it is missing or
+# unusable under SYSTEM (the guest agent's account) on a fresh Windows 10.
+$dl = Join-Path $env:TEMP "runner-setup"
+New-Item -ItemType Directory -Force -Path $dl | Out-Null
+
+function Install-From([string]$Name, [string]$Check, [string]$Url, [string]$File, [string[]]$InstallArgs) {
+    if (Test-Path $Check) { Write-Host "ok   $Name already installed"; return }
+    $path = Join-Path $dl $File
+    Write-Host "get  $Name  $Url"
+    Invoke-WebRequest -Uri $Url -OutFile $path -UseBasicParsing
+    Write-Host "run  $Name"
+    if ($File -like "*.msi") {
+        $p = Start-Process msiexec.exe -ArgumentList (@("/i", "`"$path`"", "/qn", "/norestart") + $InstallArgs) -Wait -PassThru
+    } else {
+        $p = Start-Process $path -ArgumentList $InstallArgs -Wait -PassThru
+    }
+    # 3010 = success, reboot required
+    if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010) { throw "$Name installer exited $($p.ExitCode)" }
+    Write-Host "ok   $Name (exit $($p.ExitCode))"
 }
 
-Install-Winget "Microsoft.VisualStudio.2022.BuildTools" `
-    "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
-Install-Winget "Kitware.CMake"
-Install-Winget "Git.Git"
-Install-Winget "Microsoft.PowerShell"
-Install-Winget "OpenJS.NodeJS.LTS"
+Install-From "VS 2022 Build Tools (C++)" "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC" `
+    "https://aka.ms/vs/17/release/vs_BuildTools.exe" "vs_BuildTools.exe" `
+    @("--quiet", "--wait", "--norestart", "--nocache", "--add", "Microsoft.VisualStudio.Workload.VCTools", "--includeRecommended")
+Install-From "CMake" "C:\Program Files\CMake\bin\cmake.exe" `
+    "https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-windows-x86_64.msi" "cmake.msi" `
+    @("ADD_CMAKE_TO_PATH=System")
+Install-From "Git" "C:\Program Files\Git\cmd\git.exe" `
+    "https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.2/Git-2.47.1.2-64-bit.exe" "git.exe" `
+    @("/VERYSILENT", "/NORESTART", "/NOCANCEL", "/SP-")
+Install-From "PowerShell 7" "C:\Program Files\PowerShell\7\pwsh.exe" `
+    "https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/PowerShell-7.4.6-win-x64.msi" "pwsh.msi" `
+    @("ADD_PATH=1")
+Install-From "Node.js 20" "C:\Program Files\nodejs\node.exe" `
+    "https://nodejs.org/dist/v20.18.1/node-v20.18.1-x64.msi" "node.msi" @()
 
 # Make the new tools visible to this session and to the runner (machine PATH).
 $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
