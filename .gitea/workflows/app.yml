@@ -1,6 +1,6 @@
 # Gitea Actions copy of .github/workflows/app.yml.
 name: app
-# checkout@v4 (node20): act_runner 0.2.11 has no node24. github-server-url: the Linux runner
+# checkout@v4 (node20): act_runner 0.2.11 has no node24. upload/download-artifact@v3: v4 refuses non-GitHub servers. github-server-url: the Linux runner
 # hands job containers its compose-internal URL (http://server:3000), which they can't resolve.
 
 on:
@@ -46,7 +46,7 @@ jobs:
       - name: Test, verify screenshots and assemble
         # verifyPaparazziDebug runs the unit tests in verify mode: screenshots must match src/test/snapshots.
         run: ./gradlew --no-daemon testDebugUnitTest verifyPaparazziDebug assembleDebug
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: kh1-map-screenshots
@@ -54,7 +54,7 @@ jobs:
             app/app/src/test/snapshots/images/*.png
             app/app/build/paparazzi/failures/
           if-no-files-found: error
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: diptych-spike-apk
           path: app/app/build/outputs/apk/debug/app-debug.apk

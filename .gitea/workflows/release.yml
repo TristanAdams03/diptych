@@ -1,6 +1,6 @@
 # Gitea Actions copy of .github/workflows/release.yml: publishes through the Gitea API.
 name: release
-# checkout@v4 (node20): act_runner 0.2.11 has no node24. github-server-url: the Linux runner
+# checkout@v4 (node20): act_runner 0.2.11 has no node24. upload/download-artifact@v3: v4 refuses non-GitHub servers. github-server-url: the Linux runner
 # hands job containers its compose-internal URL (http://server:3000), which they can't resolve.
 
 on:
@@ -41,7 +41,7 @@ jobs:
         shell: pwsh
         run: |
           Compress-Archive -Path build/Release/dinput8.dll -DestinationPath "Diptych-KH1-mod-${{ github.ref_name }}.zip"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: mod-zip
           path: Diptych-KH1-mod-${{ github.ref_name }}.zip
@@ -70,7 +70,7 @@ jobs:
       - name: Name the APK
         working-directory: ${{ github.workspace }}
         run: cp app/app/build/outputs/apk/debug/app-debug.apk "Diptych-${{ github.ref_name }}.apk"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: app-apk
           path: Diptych-${{ github.ref_name }}.apk
@@ -82,10 +82,11 @@ jobs:
     container:
       image: catthehacker/ubuntu:act-22.04
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
         with:
           path: dist
-          merge-multiple: true
+      - name: Flatten artifacts
+        run: find dist -mindepth 2 -type f -exec mv {} dist/ \;
       - name: Create pre-release (Gitea API)
         env:
           TOKEN: ${{ github.token }}
