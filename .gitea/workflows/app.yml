@@ -1,5 +1,7 @@
 # Gitea Actions copy of .github/workflows/app.yml.
 name: app
+# checkout@v4 (node20): act_runner 0.2.11 has no node24. github-server-url: the Linux runner
+# hands job containers its compose-internal URL (http://server:3000), which they can't resolve.
 
 on:
   push:
@@ -17,7 +19,9 @@ jobs:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
+        with:
+          github-server-url: http://192.168.0.186:3001
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
