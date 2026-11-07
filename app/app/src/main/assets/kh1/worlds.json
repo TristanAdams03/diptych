@@ -10,6 +10,7 @@
   "Hollow Bastion Emblem Piece (Chest): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua line 1013 (MIT); collected when u8[offset] >= atLeast",
   "Chest contents: Denhonator/KHPCSpeedrunTools@aeb4972e 1FMMods/scripts/io_packages/Rando/chests.lua and rewards.lua (Unlicense)",
   "Story progress bytes and thresholds: gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 623-718, 784-794 and 1fmAPFixWarps.lua lines 10-338 (MIT); Denhonator/KHPCSpeedrunTools@aeb4972e 1fmRandoSomeLogic.lua lines 236, 1960-2486 (Unlicense); gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua lines 9, 199 (MIT)",
+  "Story hints (text, nextRoom, lockedRooms): hand-written. A step is 'source' only when its threshold cites a line (Neverland, Hollow Bastion, End of the World tables in story_flags.json); all other steps are 'guess'",
   "Edges: guesses from game knowledge (docs/research/kh1-data-draft/rooms.json adjacency); not sourced",
   "Layout: hand-authored, tools/data/layouts/kh1_layouts.json",
   "Per-row citations: docs/research/kh1-data-draft/*.json and docs/research/kh1-late-worlds.md"
@@ -110,6 +111,7 @@
     "steps": [
      {
       "below": 13,
+      "confidence": "guess",
       "hint": "choose your power on the Awakening platform",
       "lockedRooms": [
        4
@@ -118,12 +120,14 @@
      },
      {
       "below": 30,
+      "confidence": "guess",
       "hint": "defeat Darkside on the Awakening platform",
       "lockedRooms": [],
       "nextRoom": 4
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "step into the light toward Destiny Islands",
       "lockedRooms": [],
       "nextRoom": 5
@@ -275,6 +279,7 @@
     "steps": [
      {
       "below": 26,
+      "confidence": "guess",
       "hint": "gather raft supplies along the Seashore and Cove",
       "lockedRooms": [
        8
@@ -283,6 +288,7 @@
      },
      {
       "below": 190,
+      "confidence": "guess",
       "hint": "explore the Cove and Secret Place to finish Day 2",
       "lockedRooms": [
        8
@@ -291,12 +297,14 @@
      },
      {
       "below": 220,
+      "confidence": "guess",
       "hint": "brave the storm at the Secret Place and Island Remains",
       "lockedRooms": [],
       "nextRoom": 7
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Destiny Islands complete",
       "lockedRooms": [],
       "nextRoom": null
@@ -891,6 +899,7 @@
     "steps": [
      {
       "below": 23,
+      "confidence": "guess",
       "hint": "visit Cid in the Accessory Shop and patrol the 2nd District",
       "lockedRooms": [
        18,
@@ -901,6 +910,7 @@
      },
      {
       "below": 35,
+      "confidence": "guess",
       "hint": "regroup with Leon and Aerith in the Green Room",
       "lockedRooms": [
        18,
@@ -910,6 +920,7 @@
      },
      {
       "below": 49,
+      "confidence": "guess",
       "hint": "defeat Guard Armor in the 3rd District",
       "lockedRooms": [
        18,
@@ -919,24 +930,28 @@
      },
      {
       "below": 62,
+      "confidence": "guess",
       "hint": "head through the Secret Waterway to deliver the Old Book to Merlin",
       "lockedRooms": [],
       "nextRoom": 18
      },
      {
       "below": 110,
+      "confidence": "guess",
       "hint": "ring the Gizmo Shop bell and defeat Opposite Armor in the 3rd District",
       "lockedRooms": [],
       "nextRoom": 2
      },
      {
       "below": 140,
+      "confidence": "guess",
       "hint": "speak with Kairi in the Secret Waterway for Oathkeeper",
       "lockedRooms": [],
       "nextRoom": 22
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Traverse Town Keyhole sealed · visit Merlin's House or the Item Workshop",
       "lockedRooms": [],
       "nextRoom": null
@@ -1254,6 +1269,7 @@
     "steps": [
      {
       "below": 17,
+      "confidence": "guess",
       "hint": "enter the Bizarre Room and speak to the Doorknob",
       "lockedRooms": [
        9
@@ -1262,18 +1278,21 @@
      },
      {
       "below": 30,
+      "confidence": "guess",
       "hint": "search the Lotus Forest for the evidence boxes",
       "lockedRooms": [],
       "nextRoom": 4
      },
      {
       "below": 46,
+      "confidence": "guess",
       "hint": "defeat Trickmaster in the Bizarre Room to seal the Keyhole",
       "lockedRooms": [],
       "nextRoom": 1
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Wonderland Keyhole sealed",
       "lockedRooms": [],
       "nextRoom": null
@@ -1693,6 +1712,7 @@
     "steps": [
      {
       "below": 23,
+      "confidence": "guess",
       "hint": "head down from the Tree House to the Camp: Tent to meet Jane",
       "lockedRooms": [
        9,
@@ -1703,6 +1723,7 @@
      },
      {
       "below": 43,
+      "confidence": "guess",
       "hint": "collect the 6 slides around Camp and view them at the Tent",
       "lockedRooms": [
        9,
@@ -1712,6 +1733,7 @@
      },
      {
       "below": 66,
+      "confidence": "guess",
       "hint": "climb to the Tree House and defeat Sabor in the Bamboo Thicket",
       "lockedRooms": [
        9,
@@ -1721,6 +1743,7 @@
      },
      {
       "below": 86,
+      "confidence": "guess",
       "hint": "head to the Jungle: Cliff to defeat Clayton and the Stealth Sneak",
       "lockedRooms": [
        10
@@ -1729,12 +1752,14 @@
      },
      {
       "below": 110,
+      "confidence": "guess",
       "hint": "climb the Waterfall Cavern to seal the Cavern of Hearts",
       "lockedRooms": [],
       "nextRoom": 10
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Deep Jungle Keyhole sealed · Jungle Slider courses open in the Tunnel",
       "lockedRooms": [],
       "nextRoom": null
@@ -1897,6 +1922,7 @@
     "steps": [
      {
       "below": 2,
+      "confidence": "guess",
       "hint": "visit Pooh's House and help Pooh at the Hunny Tree",
       "lockedRooms": [
        7,
@@ -1906,6 +1932,7 @@
      },
      {
       "below": 4,
+      "confidence": "guess",
       "hint": "protect Rabbit's garden at Rabbit's House and Wood: Meadow",
       "lockedRooms": [
        8
@@ -1914,12 +1941,14 @@
      },
      {
       "below": 6,
+      "confidence": "guess",
       "hint": "join Tigger at the Bouncing Spot and guide Pooh on the Muddy Path",
       "lockedRooms": [],
       "nextRoom": 7
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "find Pooh at Wood: Hill to seal the 100 Acre Wood book",
       "lockedRooms": [],
       "nextRoom": 5
@@ -2546,6 +2575,7 @@
     "steps": [
      {
       "below": 30,
+      "confidence": "guess",
       "hint": "rescue Jasmine in the Alley and release Carpet at Aladdin's House",
       "lockedRooms": [
        8,
@@ -2563,6 +2593,7 @@
      },
      {
       "below": 53,
+      "confidence": "guess",
       "hint": "defeat the Pot Centipede at the Palace Gates",
       "lockedRooms": [
        9,
@@ -2579,6 +2610,7 @@
      },
      {
       "below": 73,
+      "confidence": "guess",
       "hint": "enter the Cave of Wonders and activate the Cave: Core",
       "lockedRooms": [
        16
@@ -2587,12 +2619,14 @@
      },
      {
       "below": 120,
+      "confidence": "guess",
       "hint": "defeat Jafar and Genie Jafar in the Lamp Chamber",
       "lockedRooms": [],
       "nextRoom": 16
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Agrabah Keyhole sealed",
       "lockedRooms": [],
       "nextRoom": null
@@ -3030,6 +3064,7 @@
     "steps": [
      {
       "below": 30,
+      "confidence": "guess",
       "hint": "follow the tridents through the Undersea Gorge to Triton's Palace",
       "lockedRooms": [
        9,
@@ -3042,6 +3077,7 @@
      },
      {
       "below": 50,
+      "confidence": "guess",
       "hint": "retrieve the Crystal Trident from the Sunken Ship",
       "lockedRooms": [
        11,
@@ -3052,6 +3088,7 @@
      },
      {
       "below": 83,
+      "confidence": "guess",
       "hint": "swim through the Den of Tides to confront Ursula in Ursula's Lair",
       "lockedRooms": [
        16
@@ -3060,18 +3097,21 @@
      },
      {
       "below": 93,
+      "confidence": "guess",
       "hint": "pursue giant Ursula past the Tidal Abyss",
       "lockedRooms": [],
       "nextRoom": 16
      },
      {
       "below": 100,
+      "confidence": "guess",
       "hint": "return to Ariel's Grotto to seal the Keyhole",
       "lockedRooms": [],
       "nextRoom": 13
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Atlantica Keyhole sealed",
       "lockedRooms": [],
       "nextRoom": null
@@ -3430,6 +3470,7 @@
     "steps": [
      {
       "below": 30,
+      "confidence": "guess",
       "hint": "visit Dr. Finkelstein in the Research Lab and check the Graveyard",
       "lockedRooms": [
        4,
@@ -3443,6 +3484,7 @@
      },
      {
       "below": 43,
+      "confidence": "guess",
       "hint": "find the Surprise in the Boneyard and return to the Research Lab",
       "lockedRooms": [
        6,
@@ -3454,6 +3496,7 @@
      },
      {
       "below": 80,
+      "confidence": "guess",
       "hint": "cross the Bridge to Oogie's Manor and climb to the Evil Playroom",
       "lockedRooms": [
        7,
@@ -3463,6 +3506,7 @@
      },
      {
       "below": 98,
+      "confidence": "guess",
       "hint": "drop to the Torture Chamber to defeat Oogie Boogie",
       "lockedRooms": [
        8
@@ -3471,12 +3515,14 @@
      },
      {
       "below": 110,
+      "confidence": "guess",
       "hint": "destroy the dark orbs at the Manor Ruins to seal the Keyhole",
       "lockedRooms": [],
       "nextRoom": 8
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Halloween Town Keyhole sealed",
       "lockedRooms": [],
       "nextRoom": null
@@ -3637,6 +3683,7 @@
     "steps": [
      {
       "below": 13,
+      "confidence": "guess",
       "hint": "complete Phil's barrel trials in the Coliseum: Lobby for Thunder",
       "lockedRooms": [
        2
@@ -3645,12 +3692,14 @@
      },
      {
       "below": 37,
+      "confidence": "guess",
       "hint": "enter the Coliseum: Arena prelims and face Cloud and Cerberus",
       "lockedRooms": [],
       "nextRoom": 2
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "speak to Phil in the Coliseum: Lobby to enter the tournament cups",
       "lockedRooms": [],
       "nextRoom": 1
@@ -4019,6 +4068,7 @@
     "steps": [
      {
       "below": 46,
+      "confidence": "guess",
       "hint": "follow Riku through Chambers 1–6 to the Bowels for Parasite Cage",
       "lockedRooms": [
        2,
@@ -4028,12 +4078,14 @@
      },
      {
       "below": 70,
+      "confidence": "guess",
       "hint": "climb from Monstro: Mouth through the Throat to the Stomach",
       "lockedRooms": [],
       "nextRoom": 2
      },
      {
       "below": 256,
+      "confidence": "guess",
       "hint": "Monstro complete",
       "lockedRooms": [],
       "nextRoom": null
@@ -4281,40 +4333,57 @@
     "steps": [
      {
       "below": 53,
+      "confidence": "source",
       "hint": "climb from the Hold through the Galley to the Cabin to fight Anti-Sora",
       "lockedRooms": [
        6,
        8,
        9
       ],
-      "nextRoom": 5
+      "nextRoom": 5,
+      "source": "neverland threshold 0x35 (Anti-Sora beaten (Raven's Claw)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 693"
      },
      {
       "below": 63,
+      "confidence": "source",
       "hint": "rejoin Peter Pan and clear the Ship: Hold for Cure",
       "lockedRooms": [
        8,
        9
       ],
-      "nextRoom": 0
+      "nextRoom": 0,
+      "source": "neverland threshold 0x3F (forced fight done (Cure)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 694; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 263"
      },
      {
       "below": 86,
+      "confidence": "source",
       "hint": "confront Captain Hook on the Pirate Ship deck",
       "lockedRooms": [
        9
       ],
-      "nextRoom": 8
+      "nextRoom": 8,
+      "source": "neverland threshold 0x56 (Hook beaten (Ars Arcanum); next = Clock Tower): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 695; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 272"
      },
      {
       "below": 110,
+      "confidence": "source",
       "hint": "fly to the Clock Tower to seal the Keyhole",
       "lockedRooms": [],
-      "nextRoom": 9
+      "nextRoom": 9,
+      "source": "neverland threshold 0x6E (Clock Tower keyhole sealed (Fairy Harp, Tinker Bell, Glide)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 696-698"
+     },
+     {
+      "below": 150,
+      "confidence": "source",
+      "hint": "optional: defeat the Phantom at the Clock Tower",
+      "lockedRooms": [],
+      "nextRoom": 9,
+      "source": "neverland threshold 0x96 (Phantom beaten (Stop)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 699; 1fmAPEotWDoor.lua line 75"
      },
      {
       "below": 256,
-      "hint": "Neverland Keyhole sealed · check the Clock Tower doors on the hour",
+      "confidence": "guess",
+      "hint": "Neverland complete",
       "lockedRooms": [],
       "nextRoom": null
      }
@@ -4915,6 +4984,7 @@
     "steps": [
      {
       "below": 30,
+      "confidence": "source",
       "hint": "ride the Rising Falls bubbles up to the Castle Gates",
       "lockedRooms": [
        4,
@@ -4924,62 +4994,92 @@
        14,
        15
       ],
-      "nextRoom": 1
+      "nextRoom": 1,
+      "source": "hollow_bastion threshold 0x1E-0x28 (Riku I fight): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 303"
      },
      {
       "below": 50,
-      "hint": "open the Waterway gate from the Base Level and enter the Entrance Hall",
+      "confidence": "source",
+      "hint": "win the Keyblade back and defeat Riku",
       "lockedRooms": [
-       5,
-       6,
        11,
        14,
        15
       ],
-      "nextRoom": 4
+      "nextRoom": null,
+      "source": "hollow_bastion threshold 0x32 (Riku I beaten (White Trinity)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 703"
+     },
+     {
+      "below": 70,
+      "confidence": "source",
+      "hint": "work up through the castle to the Castle Chapel",
+      "lockedRooms": [
+       14,
+       15
+      ],
+      "nextRoom": 11,
+      "source": "hollow_bastion threshold 0x46 (Ansem possesses Riku cutscene (world 15 room 11)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 306-309"
      },
      {
       "below": 80,
-      "hint": "head up to the Lift Stop and take the lift to the Base Level",
+      "confidence": "source",
+      "hint": "go on from the Castle Chapel to the Grand Hall",
       "lockedRooms": [
-       11,
-       14,
        15
       ],
-      "nextRoom": 6
+      "nextRoom": 14,
+      "source": "hollow_bastion threshold 0x50 (before Maleficent (room 14 cutscene)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 312-317"
+     },
+     {
+      "below": 90,
+      "confidence": "source",
+      "hint": "defeat Maleficent",
+      "lockedRooms": [
+       15
+      ],
+      "nextRoom": null,
+      "source": "hollow_bastion threshold 0x5A (Maleficent beaten (Donald Cheer); before Dragon Maleficent): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 704; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 321"
      },
      {
       "below": 110,
-      "hint": "ascend the High Tower to the Castle Chapel and defeat Maleficent",
+      "confidence": "source",
+      "hint": "defeat Dragon Maleficent",
       "lockedRooms": [
-       14,
        15
       ],
-      "nextRoom": 11
+      "nextRoom": null,
+      "source": "hollow_bastion threshold 0x6E (Dragon Maleficent beaten (Fireglow)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 705"
      },
      {
       "below": 130,
-      "hint": "proceed past the Castle Chapel to the Grand Hall to face Riku",
+      "confidence": "source",
+      "hint": "defeat Riku (second fight)",
       "lockedRooms": [
        15
       ],
-      "nextRoom": 14
+      "nextRoom": null,
+      "source": "hollow_bastion threshold 0x82 (Riku II beaten (Ragnarok)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 706; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 324"
      },
      {
       "below": 185,
-      "hint": "return through the Grand Hall to the Dark Depths to seal the Keyhole",
+      "confidence": "source",
+      "hint": "go to the Dark Depths, defeat Behemoth and seal the Keyhole",
       "lockedRooms": [],
-      "nextRoom": 15
+      "nextRoom": 15,
+      "source": "hollow_bastion threshold 0xB9 (Behemoth beaten (Omega Arts)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 707"
      },
      {
       "below": 195,
-      "hint": "speak with the Princesses in the Castle Chapel and Belle in the Library",
+      "confidence": "source",
+      "hint": "speak with the Princesses in the Castle Chapel",
       "lockedRooms": [],
-      "nextRoom": 11
+      "nextRoom": 11,
+      "source": "hollow_bastion threshold 0xC3 (spoke to princesses (Fire); EotW unlock gate): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 708; Denhonator line 2438"
      },
      {
       "below": 256,
-      "hint": "Hollow Bastion Keyhole sealed",
+      "confidence": "guess",
+      "hint": "Hollow Bastion complete",
       "lockedRooms": [],
       "nextRoom": null
      }
@@ -5618,19 +5718,30 @@
     "steps": [
      {
       "below": 51,
-      "hint": "cross the Final Dimension and World Terminus to Evil Grounds",
+      "confidence": "source",
+      "hint": "cross the Final Dimension and World Terminus to Evil Grounds and defeat Chernabog",
       "lockedRooms": [
        28,
        29,
        32
       ],
-      "nextRoom": 26
+      "nextRoom": 26,
+      "source": "end_of_the_world threshold 0x33 (Chernabog beaten (Superglide)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 712"
+     },
+     {
+      "below": 155,
+      "confidence": "source",
+      "hint": "descend through Linked Worlds and Final Rest to the Final Door",
+      "lockedRooms": [],
+      "nextRoom": 32,
+      "source": "end_of_the_world threshold 0x9B (final (with world 0x10 room 0x20)): gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 1474"
      },
      {
       "below": 256,
-      "hint": "descend through Linked Worlds to Final Rest and the Final Door",
+      "confidence": "guess",
+      "hint": "the final battle waits beyond the Final Door",
       "lockedRooms": [],
-      "nextRoom": 29
+      "nextRoom": null
      }
     ]
    },

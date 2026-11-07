@@ -1,0 +1,133 @@
+{
+ "_note": "Verbatim copy of the reviewed threshold tables at commit 4fac287 (docs/research/kh1-data-draft/story_flags.json). Do not edit.",
+ "neverland": {
+  "address": "0x2DEA86D",
+  "thresholds": [
+   [
+    "<=0x0A",
+    "start of Neverland 1",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 240"
+   ],
+   [
+    "0x14",
+    "Neverland 2 start / room 7",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 243-244"
+   ],
+   [
+    "0x17/0x1E",
+    "before Anti-Sora cutscenes",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 252"
+   ],
+   [
+    "0x28-0x32",
+    "Anti-Sora fight",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 257"
+   ],
+   [
+    "0x35",
+    "Anti-Sora beaten (Raven's Claw)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 693"
+   ],
+   [
+    "0x3C",
+    "before Peter Pan rejoins",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 260"
+   ],
+   [
+    "0x3F",
+    "forced fight done (Cure)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 694; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 263"
+   ],
+   [
+    "0x50",
+    "before Captain Hook",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 266"
+   ],
+   [
+    "0x56",
+    "Hook beaten (Ars Arcanum); next = Clock Tower",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 695; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 272"
+   ],
+   [
+    "0x6E",
+    "Clock Tower keyhole sealed (Fairy Harp, Tinker Bell, Glide)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 696-698"
+   ],
+   [
+    "0x96",
+    "Phantom beaten (Stop)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 699; 1fmAPEotWDoor.lua line 75"
+   ]
+  ]
+ },
+ "hollow_bastion": {
+  "address": "0x2DEA86E",
+  "thresholds": [
+   [
+    "0x1E-0x28",
+    "Riku I fight",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 303"
+   ],
+   [
+    "0x32",
+    "Riku I beaten (White Trinity)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 703"
+   ],
+   [
+    "0x46",
+    "Ansem possesses Riku cutscene (world 15 room 11)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 306-309"
+   ],
+   [
+    "0x50",
+    "before Maleficent (room 14 cutscene)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 312-317"
+   ],
+   [
+    "0x5A",
+    "Maleficent beaten (Donald Cheer); before Dragon Maleficent",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 704; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 321"
+   ],
+   [
+    "0x6E",
+    "Dragon Maleficent beaten (Fireglow)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 705"
+   ],
+   [
+    "0x82",
+    "Riku II beaten (Ragnarok)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 706; gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 324"
+   ],
+   [
+    "0xB9",
+    "Behemoth beaten (Omega Arts)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 707"
+   ],
+   [
+    "0xC3",
+    "spoke to princesses (Fire); EotW unlock gate",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 708; Denhonator line 2438"
+   ]
+  ]
+ },
+ "end_of_the_world": {
+  "address": "0x2DEA86F",
+  "thresholds": [
+   [
+    "0x08..0x32",
+    "Chernabog region",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua 331"
+   ],
+   [
+    "0x33",
+    "Chernabog beaten (Superglide)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 712"
+   ],
+   [
+    "0x9B",
+    "final (with world 0x10 room 0x20)",
+    "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua 1474"
+   ]
+  ]
+ }
+}

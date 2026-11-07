@@ -4,6 +4,7 @@ import com.diptych.app.kh1.TestData.data
 import com.diptych.app.net.RegionHex
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DecodeTest {
@@ -33,13 +34,13 @@ class DecodeTest {
         val step0 = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "00")))!!
         assertEquals(1, step0.nextRoom)
         val step60 = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "3c")))!!
-        assertEquals(6, step60.nextRoom)
+        assertEquals(11, step60.nextRoom) // 0x3C < 0x46: Ansem/Riku cutscene, Castle Chapel (11)
         val stepDone = decodeStoryStep(hbStory, listOf(RegionHex(TestData.HB_STORY, "ff")))!!
         assertNull(stepDone.nextRoom)
         assertNull(decodeStoryStep(hbStory, emptyList()))
     }
 
-    @Test fun soraStatusDecodesStatsSpellsAndStockItems() {
+    @Test fun soraStatusDecodesStatsSpellsAndEquippedItems() {
         val status = decodeSoraStatus(data.party, TestData.soraStatusRegions())
         assertEquals(42, status.level)
         assertEquals(38, status.ap)
@@ -50,12 +51,11 @@ class DecodeTest {
             listOf("Firaga", "Blizzara", "Thundara", "Cura", "Gravira", "Stopra"),
             status.spells.map { it.name },
         )
-        assertEquals(
-            listOf("Potion" to 6, "Hi-Potion" to 3, "Ether" to 4, "Elixir" to 1, "Tent" to 2),
-            status.items.map { it.name to it.count },
-        )
-        assertEquals(true, status.items.first { it.name == "Potion" }.equipped)
-        assertEquals(false, status.items.first { it.name == "Tent" }.equipped)
+        // Equipped slots only: Ether, Elixir and Tent are stocked but not equipped, so they are not listed.
+        assertEquals(listOf("Potion" to 6, "Hi-Potion" to 3), status.items.map { it.name to it.count })
+        assertTrue(status.items.all { it.equipped })
+        assertTrue(status.known)
+        assertEquals(false, decodeSoraStatus(data.party, TestData.partyRegions()).known) // stats not watched
     }
 
     @Test fun nullHexGivesNullFields() {

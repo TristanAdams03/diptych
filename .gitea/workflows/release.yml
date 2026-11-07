@@ -1,0 +1,83 @@
+# Gitea Actions copy of .github/workflows/release.yml. Each job attaches its own asset to the Gitea
+# pre-release through the API (tools/release/gitea-attach.*): the Linux runner's artifact service
+# isn't reachable from job containers, so no artifacts are passed between jobs.
+name: release
+# checkout@v4 (node20): act_runner 0.2.11 has no node24. github-server-url: the Linux runner
+# hands job containers its compose-internal URL (http://server:3000), which they can't resolve.
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  mod:
+    runs-on: windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          github-server-url: http://192.168.0.186:3001
+      - name: Configure (x64)
+        run: cmake -S mods/kh1 -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure -V
+      - name: Check dinput8.dll (x64, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build/Release/dinput8.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          $names = "DirectInput8Create", "DllCanUnloadNow", "DllGetClassObject", "DllRegisterServer", "DllUnregisterServer", "GetdfDIJoystick"
+          if ($out -notmatch "8664 machine \(x64\)") { throw "DLL is not x64" }
+          foreach ($name in $names) {
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - name: Zip (dinput8.dll only, at the zip root)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path build/Release/dinput8.dll -DestinationPath "Diptych-KH1-mod-${{ github.ref_name }}.zip"
+      - name: Attach the mod zip to the release
+        shell: pwsh
+        env:
+          TOKEN: ${{ github.token }}
+          API: http://192.168.0.186:3001/api/v1/repos/${{ github.repository }}
+          WEB: https://gitea.fantastictwo.net/${{ github.repository }}/src/tag/${{ github.ref_name }}
+        run: pwsh tools/release/gitea-attach.ps1 $env:API ${{ github.ref_name }} $env:WEB "Diptych-KH1-mod-${{ github.ref_name }}.zip"
+
+  app:
+    runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-22.04
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          github-server-url: http://192.168.0.186:3001
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-35 build-tools;35.0.0 platform-tools"
+      - name: Test and assemble
+        run: ./gradlew --no-daemon testDebugUnitTest assembleDebug
+      - name: Name the APK
+        working-directory: ${{ github.workspace }}
+        run: cp app/app/build/outputs/apk/debug/app-debug.apk "Diptych-${{ github.ref_name }}.apk"
+      - name: Attach the APK to the release
+        working-directory: ${{ github.workspace }}
+        env:
+          TOKEN: ${{ github.token }}
+          API: http://192.168.0.186:3001/api/v1/repos/${{ github.repository }}
+          WEB: https://gitea.fantastictwo.net/${{ github.repository }}/src/tag/${{ github.ref_name }}
+        run: tools/release/gitea-attach.sh "$API" "${{ github.ref_name }}" "$WEB" "Diptych-${{ github.ref_name }}.apk"

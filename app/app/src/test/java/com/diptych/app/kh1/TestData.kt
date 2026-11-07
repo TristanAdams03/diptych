@@ -21,7 +21,7 @@ object TestData {
     )
 
     /** Realistic Sora stats + magic tiers + inventory counts matching Magic.dc.html. */
-    fun soraStatusRegions(slots: String = "0109"): List<RegionHex> {
+    fun soraStatusRegions(slots: String = "0102"): List<RegionHex> {
         val stats = ByteArray(113).also {
             it[0] = 42 // Level
             it[5] = 38 // AP
@@ -56,7 +56,7 @@ object TestData {
         )
     }
 
-    /** Hollow Bastion (15): byte +20 = 0x08, +24 = 0x05, rest zero; story byte = 60 (Library -> Lift Stop). */
+    /** Hollow Bastion (15): byte +20 = 0x08, +24 = 0x05, rest zero; story byte = 60 = 0x3C (Riku I beaten; next: Castle Chapel). */
     fun hbRegions(storyByte: Int = 60): List<RegionHex> {
         val b = ByteArray(45).also { it[20] = 0x08; it[24] = 0x05 }
         return listOf(

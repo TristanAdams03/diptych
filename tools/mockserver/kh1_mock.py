@@ -51,7 +51,7 @@ FAKE_BYTES.update({
     0x2DE97F9 + 3: 4,         # Ether x4
     0x2DE97F9 + 4: 1,         # Elixir x1
     0x2DE97F9 + 142: 2,       # Tent x2
-    0x2DEA86E: 60,            # Hollow Bastion story progress: Library -> Lift Stop
+    0x2DEA86E: 60,            # Hollow Bastion story progress 0x3C: Riku I beaten; next: Castle Chapel
 })
 WATCH_MAX_REGIONS, WATCH_MAX_LENGTH, WATCH_MAX_TOTAL = 8, 256, 1024
 

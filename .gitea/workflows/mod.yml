@@ -1,0 +1,59 @@
+# Gitea Actions copy of .github/workflows/mod.yml (Gitea reads .gitea/workflows first).
+name: mod
+# checkout@v4 (node20): act_runner 0.2.11 has no node24. upload/download-artifact@v3: v4 refuses non-GitHub servers. github-server-url: the Linux runner
+# hands job containers its compose-internal URL (http://server:3000), which they can't resolve.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          github-server-url: http://192.168.0.186:3001
+      - name: Configure (x64)
+        run: cmake -S mods/kh1 -B build -A x64
+      - name: Build
+        run: cmake --build build --config Release
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure -V
+      - name: Check dinput8.dll (x64, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build/Release/dinput8.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          $names = "DirectInput8Create", "DllCanUnloadNow", "DllGetClassObject", "DllRegisterServer", "DllUnregisterServer", "GetdfDIJoystick"
+          $out -split "`n" | Select-String -Pattern ("machine|DLL characteristics|" + ($names -join "|")) | ForEach-Object { Write-Host $_.Line.Trim() }
+          if ($out -notmatch "8664 machine \(x64\)") { throw "DLL is not x64" }
+          foreach ($name in $names) {
+            # an exports-table row: ordinal, hint, RVA, then exactly the undecorated name
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - uses: actions/upload-artifact@v3
+        with:
+          name: diptych-kh1-dinput8
+          path: build/Release/dinput8.dll
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-latest
+    container:
+      image: catthehacker/ubuntu:act-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          github-server-url: http://192.168.0.186:3001
+      - name: Install cmake
+        run: apt-get update -qq && apt-get install -y -qq cmake >/dev/null
+      - name: Build and test
+        run: cmake -S mods/kh1 -B b -DCMAKE_BUILD_TYPE=Release && cmake --build b && ctest --test-dir b --output-on-failure -V

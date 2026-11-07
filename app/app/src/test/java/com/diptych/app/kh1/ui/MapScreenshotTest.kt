@@ -28,14 +28,18 @@ class MapScreenshotTest {
 
     private fun hex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
 
-    /** Sora full, Donald low (16 / 42, under 40%), Beast full, plus Sora stats/magic/inventory. */
+    /** Sora full, Donald low (16 / 42, under 40%), Goofy full (the live game's party), plus Sora stats/magic/inventory. */
     private fun party() = listOf(
         RegionHex(TestData.PARTY_BASE, TestData.SORA),
         RegionHex(TestData.PARTY_BASE + 256, "100000002a0000000300000008000000"),
-        RegionHex(TestData.PARTY_BASE + 512, "42000000420000000400000004000000"),
-    ) + TestData.soraStatusRegions(slots = "0109")
+        RegionHex(TestData.PARTY_BASE + 512, TestData.GOOFY),
+    ) + TestData.soraStatusRegions(slots = "0102")
 
-    @Test fun hollowBastionLiftStop() {
+    /** Every safety flag reads false: the status line says "Game ready". */
+    private fun safe(world: Int?, room: Int?, regions: List<RegionHex>) =
+        TestData.state(world, room, regions).copy(inMenu = false, inCutscene = false, inGummi = false)
+
+    @Test fun hollowBastionLibrary() {
         // Task 4's fixture (room 6, bytes +20/+24) plus Great Crest's two chests (+12 bits 0,1) so a cleared room shows.
         val b = ByteArray(45).also { it[12] = 0x03; it[20] = 0x08; it[24] = 0x05 }
         val regions = listOf(
@@ -43,17 +47,12 @@ class MapScreenshotTest {
             RegionHex(TestData.HB_STORY, "3c"),
             RegionHex(48149007L, "00"),
         ) + party()
-        snap(buildMapView(TestData.data, TestData.state(15, 5, regions)))
+        snap(buildMapView(TestData.data, safe(15, 5, regions)))
     }
 
     @Test fun magicAndItemsTab() {
-        val b = ByteArray(45).also { it[12] = 0x03; it[20] = 0x08; it[24] = 0x05 }
-        val regions = listOf(
-            RegionHex(48143040L, hex(b)),
-            RegionHex(TestData.HB_STORY, "3c"),
-            RegionHex(48149007L, "00"),
-        ) + party()
-        val view = buildMapView(TestData.data, TestData.state(15, 5, regions))
+        // Traverse Town: Sora's stats block is watched in every shipped world.
+        val view = buildMapView(TestData.data, safe(3, 2, party()))
         paparazzi.snapshot { MapScreen(view, ConnectionLabel.Connected, onReport = {}, initialTab = Kh1Tab.MagicItems) }
     }
 
@@ -61,7 +60,8 @@ class MapScreenshotTest {
         // Room 21 (World Terminus (Atlantica)) is col 6, row 5: the far bottom-right of a 7×6 grid.
         val b = ByteArray(25).also { it[0] = 0x0f; it[4] = 0x0f; it[8] = 0x07; it[20] = 0x01 }
         val regions = listOf(RegionHex(48143088L, hex(b)), RegionHex(48146543L, "05")) + party()
-        snap(buildMapView(TestData.data, TestData.state(16, 21, regions)))
+        // inCutscene set: the busy reason must show next to the Next hint.
+        snap(buildMapView(TestData.data, safe(16, 21, regions).copy(inCutscene = true)))
     }
 
     @Test fun unknownWorld() {

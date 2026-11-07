@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -42,7 +43,7 @@ class Kh1SessionTest {
     private fun frame(world: Int?, room: Int?, regions: List<com.diptych.app.net.RegionHex>?) =
         link.bus.tryEmit(ServerMsg.State("kh1.spike", state(world, room, regions)))
 
-    private val hbWatch = data.party.watch + data.world(15)!!.watch
+    private val hbWatch = combinedWatch(data.party, data.world(15)!!)
 
     @Test fun welcomeSendsOneWatch() {
         welcome()
@@ -58,7 +59,7 @@ class Kh1SessionTest {
         welcome()
         frame(13, 0, TestData.partyRegions())
         assertEquals(2, link.sent.size)
-        assertEquals(data.party.watch + data.world(13)!!.watch, link.sent[1])
+        assertEquals(data.party.watch + data.world(13)!!.watch, link.sent[1]) // 5 + 3 = 8 regions: fits, nothing dropped
         frame(13, 1, TestData.partyRegions())
         assertEquals(2, link.sent.size)
         frame(15, 6, TestData.partyRegions())
@@ -98,7 +99,7 @@ class Kh1SessionTest {
     }
 
     @Test fun overLimitWorldWatchesPartyOnlyAndLogs() {
-        val big = WorldDef(99, "Big", watch = List(5) { Region(48143000L + it * 300, 256) })
+        val big = WorldDef(99, "Big", watch = List(5) { Region(48143000L + it * 300, 256) }) // 1280 bytes: cannot fit
         val logs = mutableListOf<String>()
         val l = FakeLink()
         val s = CoroutineScope(Dispatchers.Unconfined)
@@ -111,14 +112,77 @@ class Kh1SessionTest {
         s.cancel()
     }
 
-    @Test fun everyShippedWorldFitsTheWatchLimits() {
+    private fun covered(regions: List<Region>, offset: Long) = regions.any { offset >= it.offset && offset < it.offset + it.length }
+
+    @Test fun droppedInfoRegionIsLogged() {
+        val logs = mutableListOf<String>()
+        val l = FakeLink()
+        val s = CoroutineScope(Dispatchers.Unconfined)
+        val far = WorldDef(98, "Far", watch = List(4) { Region(48143000L + it * 1000L, 10) }) // 5 + 4 = 9 > 8
+        Kh1Session(l, data.copy(worlds = data.worlds + far), s, logs::add)
+        l.bus.tryEmit(ServerMsg.Welcome("0.1.0", 0, "kh1", "steam-1.0.0.2", true, listOf("watch")))
+        l.bus.tryEmit(ServerMsg.State("kh1.spike", state(98, 0, null)))
+        assertEquals(1, logs.size)
+        assertTrue(logs[0], logs[0].contains("dropped 1") && logs[0].contains("chests kept"))
+        s.cancel()
+    }
+
+    @Test fun everyShippedWorldKeepsItsChestsAndStatsWithinLimits() {
         for (w in data.worlds) {
-            val c = combinedWatch(data.party, w)
-            assertNotNull("world ${w.id} ${w.name}", c)
-            assertEquals(true, withinWatchLimits(c!!))
+            val plan = planWatch(data.party, w)
+            val r = plan.regions
+            val label = "world ${w.id} ${w.name}: $r"
+            assertTrue(label, plan.chestsFit)
+            assertTrue(label, withinWatchLimits(r))
+            assertTrue(label, r.size <= MAX_WATCH_REGIONS)
+            assertTrue(label, r.sumOf { it.length } <= MAX_WATCH_TOTAL_BYTES)
+            assertTrue(label, plan.dropped.isEmpty()) // Sora's stats stay watched in every shipped world
+            for (c in w.chests) assertTrue("$label misses ${c.name}", covered(r, c.offset))
+            w.story?.let { assertTrue("$label misses the story byte", covered(r, it.offset)) }
+            // Party HP/MP and slot bytes are never dropped.
+            for (p in data.party.essentialWatch) assertTrue("$label misses party $p", covered(r, p.offset))
         }
-        assertNull(combinedWatch(data.party, WorldDef(1, "x", watch = List(5) { Region(1L + it * 1000, 10) })))
-        assertNull(combinedWatch(data.party, WorldDef(1, "x", watch = listOf(Region(1, 257)))))
+    }
+
+    @Test fun twoSpanWorldsKeepTheFullPartyWatch() {
+        val tt = data.world(3)!!
+        assertEquals(data.party.watch + tt.watch, combinedWatch(data.party, tt))
+        assertTrue(planWatch(data.party, tt).dropped.isEmpty())
+    }
+
+    @Test fun closeSpansMergeBeforeAnythingIsDropped() {
+        // 4 party essentials + stats + 4 world spans = 9 > 8; two world spans 40 bytes apart merge into one.
+        val w = WorldDef(1, "x", watch = listOf(Region(48143000L, 10), Region(48143050L, 10), Region(48146000L, 1), Region(48147000L, 1)))
+        val plan = planWatch(data.party, w)
+        assertEquals(1, plan.merged)
+        assertTrue(plan.dropped.isEmpty())
+        assertTrue(Region(48143000L, 60) in plan.regions)
+        assertEquals(8, plan.regions.size)
+    }
+
+    @Test fun farSpansDropStatsNotChests() {
+        val w = WorldDef(1, "x", watch = listOf(Region(48143000L, 10), Region(48144000L, 10), Region(48146000L, 1), Region(48147000L, 1)))
+        val plan = planWatch(data.party, w)
+        assertEquals(data.party.extraWatch, plan.dropped)
+        assertTrue(plan.chestsFit)
+        for (x in w.watch) assertTrue(x in plan.regions)
+    }
+
+    @Test fun chestsThatCannotFitAreReportedNotSilent() {
+        for (w in listOf(
+            WorldDef(1, "x", watch = List(5) { Region(1L + it * 1000, 200) }),
+            WorldDef(1, "x", watch = listOf(Region(1, 257))),
+        )) {
+            val plan = planWatch(data.party, w)
+            assertEquals(false, plan.chestsFit)
+            assertEquals(data.party.watch, plan.regions)
+        }
+    }
+
+    @Test fun coalesceRespectsGapSpanAndTotal() {
+        assertEquals(listOf(Region(0, 10), Region(100, 10)) to 0, coalesce(listOf(Region(0, 10), Region(100, 10)), 1))
+        assertEquals(listOf(Region(0, 74)) to 1, coalesce(listOf(Region(0, 10), Region(70, 4)), 1)) // gap 60 ≤ 64
+        assertEquals(listOf(Region(0, 250), Region(300, 10)), coalesce(listOf(Region(0, 250), Region(300, 10)), 1).first) // span 310 > 256
     }
 
     @Test fun secondWelcomeResendsWatch() {

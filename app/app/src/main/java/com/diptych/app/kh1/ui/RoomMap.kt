@@ -58,7 +58,14 @@ private const val FIT_PAD_X = 8f
 private const val FIT_GAP = 8f
 private const val FIT_BOX_H = 48f
 private const val FIT_GAP_Y = 6f
-private const val FIT_PAD_Y = 4f
+private const val FIT_GAP_Y_TIGHT = 4f
+
+/** Gap kept between the grid and the panel title above / key bar below, at either end of a vertical pan. */
+internal const val GRID_EDGE_GAP = 6f
+private const val FIT_PAD_Y = GRID_EDGE_GAP
+
+/** Smallest fitted box: two 11 sp label lines plus the count (39 dp), 2 dp padding each side, and font slack. */
+internal const val FIT_MIN_BOX_H = 46f
 
 /** Cell geometry for one world. Worlds of ≤ [FIT_COLS] columns are sized to the viewport width (no horizontal pan). */
 internal data class GridMetrics(
@@ -71,12 +78,19 @@ internal data class GridMetrics(
     fun contentHeight(rows: Int) = padY * 2 + (rows - 1) * pitchY + boxH
 }
 
-internal fun gridMetrics(cols: Int, viewportWidthDp: Float): GridMetrics {
+/**
+ * Worlds of ≤ [FIT_COLS] columns are sized to the viewport width, and their rows shrink (down to [FIT_MIN_BOX_H], gap
+ * 6 then 4 dp) to fit [viewportHeightDp]. If they still don't fit, the grid pans vertically; the [GRID_EDGE_GAP]
+ * padding keeps the top and bottom rows clear of the title and key bar at either end of the pan.
+ */
+internal fun gridMetrics(cols: Int, viewportWidthDp: Float, rows: Int = 1, viewportHeightDp: Float = Float.POSITIVE_INFINITY): GridMetrics {
     val standard = GridMetrics(BOX_W, BOX_H, PITCH_X, PITCH_Y, PAD_X, PAD_Y, 12f, 6f)
     if (cols > FIT_COLS || standard.contentWidth(cols) <= viewportWidthDp) return standard
     val pitch = (viewportWidthDp - 2 * FIT_PAD_X + FIT_GAP) / cols
-    // Tighter rows too (11 sp label: two lines plus the count fit in 48 dp), so a 5-row world usually fits without panning.
-    return GridMetrics(pitch - FIT_GAP, FIT_BOX_H, pitch, FIT_BOX_H + FIT_GAP_Y, FIT_PAD_X, FIT_PAD_Y, 11f, 4f)
+    fun boxFor(gap: Float) = ((viewportHeightDp - 2 * FIT_PAD_Y - (rows - 1) * gap) / rows).coerceAtMost(FIT_BOX_H)
+    val gapY = if (boxFor(FIT_GAP_Y) >= FIT_MIN_BOX_H) FIT_GAP_Y else FIT_GAP_Y_TIGHT
+    val boxH = boxFor(gapY).coerceAtLeast(FIT_MIN_BOX_H)
+    return GridMetrics(pitch - FIT_GAP, boxH, pitch, boxH + gapY, FIT_PAD_X, FIT_PAD_Y, 11f, 4f)
 }
 
 /** "o / t", "n / n ✓" when every chest is opened, "? / t" when unreadable, "no chests" for none. */
@@ -102,7 +116,7 @@ fun RoomMap(view: MapView, modifier: Modifier = Modifier, showSpoilers: Boolean 
     Column(modifier.kh1Panel().padding(2.dp).clip(RoundedCornerShape(12.dp))) {
         Text(
             if (view.chestsTotal == 0) "ROOMS" else "ROOMS · CHESTS ${view.chestsOpened ?: "?"} / ${view.chestsTotal}",
-            Modifier.fillMaxWidth().padding(start = 10.dp, top = 6.dp, bottom = 2.dp),
+            Modifier.fillMaxWidth().padding(start = 10.dp, top = 4.dp, bottom = 2.dp),
             color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
             letterSpacing = 1.5.sp,
         )
@@ -131,7 +145,7 @@ private fun PannableGrid(view: MapView, showSpoilers: Boolean) {
         val vh = constraints.maxHeight.toFloat()
         val cols = (view.rooms.maxOf { it.col } + 1)
         val rows = (view.rooms.maxOf { it.row } + 1)
-        val m = gridMetrics(cols, maxWidth.value)
+        val m = gridMetrics(cols, maxWidth.value, rows, maxHeight.value)
         val cw = m.contentWidth(cols) * px
         val ch = m.contentHeight(rows) * px
         val here = view.rooms.firstOrNull { it.here }
@@ -194,7 +208,7 @@ private fun RoomBox(r: RoomView, m: GridMetrics, showSpoilers: Boolean, modifier
         modifier.requiredSize(m.boxW.dp, m.boxH.dp)
             .background(fill, RoomShape)
             .then(borderMod)
-            .padding(horizontal = m.innerPad.dp, vertical = 3.dp),
+            .padding(horizontal = m.innerPad.dp, vertical = if (m.boxH < FIT_BOX_H) 2.dp else 3.dp),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -229,13 +243,13 @@ private fun RoomBox(r: RoomView, m: GridMetrics, showSpoilers: Boolean, modifier
 private fun KeyBar(showSpoilers: Boolean, modifier: Modifier) {
     val shape = RoundedCornerShape(8.dp)
     Row(
-        modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp).fillMaxWidth().height(28.dp)
+        modifier.padding(start = 8.dp, end = 8.dp, bottom = 6.dp).fillMaxWidth().height(24.dp)
             .background(Kh1Colors.Room, shape).border(1.dp, Kh1Colors.KeyRim, shape)
-            .padding(horizontal = 10.dp),
+            .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        KeyItem("Current") {
+        KeyItem("You") {
             Box(
                 Modifier.size(14.dp, 9.dp).background(Kh1Colors.You, RoundedCornerShape(3.dp))
                     .border(1.5.dp, Color.White, RoundedCornerShape(3.dp)),
@@ -254,9 +268,8 @@ private fun KeyBar(showSpoilers: Boolean, modifier: Modifier) {
                         .dashedBorder(1.5.dp, Kh1Colors.KeyLockedRim, 3.dp),
                 )
             }
-        } else {
-            KeyItem("Cleared") { KeyText("✓", Kh1Colors.Gold) }
         }
+        KeyItem("Cleared") { KeyText("✓", Kh1Colors.Gold) }
         KeyItem("Chests") { KeyText("2 / 4", Kh1Colors.Gold) }
     }
 }
@@ -265,7 +278,7 @@ private fun KeyBar(showSpoilers: Boolean, modifier: Modifier) {
 private fun KeyItem(label: String, mark: @Composable () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         mark()
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(4.dp))
         KeyText(label, Kh1Colors.KeyText)
     }
 }

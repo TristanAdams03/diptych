@@ -70,4 +70,40 @@ class MapUiLogicTest {
         assertTrue("last row bottom $lastBottom > $viewportH", lastBottom <= viewportH)
         assertTrue(m.boxY(rows - 1) + pan >= 0f)
     }
+
+    // Grid slot height on the Thor with the two-line header (Next hint): ~262 dp between title and key bar.
+    private val mapHeightDp = 262f
+
+    @Test fun hollowBastionFitsBelowTheNextLine() {
+        val cols = 4
+        val rows = TestData.data.world(15)!!.rooms.maxOf { it.row } + 1
+        assertEquals(5, rows)
+        val m = gridMetrics(cols, mapWidthDp, rows, mapHeightDp)
+        assertTrue("content ${m.contentHeight(rows)} > $mapHeightDp", m.contentHeight(rows) <= mapHeightDp)
+        assertTrue(m.boxH >= FIT_MIN_BOX_H)
+        assertEquals(0f, clampPan(-100f, m.contentHeight(rows), mapHeightDp)) // fits: no vertical pan
+    }
+
+    @Test fun everyWorldClearsTitleAndKeyBarAtBothPanEnds() {
+        for (w in TestData.data.worlds) {
+            val cols = w.rooms.maxOf { it.col } + 1
+            val rows = w.rooms.maxOf { it.row } + 1
+            for (vh in listOf(mapHeightDp, 200f, 150f)) {
+                val m = gridMetrics(cols, mapWidthDp, rows, vh)
+                val ch = m.contentHeight(rows)
+                // Top end of the pan: the first row starts >= 6 dp below the title.
+                assertTrue("${w.name} @$vh top", m.boxY(0) + clampPan(1e6f, ch, vh) >= GRID_EDGE_GAP)
+                // Bottom end: the last row ends >= 6 dp above the key bar.
+                val bottom = m.boxY(rows - 1) + m.boxH + clampPan(-1e6f, ch, vh)
+                assertTrue("${w.name} @$vh bottom $bottom", vh - bottom >= GRID_EDGE_GAP - 0.01f)
+            }
+        }
+    }
+
+    @Test fun statusLineShowsTheReasonOrReady() {
+        val base = com.diptych.app.kh1.buildMapView(TestData.data, TestData.state(15, 5, TestData.partyRegions()))
+        assertEquals(com.diptych.app.kh1.BUSY_UNKNOWN, statusLine(base))
+        assertEquals("Game ready", statusLine(base.copy(canAct = true, busyReason = null)))
+        assertEquals("Tap-to-cast is coming next", QUICK_COMING_NEXT)
+    }
 }
