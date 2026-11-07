@@ -15,7 +15,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: catthehacker/ubuntu:act-22.04
-      options: --network gitea_default
     defaults:
       run:
         working-directory: app
@@ -48,6 +47,7 @@ jobs:
         # verifyPaparazziDebug runs the unit tests in verify mode: screenshots must match src/test/snapshots.
         run: ./gradlew --no-daemon testDebugUnitTest verifyPaparazziDebug assembleDebug
       - uses: actions/upload-artifact@v3
+        continue-on-error: true  # the Linux runner's artifact service is unreachable from job containers
         if: always()
         with:
           name: kh1-map-screenshots
@@ -56,6 +56,7 @@ jobs:
             app/app/build/paparazzi/failures/
           if-no-files-found: error
       - uses: actions/upload-artifact@v3
+        continue-on-error: true  # the Linux runner's artifact service is unreachable from job containers
         with:
           name: diptych-spike-apk
           path: app/app/build/outputs/apk/debug/app-debug.apk
