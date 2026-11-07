@@ -51,6 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: catthehacker/ubuntu:act-22.04
+      options: --network gitea_default
     defaults:
       run:
         working-directory: app
@@ -81,6 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: catthehacker/ubuntu:act-22.04
+      options: --network gitea_default
     steps:
       - uses: actions/download-artifact@v3
         with:

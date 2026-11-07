@@ -48,7 +48,8 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     container:
-      image: catthehacker/ubuntu:act-22.04
+      image: catthehacker/ubuntu:act-24.04
+      options: --network gitea_default
     steps:
       - uses: actions/checkout@v4
         with:
