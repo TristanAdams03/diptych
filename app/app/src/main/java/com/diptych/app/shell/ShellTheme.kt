@@ -6,6 +6,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.diptych.app.R
 
 /** Warm charcoal and brass (spec §6; docs/superpowers/specs/mockups/diptych-v4.html). Never navy in the shell. */
@@ -20,11 +21,16 @@ object ShellColors {
 }
 
 @OptIn(ExperimentalTextApi::class)
-private fun variable(res: Int, w: Int) =
-    Font(res, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))
+private fun variable(res: Int, w: Int, opsz: Float? = null) =
+    Font(
+        res, FontWeight(w),
+        variationSettings = FontVariation.Settings(
+            *listOfNotNull(FontVariation.weight(w), opsz?.let { FontVariation.opticalSizing(it.sp) }).toTypedArray(),
+        ),
+    )
 
 /** Display = Fraunces 700 (variable, OFL); body = Manrope (variable, OFL). */
 object ShellType {
-    val display = FontFamily(variable(R.font.fraunces, 500), variable(R.font.fraunces, 700))
+    val display = FontFamily(variable(R.font.fraunces, 500, 20f), variable(R.font.fraunces, 700, 20f))
     val body = FontFamily(variable(R.font.manrope, 400), variable(R.font.manrope, 600), variable(R.font.manrope, 700))
 }

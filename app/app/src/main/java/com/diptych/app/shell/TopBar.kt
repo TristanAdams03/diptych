@@ -4,6 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,7 +64,7 @@ fun TopBar(active: ShellTab, onSelect: (ShellTab) -> Unit, onSettings: () -> Uni
             modifier = Modifier.padding(start = 6.dp, top = 5.dp),
         )
         Spacer(Modifier.weight(1f))
-        Row(horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
             ShellTab.entries.forEach { tab -> TabLabel(tab, tab == active) { onSelect(tab) } }
         }
         Box(
@@ -81,7 +83,7 @@ private fun TabLabel(tab: ShellTab, on: Boolean, onClick: () -> Unit) {
         Modifier
             .heightIn(min = 48.dp)
             .widthIn(min = 48.dp)
-            .clickable(role = Role.Tab, onClick = onClick)
+            .selectable(selected = on, role = Role.Tab, onClick = onClick)
             .padding(horizontal = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
