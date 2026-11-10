@@ -2,6 +2,7 @@ package com.diptych.app.shell
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -30,7 +31,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -47,6 +49,13 @@ private fun ribbonLabel(s: GameStatus) = when (s) {
     GameStatus.SetUp -> "SET UP"
     GameStatus.Update -> "UPDATE"
     GameStatus.Soon -> "SOON"
+}
+
+private fun statusWord(s: GameStatus) = when (s) {
+    GameStatus.Ready -> "Ready"
+    GameStatus.SetUp -> "Set up"
+    GameStatus.Update -> "Update"
+    GameStatus.Soon -> "Soon"
 }
 
 private fun ribbonColor(s: GameStatus) = when (s) {
@@ -71,14 +80,14 @@ fun CoverTile(
 ) {
     val width: Dp = if (selected) 132.dp else 104.dp
     val loader = imageLoader ?: ArtLoader.get(LocalContext.current)
-    val desc = "${entry.title}, ${ribbonLabel(statusInfo.status)}"
+    val desc = "${entry.title}, ${statusWord(statusInfo.status)}, ${statusInfo.reason}"
     // Room around the tile so the offset outline is not clipped by the caller.
     Box(modifier.padding(4.dp)) {
         Box(
             Modifier
                 .width(width)
                 .aspectRatio(2f / 3f)
-                .semantics { contentDescription = desc }
+                .clearAndSetSemantics { contentDescription = desc; this.selected = selected }
                 .then(
                     if (selected) Modifier.drawBehind {
                         val o = 4.dp.toPx() // 2 dp offset + half of the 2 dp stroke
@@ -96,26 +105,37 @@ fun CoverTile(
             val dim = Modifier.alpha(if (statusInfo.status == GameStatus.Soon) 0.5f else 1f)
             if (entry.id == "ttw" && entry.coverAppIds.size >= 2) {
                 Row(Modifier.fillMaxSize()) {
-                    Half(entry, entry.coverAppIds[0], artworkEnabled, loader, dim.weight(1f), 15)
+                    Half(entry, entry.coverAppIds[0], artworkEnabled, loader, dim.weight(1f), 15, "FO3")
                     Box(Modifier.width(2.dp).fillMaxHeight().background(ShellColors.Brass))
-                    Half(entry, entry.coverAppIds[1], artworkEnabled, loader, dim.weight(1f), 15)
+                    Half(entry, entry.coverAppIds[1], artworkEnabled, loader, dim.weight(1f), 15, "FNV")
                 }
             } else {
-                Half(entry, entry.coverAppIds.first(), artworkEnabled, loader, dim.fillMaxSize(), 22)
+                Half(entry, entry.coverAppIds.first(), artworkEnabled, loader, dim.fillMaxSize(), 22, entry.ribbonName)
             }
-            Text(
-                ribbonLabel(statusInfo.status),
+            Column(
                 Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
                     .background(Brush.verticalGradient(listOf(Color(0x8C0A0908), Color(0xEB0A0908))))
                     .padding(horizontal = 6.dp, vertical = 4.dp),
-                color = ribbonColor(statusInfo.status),
-                fontFamily = ShellType.body,
-                fontWeight = FontWeight.Bold,
-                fontSize = 12.sp,
-                letterSpacing = 0.8.sp,
-            )
+            ) {
+                Text(
+                    ribbonLabel(statusInfo.status),
+                    color = ribbonColor(statusInfo.status),
+                    fontFamily = ShellType.body,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    letterSpacing = 0.8.sp,
+                )
+                Text(
+                    entry.ribbonName,
+                    color = ShellColors.Muted,
+                    fontFamily = ShellType.body,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 12.sp,
+                    letterSpacing = 0.8.sp,
+                )
+            }
         }
     }
 }
@@ -129,10 +149,11 @@ private fun Half(
     loader: ImageLoader,
     modifier: Modifier,
     initialsSp: Int,
+    label: String,
 ) {
     Box(modifier.background(Color(entry.accent)), contentAlignment = Alignment.Center) {
         Text(
-            entry.ribbonName,
+            label,
             Modifier.padding(4.dp),
             color = Color(0xFF1A1611),
             fontFamily = ShellType.display,
