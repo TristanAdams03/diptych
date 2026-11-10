@@ -42,7 +42,7 @@ fun shelfGames(seen: Map<String, SeenRecord>, live: ServerMsg.Welcome?): List<Sh
     CATALOG.map { e -> ShelfGame(e, statusOf(e, seen[e.id], live?.takeIf { it.gameId == e.id })) }
 
 /** The info row's main button. SOON has none. */
-enum class MainAction(val label: String) { Play("Play"), SetUp("Set up"), Update("Update") }
+enum class MainAction(val label: String) { Play("Play"), SetUp("Set up"), Update("Update"), Details("Details") }
 
 fun mainActionFor(status: GameStatus): MainAction? = when (status) {
     GameStatus.Ready -> MainAction.Play
@@ -142,6 +142,11 @@ private fun InfoRow(game: ShelfGame, onMain: (GameEntry, MainAction) -> Unit) {
         }
         Spacer(Modifier.width(10.dp))
         if (action != null) {
+            // A ready game's main button is Play, so its fold-out (mod check, changelog, guide) gets its own button.
+            if (action == MainAction.Play) {
+                ShellButton(MainAction.Details.label, primary = false) { onMain(game.entry, MainAction.Details) }
+                Spacer(Modifier.width(8.dp))
+            }
             ShellButton(action.label, primary = true) { onMain(game.entry, action) }
         } else {
             Text(game.status.reason, color = ShellColors.Muted, style = bodyText(12.sp), modifier = Modifier.padding(end = 6.dp))

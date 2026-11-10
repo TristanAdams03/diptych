@@ -33,7 +33,7 @@ class ShellLogicTest {
         assertEquals(MainAction.SetUp, mainActionFor(GameStatus.SetUp))
         assertEquals(MainAction.Update, mainActionFor(GameStatus.Update))
         assertNull(mainActionFor(GameStatus.Soon))
-        assertEquals(listOf("Play", "Set up", "Update"), MainAction.entries.map { it.label })
+        assertEquals(listOf("Play", "Set up", "Update", "Details"), MainAction.entries.map { it.label })
     }
 
     @Test fun aLiveWelcomeOnlyCountsForTheGameItNames() {
