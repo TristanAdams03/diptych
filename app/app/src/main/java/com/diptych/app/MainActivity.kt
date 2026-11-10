@@ -1,92 +1,119 @@
 package com.diptych.app
 
+import android.Manifest
 import android.app.ActivityOptions
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import com.diptych.app.display.FocusMode
-import com.diptych.app.display.pickCompanionDisplay
-import com.diptych.app.display.relocationTarget
-import com.diptych.app.display.snapshot
-import com.diptych.app.kh1.Kh1Session
-import com.diptych.app.kh1.loadKh1Data
-import com.diptych.app.kh1.ui.MapScreen
-import com.diptych.app.net.SpikeClient
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import com.diptych.app.display.FocusMode
+import com.diptych.app.display.pickCompanionDisplay
+import com.diptych.app.display.relocationTarget
+import com.diptych.app.display.snapshot
+import com.diptych.app.kh1.ui.MapScreen
+import com.diptych.app.service.ConnectionService
+import com.diptych.app.service.ConnectionSnapshot
+import com.diptych.app.service.shouldAskNotifications
+import com.diptych.app.service.shouldStartService
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withTimeoutOrNull
 
 class MainActivity : ComponentActivity() {
-    private lateinit var client: SpikeClient
     private var focusMode: FocusMode? = null
     private val focusOn = mutableStateOf(true)
     private val showDiagnostics = mutableStateOf(false)
-    private val sessionScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** The connection service's binder once connected. The service owns the socket; this activity only reads it. */
+    private val service = mutableStateOf<ConnectionService.LocalBinder?>(null)
+    private var bindRequested = false
+    /** Lines logged before the service connects; flushed into the client's log when it does. */
+    private val pendingLog = mutableListOf<String>()
 
     private val displayManager get() = getSystemService(DisplayManager::class.java)
     private val deviceLine get() = "${Build.MANUFACTURER} ${Build.MODEL} Android ${Build.VERSION.RELEASE}"
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, binder: IBinder) {
+            val b = binder as ConnectionService.LocalBinder
+            pendingLog.forEach(b.client::log)
+            pendingLog.clear()
+            service.value = b
+            ensureStarted(bound = true, running = b.running) // a start that failed in onCreate is retried here
+        }
+
+        // Only when the service's process dies, which is ours too. Android reconnects when the service comes back.
+        override fun onServiceDisconnected(name: ComponentName) {
+            service.value = null
+        }
+    }
+
+    private val askNotifications = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        log(if (granted) "notifications allowed" else "notifications denied: the service runs, its notification hidden")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (maybeRelocate()) return
 
-        client = SpikeClient()
-        client.log("device $deviceLine, on display ${currentDisplayId()}")
-        focusMode = FocusMode(this, client::log)
-        // The session must exist before start(): the events flow has no replay, so a later one misses the first welcome.
-        val session = Kh1Session(client, loadKh1Data(assets), sessionScope, client::log)
-        client.start()
+        log("device $deviceLine, on display ${currentDisplayId()}")
+        focusMode = FocusMode(this, ::log)
+        ensureStarted(bound = false, running = ConnectionService.running)
+        bindService(Intent(this, ConnectionService::class.java), connection, Context.BIND_AUTO_CREATE)
+        bindRequested = true
+        maybeAskNotifications()
 
         setContent {
-            val ui by client.ui.collectAsState()
-            val log by client.log.collectAsState()
-            val view by session.view.collectAsState()
+            val b = service.value
+            // A StateFlow hands over its current value on collect, so a rebind shows the true state at once.
+            val snap by (b?.state ?: UNBOUND).collectAsState()
+            val log by (b?.client?.log ?: NO_LOG).collectAsState()
             Box {
                 if (showDiagnostics.value) {
                     SpikeScreen(
-                        ui = ui,
+                        ui = snap.ui,
                         log = log,
                         focusOn = focusOn.value,
-                        onFetchModLog = { client.fetchModLog() },
-                        onTestJump = { client.testPress(0x20, 150) },
-                        onTestCast = { client.testPress(0x14, 300) },
+                        onFetchModLog = { b?.client?.fetchModLog() },
+                        onTestJump = { b?.client?.testPress(0x20, 150) },
+                        onTestCast = { b?.client?.testPress(0x14, 300) },
                         onToggleFocus = {
                             focusMode?.toggle()
                             focusOn.value = focusMode?.enabled ?: false
                         },
-                        onCopyReport = ::copyReport,
+                        onCopyReport = { copyReport() },
                     )
                 } else {
                     MapScreen(
-                        view = view,
-                        connection = connectionLabel(ui),
+                        view = snap.view,
+                        connection = connectionLabel(snap.ui),
                         onReport = ::reportWrong,
                     ) // read-only: only the diagnostics screen's Test press buttons send input
 
@@ -107,12 +134,38 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         focusMode?.onDestroy()
-        sessionScope.cancel()
-        if (::client.isInitialized) client.stop()
+        // Unbind only: the service keeps the link (and keeps reconnecting) after this activity is gone.
+        if (bindRequested) runCatching { unbindService(connection) }
+        bindRequested = false
+        service.value = null
         super.onDestroy()
     }
 
     private fun currentDisplayId(): Int = display?.displayId ?: 0
+
+    private fun log(line: String) {
+        val client = service.value?.client
+        if (client != null) client.log(line) else pendingLog += line
+    }
+
+    private fun ensureStarted(bound: Boolean, running: Boolean) {
+        if (!shouldStartService(bound, running)) return
+        try {
+            startForegroundService(Intent(this, ConnectionService::class.java))
+        } catch (e: RuntimeException) { // e.g. ForegroundServiceStartNotAllowedException; the bind still connects
+            log("service start failed: ${e.javaClass.simpleName}: ${e.message}")
+        }
+    }
+
+    /** API 33+: ask for POST_NOTIFICATIONS once, on first launch. Denied is fine: the service runs regardless. */
+    private fun maybeAskNotifications() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return // granted at install; nothing to ask
+        val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val granted = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        if (!shouldAskNotifications(Build.VERSION.SDK_INT, prefs.getBoolean(KEY_ASKED_NOTIFICATIONS, false), granted)) return
+        prefs.edit().putBoolean(KEY_ASKED_NOTIFICATIONS, true).apply()
+        askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
 
     /**
      * If we're not on the companion display, relaunch there once (10 s cooldown) and finish.
@@ -143,24 +196,32 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun copyReport() {
+    /** Copies the diagnostics report; false before the service has connected. */
+    private fun copyReport(): Boolean {
+        val client = service.value?.client ?: return false
         val report = buildReport(client.ui.value, client.log.value, deviceLine, displayManager.snapshot())
         getSystemService(ClipboardManager::class.java)
             .setPrimaryClip(ClipData.newPlainText("Diptych spike report", report))
         client.log("report copied (${report.length} chars)")
+        return true
     }
 
     private fun reportWrong() {
-        copyReport()
-        Toast.makeText(this, "Copied: paste it to Claude", Toast.LENGTH_SHORT).show()
+        val copied = copyReport()
+        Toast.makeText(this, if (copied) "Copied: paste it to Claude" else "Not connected yet", Toast.LENGTH_SHORT).show()
     }
 
     companion object {
         const val EXTRA_RELOCATED = "relocated"
         private const val PREFS = "spike"
         private const val KEY_LAST_RELOCATE = "lastRelocateMs"
+        private const val KEY_ASKED_NOTIFICATIONS = "askedNotifications"
     }
 }
+
+/** What the screens show in the moment before the service connects. */
+private val UNBOUND: StateFlow<ConnectionSnapshot> = MutableStateFlow(ConnectionSnapshot()).asStateFlow()
+private val NO_LOG: StateFlow<List<String>> = MutableStateFlow(emptyList<String>()).asStateFlow()
 
 private const val LONG_PRESS_MS = 1000L
 

@@ -11,8 +11,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import com.diptych.app.kh1.Kh1Link
 import com.diptych.app.kh1.Region
+import com.diptych.app.service.GameLink
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +53,7 @@ class SpikeClient(
         .connectTimeout(2, TimeUnit.SECONDS)
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build(),
-) : Kh1Link {
+) : GameLink {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val stall = StallDetector()
     private val fps = FpsMeter()
@@ -61,7 +61,7 @@ class SpikeClient(
     private val timeFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.ROOT)
 
     private val _ui = MutableStateFlow(SpikeUi())
-    val ui: StateFlow<SpikeUi> = _ui.asStateFlow()
+    override val ui: StateFlow<SpikeUi> = _ui.asStateFlow()
 
     private val _log = MutableStateFlow<List<String>>(emptyList())
     val log: StateFlow<List<String>> = _log.asStateFlow()
@@ -74,19 +74,19 @@ class SpikeClient(
     @Volatile private var ws: WebSocket? = null
     private var job: Job? = null
 
-    fun log(line: String) {
+    override fun log(line: String) {
         val stamped = "${synchronized(timeFmt) { timeFmt.format(Date(clock())) }} $line"
         _log.update { (it + stamped).takeLast(LOG_LINES) }
     }
 
-    fun start() {
+    override fun start() {
         if (job != null) return
         job = scope.launch { connectLoop() }
         scope.launch { pingLoop() }
         scope.launch { statusLoop() }
     }
 
-    fun stop() {
+    override fun stop() {
         ws?.close(1000, "bye")
         ws = null
         scope.cancel()

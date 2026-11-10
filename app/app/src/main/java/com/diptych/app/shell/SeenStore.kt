@@ -7,6 +7,9 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class SeenRecord(val plugin: String, val gameBuild: String, val supported: Boolean, val atMs: Long)
 
+/** SharedPreferences file for [SeenStore]: the connection service writes it, the Shelf reads it. */
+const val SEEN_PREFS = "seen"
+
 /** Last mod handshake seen per game id, stored as JSON in SharedPreferences. */
 class SeenStore(private val prefs: SharedPreferences) {
     private val json = Json { ignoreUnknownKeys = true }
