@@ -18,6 +18,12 @@ object ShellColors {
     val Muted = Color(0xFFA39A8B)
     val Brass = Color(0xFFC9A45C)
     val Line = Color(0xFF3A352E)
+    /** SET UP / UPDATE and other "needs you" text. */
+    val Amber = Color(0xFFE8B75D)
+    /** Something Diptych checked and found fine (the status line's GameNative). */
+    val Ok = Color(0xFF9FD49A)
+    /** Text on a brass fill. */
+    val OnBrass = Color(0xFF1A1611)
 }
 
 @OptIn(ExperimentalTextApi::class)

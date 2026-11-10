@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -14,8 +15,13 @@ import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.Paparazzi
 import com.android.resources.Density
 import com.android.resources.ScreenOrientation
+import com.diptych.app.kh1.TestData
+import com.diptych.app.kh1.buildMapView
+import com.diptych.app.kh1.ui.ConnectionLabel
+import com.diptych.app.kh1.ui.MapScreen
 import org.junit.Rule
 import org.junit.Test
+import java.time.Instant
 
 /** The Thor bottom screen: 1240x1080 px at 360 dpi (about 551x480 dp), same config as MapScreenshotTest. */
 class ShellScreenshotTest {
@@ -64,6 +70,46 @@ class ShellScreenshotTest {
                     entry("ttw"), selected = false, statusInfo = StatusInfo(GameStatus.Ready, ""),
                     artworkEnabled = true, modifier = Modifier.padding(16.dp), imageLoader = offline,
                 )
+            }
+        }
+    }
+
+    // --- Task 5: the Shelf, the fold-out and the hinge pull-down (artwork through the offline loader) ---
+
+    private val seenKh1 = SeenRecord("0.1.0", "steam-1.0.0.2", true, Instant.parse("2026-11-08T20:15:00Z").toEpochMilli())
+
+    @Composable
+    private fun ShellAt(route: Route.Shell, seen: Map<String, SeenRecord>) {
+        val env = ShellEnv(seen, gameNativeVersion = "1.3.0", imageLoader = offlineImageLoader(LocalContext.current))
+        ShellScreen(
+            route = route,
+            env = env,
+            games = shelfGames(seen, live = null),
+            selectedId = "kh1",
+            onSelect = {},
+            onRoute = {},
+            actions = ShellActions(),
+        )
+    }
+
+    @Test fun shelfKh1Selected() {
+        paparazzi.snapshot { ShellAt(Route.Shell(ShellTab.Shelf), mapOf("kh1" to seenKh1)) }
+    }
+
+    @Test fun foldOutKh1SetUp() {
+        paparazzi.snapshot { ShellAt(Route.Shell(ShellTab.Shelf, foldOut = "kh1"), emptyMap()) }
+    }
+
+    @Test fun foldOutKh1Ready() {
+        paparazzi.snapshot { ShellAt(Route.Shell(ShellTab.Shelf, foldOut = "kh1"), mapOf("kh1" to seenKh1)) }
+    }
+
+    @Test fun hingePullDown() {
+        val state = TestData.state(3, 2, TestData.partyRegions()).copy(inMenu = false, inCutscene = false, inGummi = false)
+        val view = buildMapView(TestData.data, state)
+        paparazzi.snapshot {
+            CompanionFrame(onChoose = {}, onDiagnostics = {}, initiallyOpen = true) {
+                MapScreen(view, ConnectionLabel.Connected, onReport = {})
             }
         }
     }

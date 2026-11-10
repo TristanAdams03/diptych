@@ -36,9 +36,19 @@ import androidx.compose.ui.unit.sp
 
 enum class ShellTab(val label: String) { Shelf("Shelf"), Device("Device"), Guide("Guide") }
 
-/** Hinge mark, "Diptych" wordmark with its DIP-tick, the three text tabs (active one underlined in brass) and a gear. */
+/**
+ * Hinge mark, "Diptych" wordmark with its DIP-tick, the three text tabs (active one underlined in brass) and a gear.
+ * [onWordmarkHold]: holding the wordmark for 1 s (the diagnostics toggle). [backToGame]: when set, a brass
+ * "Back to game" chip sits before the tabs (the user left a live companion through the hinge button).
+ */
 @Composable
-fun TopBar(active: ShellTab, onSelect: (ShellTab) -> Unit, onSettings: () -> Unit) {
+fun TopBar(
+    active: ShellTab,
+    onSelect: (ShellTab) -> Unit,
+    onSettings: () -> Unit,
+    onWordmarkHold: (() -> Unit)? = null,
+    backToGame: (() -> Unit)? = null,
+) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -56,6 +66,7 @@ fun TopBar(active: ShellTab, onSelect: (ShellTab) -> Unit, onSettings: () -> Uni
             "Diptych",
             style = TextStyle(fontFamily = ShellType.display, fontWeight = FontWeight.Bold, fontSize = 20.sp, letterSpacing = 0.2.sp),
             color = ShellColors.Ink,
+            modifier = if (onWordmarkHold != null) Modifier.holdFor(HOLD_MS, onWordmarkHold) else Modifier,
         )
         Text(
             "DIP-tick",
@@ -64,6 +75,10 @@ fun TopBar(active: ShellTab, onSelect: (ShellTab) -> Unit, onSettings: () -> Uni
             modifier = Modifier.padding(start = 6.dp, top = 5.dp),
         )
         Spacer(Modifier.weight(1f))
+        if (backToGame != null) {
+            ShellButton("Back to game", primary = true, onClick = backToGame)
+            Spacer(Modifier.width(6.dp))
+        }
         Row(Modifier.selectableGroup(), horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.CenterVertically) {
             ShellTab.entries.forEach { tab -> TabLabel(tab, tab == active) { onSelect(tab) } }
         }
