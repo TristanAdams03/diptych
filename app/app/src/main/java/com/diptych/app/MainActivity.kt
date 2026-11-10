@@ -2,36 +2,28 @@ package com.diptych.app
 
 import android.Manifest
 import android.app.ActivityOptions
+import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.view.Display
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.dp
 import com.diptych.app.display.FocusMode
 import com.diptych.app.display.pickCompanionDisplay
 import com.diptych.app.display.relocationTarget
@@ -41,15 +33,27 @@ import com.diptych.app.service.ConnectionService
 import com.diptych.app.service.ConnectionSnapshot
 import com.diptych.app.service.shouldAskNotifications
 import com.diptych.app.service.shouldStartService
+import com.diptych.app.shell.CATALOG
+import com.diptych.app.shell.SEEN_PREFS
+import com.diptych.app.shell.SeenRecord
+import com.diptych.app.shell.SeenStore
+import com.diptych.app.shell.ShellActions
+import com.diptych.app.shell.ShellEnv
+import com.diptych.app.shell.ShellRoot
+import com.diptych.app.shell.companionLabel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.withTimeoutOrNull
 
 class MainActivity : ComponentActivity() {
     private var focusMode: FocusMode? = null
     private val focusOn = mutableStateOf(true)
     private val showDiagnostics = mutableStateOf(false)
+    /** The last mod handshake per game id; the service writes it, a listener keeps this current. */
+    private val seen = mutableStateOf<Map<String, SeenRecord>>(emptyMap())
+    private val gameNative = mutableStateOf<String?>(null)
+    // Held here: SharedPreferences keeps only a weak reference to its listeners.
+    private val seenListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> readSeen() }
 
     /** The connection service's binder once connected. The service owns the socket; this activity only reads it. */
     private val service = mutableStateOf<ConnectionService.LocalBinder?>(null)
@@ -90,13 +94,26 @@ class MainActivity : ComponentActivity() {
         bindRequested = true
         maybeAskNotifications()
 
+        val seenPrefs = getSharedPreferences(SEEN_PREFS, Context.MODE_PRIVATE)
+        seenPrefs.registerOnSharedPreferenceChangeListener(seenListener)
+        readSeen()
+
+        val actions = ShellActions(
+            play = { playGameNative() },
+            openUrl = ::openUrl,
+            toggleDiagnostics = { showDiagnostics.value = !showDiagnostics.value },
+        )
         setContent {
             val b = service.value
             // A StateFlow hands over its current value on collect, so a rebind shows the true state at once.
             val snap by (b?.state ?: UNBOUND).collectAsState()
             val log by (b?.client?.log ?: NO_LOG).collectAsState()
-            Box {
-                if (showDiagnostics.value) {
+            ShellRoot(
+                snapshot = snap,
+                env = ShellEnv(seen = seen.value, gameNativeVersion = gameNative.value),
+                actions = actions,
+                showDiagnostics = showDiagnostics.value,
+                diagnostics = {
                     SpikeScreen(
                         ui = snap.ui,
                         log = log,
@@ -110,21 +127,16 @@ class MainActivity : ComponentActivity() {
                         },
                         onCopyReport = { copyReport() },
                     )
-                } else {
-                    MapScreen(
-                        view = snap.view,
-                        connection = connectionLabel(snap.ui),
-                        onReport = ::reportWrong,
-                    ) // read-only: only the diagnostics screen's Test press buttons send input
-
-                }
-                // Long-press (>= 1 s) on the header strip toggles between the map and the spike diagnostics.
-                // Leave 72 dp on the right so the 44 dp spoiler-toggle button in the header receives taps normally.
-                LongPressStrip(Modifier.align(Alignment.TopStart).padding(end = 72.dp)) {
-                    showDiagnostics.value = !showDiagnostics.value
-                }
-            }
+                },
+                // Read-only: only the diagnostics screen's Test press buttons send input.
+                companion = { MapScreen(view = snap.view, connection = companionLabel(snap), onReport = ::reportWrong) },
+            )
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        gameNative.value = gameNativeVersion() // installed or updated while we were away
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -133,6 +145,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        getSharedPreferences(SEEN_PREFS, Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(seenListener)
         focusMode?.onDestroy()
         // Unbind only: the service keeps the link (and keeps reconnecting) after this activity is gone.
         if (bindRequested) runCatching { unbindService(connection) }
@@ -196,6 +209,45 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun readSeen() {
+        val store = SeenStore(getSharedPreferences(SEEN_PREFS, Context.MODE_PRIVATE))
+        seen.value = CATALOG.mapNotNull { e -> store.get(e.id)?.let { e.id to it } }.toMap()
+    }
+
+    private fun gameNativeVersion(): String? = try {
+        @Suppress("DEPRECATION") // the PackageInfoFlags overload is API 33+; minSdk is 30
+        packageManager.getPackageInfo(GAMENATIVE, 0).versionName
+    } catch (e: PackageManager.NameNotFoundException) {
+        null
+    }
+
+    /**
+     * Play: GameNative's own launch intent, on the game display (0). Started from here without a display, Android
+     * would open it on this (the companion) display. Only GameNative ever goes to display 0, never this activity.
+     */
+    private fun playGameNative() {
+        val launch = packageManager.getLaunchIntentForPackage(GAMENATIVE)
+        if (launch == null) {
+            Toast.makeText(this, "GameNative not found", Toast.LENGTH_SHORT).show()
+            return
+        }
+        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            startActivity(launch, ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle())
+        } catch (e: RuntimeException) { // SecurityException etc.: let Android pick
+            log("play on display 0 failed: ${e.javaClass.simpleName}: ${e.message}")
+            runCatching { startActivity(launch) }
+        }
+    }
+
+    private fun openUrl(url: String) {
+        try {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "No browser to open $url", Toast.LENGTH_LONG).show()
+        }
+    }
+
     /** Copies the diagnostics report; false before the service has connected. */
     private fun copyReport(): Boolean {
         val client = service.value?.client ?: return false
@@ -216,26 +268,10 @@ class MainActivity : ComponentActivity() {
         private const val PREFS = "spike"
         private const val KEY_LAST_RELOCATE = "lastRelocateMs"
         private const val KEY_ASKED_NOTIFICATIONS = "askedNotifications"
+        private const val GAMENATIVE = "app.gamenative"
     }
 }
 
 /** What the screens show in the moment before the service connects. */
 private val UNBOUND: StateFlow<ConnectionSnapshot> = MutableStateFlow(ConnectionSnapshot()).asStateFlow()
 private val NO_LOG: StateFlow<List<String>> = MutableStateFlow(emptyList<String>()).asStateFlow()
-
-private const val LONG_PRESS_MS = 1000L
-
-/** Transparent strip over the header; calls [onLongPress] after the pointer stays down for 1 s. Taps pass nothing on. */
-@Composable
-private fun LongPressStrip(modifier: Modifier, onLongPress: () -> Unit) {
-    Box(
-        modifier.fillMaxWidth().height(64.dp).pointerInput(Unit) {
-            awaitEachGesture {
-                awaitFirstDown(requireUnconsumed = false)
-                var held = true
-                withTimeoutOrNull(LONG_PRESS_MS) { waitForUpOrCancellation(); held = false }
-                if (held) onLongPress()
-            }
-        },
-    )
-}
