@@ -67,13 +67,17 @@ fun deviceChecks(env: ShellEnv): List<DeviceCheck> = listOf(
         )
         else -> DeviceCheck("GameNative", CheckState.Ok, "Version ${env.gameNativeVersion}", null)
     },
-    when (env.batteryExempt) {
+    when (if (env.gameNativeVersion == null) null else env.batteryExempt) {
         true -> DeviceCheck("Battery for GameNative", CheckState.Ok, "Unrestricted", null)
         false -> DeviceCheck(
             "Battery for GameNative", CheckState.Fix, "Android may stop it while you play",
             "Settings → Apps → GameNative → Battery → Unrestricted",
         )
-        null -> DeviceCheck("Battery for GameNative", CheckState.Check, "Can't tell yet", null)
+        null -> if (env.gameNativeVersion == null) {
+            DeviceCheck("Battery for GameNative", CheckState.Check, "GameNative not found", null)
+        } else {
+            DeviceCheck("Battery for GameNative", CheckState.Check, "Can't tell yet", null)
+        }
     },
     DeviceCheck(
         "Focus Lock", CheckState.Check, "Check this",
@@ -93,7 +97,7 @@ fun DeviceTab(env: ShellEnv, modifier: Modifier = Modifier, initiallyIdentifying
     }
     Box(modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Before you play", color = ShellColors.Ink, style = displayText(20.sp))
+            Text("This Thor", color = ShellColors.Ink, style = displayText(20.sp))
             deviceChecks(env).forEach { CheckRow(it) }
             ScreensRow(env, onIdentify = { identifying = true })
         }

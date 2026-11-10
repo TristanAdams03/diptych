@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -79,7 +80,11 @@ fun SettingsSheet(
                 Text("Settings", Modifier.weight(1f), color = ShellColors.Ink, style = displayText(20.sp))
                 ShellButton("Done", primary = true, onClick = onClose)
             }
-            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .toggleable(value = artworkEnabled, role = Role.Switch, onValueChange = onArtwork),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Column(Modifier.weight(1f)) {
                     Text("Steam artwork", color = ShellColors.Ink, style = bodyText(15.sp).copy(fontWeight = FontWeight.Bold))
                     Text(
@@ -88,7 +93,7 @@ fun SettingsSheet(
                     )
                 }
                 Switch(
-                    checked = artworkEnabled, onCheckedChange = onArtwork,
+                    checked = artworkEnabled, onCheckedChange = null,
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = ShellColors.OnBrass, checkedTrackColor = ShellColors.Brass,
                         uncheckedThumbColor = ShellColors.Muted, uncheckedTrackColor = ShellColors.Surface,

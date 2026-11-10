@@ -21,7 +21,10 @@ class DeviceLogicTest {
     @Test fun checksSayHowToFix() {
         val missing = deviceChecks(ShellEnv(gameNativeVersion = null, batteryExempt = false))
         assertEquals(CheckState.Fix, missing[0].state)
-        assertEquals("Settings \u2192 Apps \u2192 GameNative \u2192 Battery \u2192 Unrestricted", missing[1].fix)
+        assertEquals(CheckState.Check, missing[1].state)
+        assertEquals("GameNative not found", missing[1].found)
+        val unrestricted = deviceChecks(ShellEnv(gameNativeVersion = "1.3.0", batteryExempt = false))
+        assertEquals("Settings \u2192 Apps \u2192 GameNative \u2192 Battery \u2192 Unrestricted", unrestricted[1].fix)
         val old = deviceChecks(ShellEnv(gameNativeVersion = "1.2.0", batteryExempt = true))
         assertEquals(CheckState.Fix, old[0].state)
         assertEquals(CheckState.Ok, old[1].state)
@@ -34,5 +37,14 @@ class DeviceLogicTest {
     @Test fun guideLinks() {
         assertEquals(KH1_GUIDE_URL, GUIDES[0].url)
         assertEquals(TTW_GUIDE_URL, GUIDES[1].url)
+    }
+
+    @Test fun artworkPreferenceRoundTrip() {
+        val prefs = FakePrefs()
+        assertTrue(prefs.artworkEnabled())
+        prefs.setArtworkEnabled(false)
+        assertFalse(prefs.artworkEnabled())
+        prefs.setArtworkEnabled(true)
+        assertTrue(prefs.artworkEnabled())
     }
 }
