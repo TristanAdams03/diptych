@@ -16,6 +16,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.os.PowerManager
 import android.os.SystemClock
 import android.view.Display
 import android.widget.Toast
@@ -37,7 +38,10 @@ import com.diptych.app.service.shouldStartService
 import com.diptych.app.shell.CATALOG
 import com.diptych.app.shell.SEEN_PREFS
 import com.diptych.app.shell.SeenRecord
+import com.diptych.app.shell.SHELL_PREFS
 import com.diptych.app.shell.SeenStore
+import com.diptych.app.shell.artworkEnabled
+import com.diptych.app.shell.setArtworkEnabled
 import com.diptych.app.shell.ShellActions
 import com.diptych.app.shell.ShellEnv
 import com.diptych.app.shell.ShellRoot
@@ -53,6 +57,8 @@ class MainActivity : ComponentActivity() {
     /** The last mod handshake per game id; the service writes it, a listener keeps this current. */
     private val seen = mutableStateOf<Map<String, SeenRecord>>(emptyMap())
     private val gameNative = mutableStateOf<String?>(null)
+    private val batteryExempt = mutableStateOf<Boolean?>(null)
+    private val artwork = mutableStateOf(true)
     // Held here: SharedPreferences keeps only a weak reference to its listeners.
     private val seenListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> readSeen() }
 
@@ -99,7 +105,15 @@ class MainActivity : ComponentActivity() {
         seenPrefs.registerOnSharedPreferenceChangeListener(seenListener)
         readSeen()
 
+        val shellPrefs = getSharedPreferences(SHELL_PREFS, Context.MODE_PRIVATE)
+        artwork.value = shellPrefs.artworkEnabled()
+        @Suppress("DEPRECATION")
+        val ownVersion = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
         val actions = ShellActions(
+            setArtwork = { on ->
+                shellPrefs.setArtworkEnabled(on)
+                artwork.value = on
+            },
             play = { playGameNative() },
             openUrl = ::openUrl,
             toggleDiagnostics = { showDiagnostics.value = !showDiagnostics.value },
@@ -111,7 +125,15 @@ class MainActivity : ComponentActivity() {
             val log by (b?.client?.log ?: NO_LOG).collectAsState()
             ShellRoot(
                 snapshot = snap,
-                env = ShellEnv(seen = seen.value, gameNativeVersion = gameNative.value),
+                env = ShellEnv(
+                    seen = seen.value,
+                    gameNativeVersion = gameNative.value,
+                    artworkEnabled = artwork.value,
+                    batteryExempt = batteryExempt.value,
+                    companionDisplayId = currentDisplayId(),
+                    companionSize = displaySize(),
+                    appVersion = ownVersion,
+                ),
                 actions = actions,
                 showDiagnostics = showDiagnostics.value,
                 diagnostics = {
@@ -138,7 +160,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        gameNative.value = gameNativeVersion() // installed or updated while we were away
+        refreshDevice() // installed or updated while we were away
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -146,7 +168,7 @@ class MainActivity : ComponentActivity() {
         focusMode?.onWindowFocusChanged(hasFocus)
         // Diptych stays resumed on the bottom screen while GameNative is installed or updated on top; a touch back
         // here re-reads the version, so the status line can't go stale.
-        if (hasFocus) gameNative.value = gameNativeVersion()
+        if (hasFocus) refreshDevice()
     }
 
     override fun onDestroy() {
@@ -217,6 +239,17 @@ class MainActivity : ComponentActivity() {
     private fun readSeen() {
         val store = SeenStore(getSharedPreferences(SEEN_PREFS, Context.MODE_PRIVATE))
         seen.value = CATALOG.mapNotNull { e -> store.get(e.id)?.let { e.id to it } }.toMap()
+    }
+
+    private fun refreshDevice() {
+        gameNative.value = gameNativeVersion()
+        batteryExempt.value = getSystemService(PowerManager::class.java)?.isIgnoringBatteryOptimizations(GAMENATIVE)
+    }
+
+    /** "1240 x 1080" for the display this activity is on; empty when unknown. */
+    private fun displaySize(): String {
+        val m = display?.mode ?: return ""
+        return "${m.physicalWidth} x ${m.physicalHeight}"
     }
 
     private fun gameNativeVersion(): String? = try {

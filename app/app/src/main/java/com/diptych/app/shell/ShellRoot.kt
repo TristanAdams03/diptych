@@ -115,6 +115,12 @@ data class ShellEnv(
     val gameNativeVersion: String? = null,
     val artworkEnabled: Boolean = true,
     val imageLoader: ImageLoader? = null,
+    /** Null until known. GameNative being exempt from battery optimization keeps Android from stopping it. */
+    val batteryExempt: Boolean? = null,
+    val companionDisplayId: Int = 1,
+    /** E.g. "1240 x 1080"; empty when unknown. */
+    val companionSize: String = "",
+    val appVersion: String = "",
 )
 
 /** What the shell asks the activity to do. */
@@ -122,6 +128,7 @@ class ShellActions(
     val play: (GameEntry) -> Unit = {},
     val openUrl: (String) -> Unit = {},
     val toggleDiagnostics: () -> Unit = {},
+    val setArtwork: (Boolean) -> Unit = {},
 )
 
 /**
@@ -142,7 +149,7 @@ fun ShellRoot(
     var route by remember { mutableStateOf<Route>(Route.Shell()) }
     var previousShell by remember { mutableStateOf(Route.Shell()) }
     var selectedId by remember { mutableStateOf(LINK_GAME_ID) }
-    var settingsOpen by remember { mutableStateOf(false) } // the sheet itself is Task 6's
+    var settingsOpen by remember { mutableStateOf(false) }
     var everLive by remember { mutableStateOf(false) }
     var lostAt by remember { mutableStateOf<Long?>(null) }
 
@@ -170,7 +177,8 @@ fun ShellRoot(
     }
 
     val r = route
-    BackHandler(enabled = !showDiagnostics && (r is Route.Companion || (r is Route.Shell && (r.foldOut != null || r.tab != ShellTab.Shelf)))) {
+    BackHandler(enabled = settingsOpen || (!showDiagnostics && (r is Route.Companion || (r is Route.Shell && (r.foldOut != null || r.tab != ShellTab.Shelf))))) {
+        if (settingsOpen) { settingsOpen = false; return@BackHandler }
         when (r) {
             is Route.Companion -> go(leaveCompanion(previousShell))
             is Route.Shell -> go(if (r.foldOut != null) r.copy(foldOut = null) else Route.Shell(overGame = r.overGame))
@@ -178,31 +186,41 @@ fun ShellRoot(
     }
 
     OledCare(connected = welcome != null, dimAllowed = !showDiagnostics && r !is Route.Companion, clock = clock) {
-        when {
-            showDiagnostics -> Box(Modifier.fillMaxSize()) {
-                diagnostics()
-                // Leave 72 dp on the right so the diagnostics header's own buttons receive taps normally.
-                HoldStrip(Modifier.align(Alignment.TopStart).padding(end = 72.dp), actions.toggleDiagnostics)
+        Box(Modifier.fillMaxSize()) {
+            when {
+                showDiagnostics -> Box(Modifier.fillMaxSize()) {
+                    diagnostics()
+                    // Leave 72 dp on the right so the diagnostics header's own buttons receive taps normally.
+                    HoldStrip(Modifier.align(Alignment.TopStart).padding(end = 72.dp), actions.toggleDiagnostics)
+                }
+                r is Route.Companion -> CompanionFrame(
+                    onChoose = { c ->
+                        if (c == HingeChoice.Settings) settingsOpen = true
+                        go(hingeRoute(c, previousShell))
+                    },
+                    onDiagnostics = actions.toggleDiagnostics,
+                ) { companion(r.gameId) }
+                r is Route.Shell -> {
+                    val game = takeoverGame(welcome)
+                    ShellScreen(
+                        route = r,
+                        env = env,
+                        games = shelfGames(env.seen, welcome),
+                        selectedId = selectedId,
+                        onSelect = { selectedId = it },
+                        onRoute = ::go,
+                        actions = actions,
+                        onSettings = { settingsOpen = true },
+                        backToGame = if (r.overGame && game != null) ({ go(Route.Companion(game)) }) else null,
+                    )
+                }
             }
-            r is Route.Companion -> CompanionFrame(
-                onChoose = { c ->
-                    if (c == HingeChoice.Settings) settingsOpen = true
-                    go(hingeRoute(c, previousShell))
-                },
-                onDiagnostics = actions.toggleDiagnostics,
-            ) { companion(r.gameId) }
-            r is Route.Shell -> {
-                val game = takeoverGame(welcome)
-                ShellScreen(
-                    route = r,
-                    env = env,
-                    games = shelfGames(env.seen, welcome),
-                    selectedId = selectedId,
-                    onSelect = { selectedId = it },
-                    onRoute = ::go,
-                    actions = actions,
-                    onSettings = { settingsOpen = true },
-                    backToGame = if (r.overGame && game != null) ({ go(Route.Companion(game)) }) else null,
+            if (settingsOpen && !showDiagnostics) {
+                SettingsSheet(
+                    artworkEnabled = env.artworkEnabled,
+                    onArtwork = actions.setArtwork,
+                    appVersion = env.appVersion,
+                    onClose = { settingsOpen = false },
                 )
             }
         }
@@ -247,12 +265,8 @@ fun ShellScreen(
                     },
                     imageLoader = env.imageLoader,
                 )
-                else -> Text(
-                    if (route.tab == ShellTab.Device) "Device checks are on the way." else "Guides are on the way.",
-                    Modifier.align(Alignment.Center),
-                    color = ShellColors.Muted,
-                    style = bodyText(13.sp),
-                )
+                route.tab == ShellTab.Device -> DeviceTab(env)
+                else -> GuideTab(actions.openUrl)
             }
         }
     }

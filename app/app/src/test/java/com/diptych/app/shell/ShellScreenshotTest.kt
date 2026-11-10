@@ -128,4 +128,32 @@ class ShellScreenshotTest {
             }
         }
     }
+
+    // --- Task 6: Device, Guide, Settings ---
+
+    @Test fun deviceTab() {
+        paparazzi.snapshot {
+            val env = ShellEnv(gameNativeVersion = "1.3.0", batteryExempt = false, companionDisplayId = 4, companionSize = "1240 x 1080")
+            ShellScreen(Route.Shell(ShellTab.Device), env, shelfGames(emptyMap(), null), "kh1", {}, {}, ShellActions())
+        }
+    }
+
+    @Test fun guideTab() {
+        paparazzi.snapshot {
+            ShellScreen(Route.Shell(ShellTab.Guide), ShellEnv(), shelfGames(emptyMap(), null), "kh1", {}, {}, ShellActions())
+        }
+    }
+
+    @Test fun settingsSheet() {
+        paparazzi.snapshot {
+            Box(Modifier.fillMaxSize()) {
+                ShellScreen(Route.Shell(ShellTab.Shelf), ShellEnv(gameNativeVersion = "1.3.0", imageLoader = offlineImageLoader(LocalContext.current)), shelfGames(emptyMap(), null), "kh1", {}, {}, ShellActions())
+                SettingsSheet(
+                    artworkEnabled = true, onArtwork = {}, appVersion = "0.2.1", onClose = {},
+                    readLicense = { "Copyright 2020 The Manrope Project Authors\n\nThis Font Software is licensed under the SIL Open Font License, Version 1.1." },
+                    initiallyOpenLicense = "OFL-Manrope.txt",
+                )
+            }
+        }
+    }
 }

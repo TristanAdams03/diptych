@@ -73,7 +73,7 @@ fun Modifier.dashedBorder(width: Dp, color: Color, cornerRadius: Dp): Modifier =
 
 @OptIn(ExperimentalTextApi::class)
 private fun variable(res: Int, w: Int) =
-    Font(res, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w)))
+    Font(res, FontWeight(w), variationSettings = FontVariation.Settings(FontVariation.weight(w), FontVariation.width(100f)))
 
 /** Fredoka (variable, OFL): headings and tabs. */
 val Fredoka = FontFamily(variable(R.font.fredoka, 500), variable(R.font.fredoka, 600), variable(R.font.fredoka, 700))
