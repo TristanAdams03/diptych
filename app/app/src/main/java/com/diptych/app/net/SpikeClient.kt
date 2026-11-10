@@ -160,7 +160,12 @@ class SpikeClient(
             if (ws === socket) ws = null
             _ui.update { it.copy(connected = false, seqRate = null) }
             applyLoop(LoopStatus.SocketDead)
-            if (opened) backoff = BACKOFF_START_MS
+            if (opened) {
+                // OkHttp's reader thread delivers frames and then the close (or a read failure), so this follows the
+                // socket's last frame. emit, not tryEmit: a full buffer waits instead of dropping it.
+                _events.emit(ServerMsg.Disconnected)
+                backoff = BACKOFF_START_MS
+            }
             delay(backoff)
             backoff = (backoff * 2).coerceAtMost(BACKOFF_CAP_MS)
         }
@@ -207,6 +212,7 @@ class SpikeClient(
             }
             is ServerMsg.Error -> log("<- error: ${m.message}")
             is ServerMsg.Unknown -> log("<- unknown ${m.type}: ${m.raw.take(120)}")
+            ServerMsg.Disconnected -> Unit // never parsed from a frame
         }
     }
 

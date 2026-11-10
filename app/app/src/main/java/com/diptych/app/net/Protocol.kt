@@ -72,6 +72,12 @@ sealed interface ServerMsg {
 
     /** Unknown `type`, or a frame that is not a valid protocol object. */
     data class Unknown(val type: String?, val raw: String) : ServerMsg
+
+    /**
+     * Not a wire frame: [SpikeClient] emits it on its events flow when a socket that had opened closes or fails,
+     * after that socket's last frame. Whatever the mod said on that connection (its welcome) no longer holds.
+     */
+    data object Disconnected : ServerMsg
 }
 
 /** Parse one server text frame. Never throws: anything unrecognised becomes [ServerMsg.Unknown]. */
