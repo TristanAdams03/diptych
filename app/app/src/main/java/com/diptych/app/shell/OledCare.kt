@@ -1,5 +1,6 @@
 package com.diptych.app.shell
 
+import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -43,12 +44,13 @@ fun idleDimmed(connected: Boolean, lastActivityMs: Long, nowMs: Long): Boolean =
  * OLED care for everything on the bottom screen: [content] moves to the next [SHIFT_CYCLE] position every minute,
  * and, when [dimAllowed] (not the companion), dims after [IDLE_DIM_MS] without a connection or a touch.
  * The touch that wakes a dimmed screen only wakes it, so it can't press something the user couldn't see.
+ * [clock] is monotonic (elapsedRealtime), so a wall-clock correction can't stretch or skip the idle timer.
  */
 @Composable
 fun OledCare(
     connected: Boolean,
     dimAllowed: Boolean,
-    clock: () -> Long = System::currentTimeMillis,
+    clock: () -> Long = SystemClock::elapsedRealtime,
     content: @Composable () -> Unit,
 ) {
     var step by remember { mutableLongStateOf(0L) }
@@ -63,6 +65,12 @@ fun OledCare(
     }
     LaunchedEffect(connected) {
         lastActivity = clock() // connecting, and losing the game, both count as activity
+        dimmed = false
+    }
+    // Moving between the shell and the companion or diagnostics starts a fresh idle period: a dim that came due
+    // where it wasn't allowed must not appear the moment the user lands back on the shell.
+    LaunchedEffect(dimAllowed) {
+        lastActivity = clock()
         dimmed = false
     }
     LaunchedEffect(connected, lastActivity) {

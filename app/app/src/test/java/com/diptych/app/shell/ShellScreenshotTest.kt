@@ -18,6 +18,7 @@ import com.android.resources.ScreenOrientation
 import com.diptych.app.kh1.TestData
 import com.diptych.app.kh1.buildMapView
 import com.diptych.app.kh1.ui.ConnectionLabel
+import com.diptych.app.kh1.ui.Kh1Tab
 import com.diptych.app.kh1.ui.MapScreen
 import org.junit.Rule
 import org.junit.Test
@@ -110,6 +111,20 @@ class ShellScreenshotTest {
         paparazzi.snapshot {
             CompanionFrame(onChoose = {}, onDiagnostics = {}, initiallyOpen = true) {
                 MapScreen(view, ConnectionLabel.Connected, onReport = {})
+            }
+        }
+    }
+
+    /**
+     * The closed hinge tab over KH1's tightest header: Magic & Items (also Party, Journal) has a one-line row whose
+     * world name starts 24.4 dp down. The tab's brass edge must sit above the "T" of TRAVERSE, touching no glyph.
+     */
+    @Test fun companionWithHinge() {
+        val state = TestData.state(3, 2, TestData.partyRegions()).copy(inMenu = false, inCutscene = false, inGummi = false)
+        val view = buildMapView(TestData.data, state)
+        paparazzi.snapshot {
+            CompanionFrame(onChoose = {}, onDiagnostics = {}) {
+                MapScreen(view, ConnectionLabel.Connected, onReport = {}, initialTab = Kh1Tab.MagicItems)
             }
         }
     }

@@ -16,6 +16,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.os.SystemClock
 import android.view.Display
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -130,6 +131,7 @@ class MainActivity : ComponentActivity() {
                 },
                 // Read-only: only the diagnostics screen's Test press buttons send input.
                 companion = { MapScreen(view = snap.view, connection = companionLabel(snap), onReport = ::reportWrong) },
+                clock = SystemClock::elapsedRealtime, // monotonic: the 10 s grace and the idle dim
             )
         }
     }
@@ -142,6 +144,9 @@ class MainActivity : ComponentActivity() {
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         focusMode?.onWindowFocusChanged(hasFocus)
+        // Diptych stays resumed on the bottom screen while GameNative is installed or updated on top; a touch back
+        // here re-reads the version, so the status line can't go stale.
+        if (hasFocus) gameNative.value = gameNativeVersion()
     }
 
     override fun onDestroy() {
@@ -234,9 +239,9 @@ class MainActivity : ComponentActivity() {
         launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
             startActivity(launch, ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle())
-        } catch (e: RuntimeException) { // SecurityException etc.: let Android pick
+        } catch (e: RuntimeException) { // SecurityException etc. No retry without a display: it would land down here.
             log("play on display 0 failed: ${e.javaClass.simpleName}: ${e.message}")
-            runCatching { startActivity(launch) }
+            Toast.makeText(this, "Couldn't open GameNative on the top screen", Toast.LENGTH_LONG).show()
         }
     }
 

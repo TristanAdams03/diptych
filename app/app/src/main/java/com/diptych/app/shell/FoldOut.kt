@@ -39,6 +39,8 @@ import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -257,6 +259,7 @@ private fun CheckRow(n: Int, item: CheckItem, onOpenUrl: (String) -> Unit) {
     val url = item.linkUrl
     Row(
         Modifier.fillMaxWidth()
+            .semantics(mergeDescendants = true) { stateDescription = if (item.done) "Done" else "Not done" }
             .then(if (url != null) Modifier.heightIn(min = 48.dp).clickable(role = Role.Button) { onOpenUrl(url) } else Modifier),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = if (url != null) Alignment.CenterVertically else Alignment.Top,

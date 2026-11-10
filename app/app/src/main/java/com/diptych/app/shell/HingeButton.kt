@@ -58,7 +58,8 @@ fun CompanionFrame(
 private val HINGE_TARGET = 48.dp
 
 /**
- * A 48 dp corner button: a small charcoal tab with the hinge mark, hanging from the top-left corner. It opens a
+ * A 56×48 dp corner button: a small (44×21 dp) charcoal tab with the hinge mark, hanging from the top-left corner,
+ * clear of the companion's header text. It opens a
  * pull-down with Shelf, Device and Settings; a tap outside closes it.
  */
 @Composable
@@ -82,11 +83,12 @@ fun HingeButton(onChoose: (HingeChoice) -> Unit, modifier: Modifier = Modifier, 
                 .clickable(role = Role.Button) { open = !open },
         ) {
             val tab = RoundedCornerShape(bottomEnd = 12.dp)
-            // Nudged 1 dp past the corner so only the tab's inner edges show their brass line.
+            // Nudged 1 dp past the corner so only the tab's inner edges show their brass line. 21 dp tall on screen, so
+            // its edge clears the KH1 world name (cap tops at 24.4 dp on the single-line header) by 3 dp.
             Box(
                 Modifier
                     .offset((-1).dp, (-1).dp)
-                    .size(49.dp, 27.dp)
+                    .size(45.dp, 22.dp)
                     .clip(tab)
                     .background(if (open) ShellColors.Raised else ShellColors.Ground.copy(alpha = 0.94f))
                     .border(1.dp, ShellColors.Brass.copy(alpha = 0.7f), tab),

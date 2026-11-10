@@ -1,5 +1,6 @@
 package com.diptych.app.shell
 
+import android.os.SystemClock
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -125,7 +126,8 @@ class ShellActions(
 
 /**
  * The bottom screen: the shell, or a connected game's companion, chosen by [nextRoute]; diagnostics over either.
- * Everything gets OLED care; the companion and diagnostics never dim.
+ * Everything gets OLED care; the companion and diagnostics never dim. [clock] times the 10 s grace and the idle
+ * dim; it is monotonic (elapsedRealtime), so a wall-clock correction can't hold "Waiting" up.
  */
 @Composable
 fun ShellRoot(
@@ -135,7 +137,7 @@ fun ShellRoot(
     showDiagnostics: Boolean,
     diagnostics: @Composable () -> Unit,
     companion: @Composable (gameId: String) -> Unit,
-    clock: () -> Long = System::currentTimeMillis,
+    clock: () -> Long = SystemClock::elapsedRealtime,
 ) {
     var route by remember { mutableStateOf<Route>(Route.Shell()) }
     var previousShell by remember { mutableStateOf(Route.Shell()) }
