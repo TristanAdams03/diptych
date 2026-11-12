@@ -46,9 +46,11 @@ android {
     }
 }
 
-// protocol/kh1/fixtures are the single source of truth; copy them into test resources at /fixtures.
+// protocol/<game>/fixtures are the single source of truth; copy them into test resources: KH1's at /fixtures
+// (where they have always been), TTW's at /fixtures/ttw.
 val copyProtocolFixtures by tasks.registering(Copy::class) {
     from(rootProject.file("../protocol/kh1/fixtures"))
+    from(rootProject.file("../protocol/ttw/fixtures")) { into("ttw") }
     into(layout.buildDirectory.dir("generated/protocolFixtures/fixtures"))
 }
 tasks.matching { it.name.startsWith("process") && it.name.endsWith("UnitTestJavaRes") }

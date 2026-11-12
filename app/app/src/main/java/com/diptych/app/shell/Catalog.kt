@@ -1,7 +1,13 @@
 package com.diptych.app.shell
 
-/** Oldest mod plugin (major.minor) this app works with. The shipped mod reports "0.1.0". */
+import com.diptych.app.ttw.TTW_NOT_LOADED
+import com.diptych.app.ttw.TTW_PORT
+
+/** Oldest KH1 mod plugin (major.minor) this app works with. The shipped mod reports "0.1.0". */
 const val MIN_PLUGIN = "0.1"
+
+/** Oldest TTW plugin this app works with: the spike plugin, which reports "0.0.1-spike". */
+const val MIN_TTW_PLUGIN = "0.0"
 
 private const val RELEASES = "https://gitea.fantastictwo.net/joe/diptych/releases"
 
@@ -18,6 +24,12 @@ data class GameEntry(
     val modAsset: String?,
     val guideUrl: String?,
     val changelogUrl: String?,
+    /** Oldest plugin (major.minor) of this game's mod the app works with. */
+    val minPlugin: String = MIN_PLUGIN,
+    /** Why a welcome with `supported:false` can't be used, as the Shelf says it. */
+    val unsupportedReason: String = "",
+    /** "Before you play", between downloading the zip and the first start. Text between backticks is code. */
+    val setupSteps: List<String> = emptyList(),
 )
 
 val CATALOG: List<GameEntry> = listOf(
@@ -26,14 +38,20 @@ val CATALOG: List<GameEntry> = listOf(
         title = "Tale of Two Wastelands",
         ribbonName = "TTW",
         tagline = "Pip-Boy dashboard · map · items · radio",
-        requiredBuild = "",
+        requiredBuild = "New Vegas 1.4.0.525 · xNVSE 6.4.9+",
         coverAppIds = listOf(22370, 22380),
         heroAppId = 22380,
         accent = 0xFF6FA35BL,
-        port = null,
-        modAsset = null,
-        guideUrl = "https://github.com/TristanAdams03/ttw-dualscreen/blob/m0-spike/docs/guide/ttw-on-ayn-thor.md",
-        changelogUrl = null,
+        port = TTW_PORT,
+        modAsset = RELEASES,
+        guideUrl = "https://gitea.fantastictwo.net/joe/diptych/src/branch/main/docs/guide/ttw-on-ayn-thor.md",
+        changelogUrl = RELEASES,
+        minPlugin = MIN_TTW_PLUGIN,
+        unsupportedReason = TTW_NOT_LOADED,
+        setupSteps = listOf(
+            "Copy `ttw_dualscreen.dll` and `ttw_dualscreen.ini` into `Data\\NVSE\\Plugins`",
+            "Start New Vegas through xNVSE with `TaleOfTwoWastelands.esm` enabled",
+        ),
     ),
     GameEntry(
         id = "kh1",
@@ -48,6 +66,11 @@ val CATALOG: List<GameEntry> = listOf(
         modAsset = RELEASES,
         guideUrl = "https://gitea.fantastictwo.net/joe/diptych/src/branch/main/docs/spike/MAP-CHECKLIST.md",
         changelogUrl = RELEASES,
+        unsupportedReason = "This KH1 build isn't supported yet (needs Steam 1.0.0.2)",
+        setupSteps = listOf(
+            "In GameNative: KH 1.5+2.5 → Mods → Import",
+            "Add `WINEDLLOVERRIDES` = `dinput8=n,b` in Environment",
+        ),
     ),
     GameEntry(
         id = "kh2",

@@ -60,16 +60,15 @@ import java.time.format.DateTimeFormatter
 data class CheckItem(val text: String, val done: Boolean, val linkLabel: String? = null, val linkUrl: String? = null)
 
 /**
- * "Before you play", ticked only from what Diptych knows. A [seen] handshake proves the mod was imported and that
- * dinput8 loaded (it can't load without the override), so it ticks steps 2-4. The zip step stays open in M1:
- * Diptych doesn't download the zip itself yet, so it can't know.
+ * "Before you play", ticked only from what Diptych knows. A [seen] handshake proves the game's own setup steps were
+ * done (KH1: the mod was imported and dinput8 loaded, which it can't without the override; TTW: xNVSE loaded the
+ * plugin), so it ticks everything after the first. The zip step stays open in M1: Diptych doesn't download the zip
+ * itself yet, so it can't know.
  */
-fun beforeYouPlay(entry: GameEntry, seen: SeenRecord?): List<CheckItem> = listOf(
-    CheckItem("Mod zip downloaded", done = false, linkLabel = "Get it from the release page", linkUrl = entry.modAsset),
-    CheckItem("In GameNative: KH 1.5+2.5 → Mods → Import", done = seen != null),
-    CheckItem("Add `WINEDLLOVERRIDES` = `dinput8=n,b` in Environment", done = seen != null),
-    CheckItem("Start ${entry.ribbonName} once; Diptych ticks this off", done = seen != null),
-)
+fun beforeYouPlay(entry: GameEntry, seen: SeenRecord?): List<CheckItem> =
+    listOf(CheckItem("Mod zip downloaded", done = false, linkLabel = "Get it from the release page", linkUrl = entry.modAsset)) +
+        entry.setupSteps.map { CheckItem(it, done = seen != null) } +
+        CheckItem("Start ${entry.ribbonName} once; Diptych ticks this off", done = seen != null)
 
 private val SEEN_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC)
 

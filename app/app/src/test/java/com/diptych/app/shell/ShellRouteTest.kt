@@ -106,4 +106,16 @@ class ShellRouteTest {
         assertEquals(8_000L, disconnectedFor(live = false, lostAtMs = 1_000, nowMs = 9_000))
         assertEquals(Long.MAX_VALUE, disconnectedFor(live = false, lostAtMs = null, nowMs = 9_000))
     }
+
+    // --- TTW takes the screen the same way ---
+
+    @Test fun aSupportedTtwWelcomeOpensTheTtwCompanion() {
+        val ttw = ServerMsg.Welcome("0.0.1-spike", 0, "ttw", "FalloutNV 1.4.0.525", true, listOf("spike"))
+        assertEquals("ttw", takeoverGame(ttw))
+        assertEquals(Route.Companion("ttw"), nextRoute(Route.Shell(), Route.Shell(), ConnectionSnapshot(welcome = ttw), 0))
+        // New Vegas without TTW loaded never opens it.
+        assertEquals(null, takeoverGame(ttw.copy(supported = false)))
+        // Switching games while a companion is up moves to the new game's companion.
+        assertEquals(Route.Companion("ttw"), nextRoute(Route.Companion("kh1"), Route.Shell(), ConnectionSnapshot(welcome = ttw), 0))
+    }
 }

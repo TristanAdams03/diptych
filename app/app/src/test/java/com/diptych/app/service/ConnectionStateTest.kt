@@ -6,6 +6,7 @@ import com.diptych.app.kh1.TestData
 import com.diptych.app.kh1.buildMapView
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.shell.FakePrefs
+import com.diptych.app.ttw.TtwUi
 import com.diptych.app.shell.SeenRecord
 import com.diptych.app.shell.SeenStore
 import kotlinx.coroutines.CoroutineDispatcher
@@ -29,6 +30,19 @@ import kotlin.coroutines.CoroutineContext
 private val WELCOME = ServerMsg.Welcome("0.1.0", 0, "kh1", "steam-1.0.0.2", true, listOf("spike", "watch"))
 private val WELCOME_EGS = ServerMsg.Welcome("0.1.0", 0, "kh1", "egs-1.0.0.10", false, listOf("spike"))
 
+private val WELCOME_TTW = ServerMsg.Welcome("0.0.1-spike", 0, "ttw", "FalloutNV 1.4.0.525 · xNVSE 6.4.9", true, listOf("spike"))
+
+private class FakeTtwLink : TtwGameLink {
+    val bus = MutableSharedFlow<ServerMsg>(extraBufferCapacity = 64)
+    override val events: Flow<ServerMsg> = bus
+    override val ui = MutableStateFlow(TtwUi())
+    var starts = 0
+    var stops = 0
+    override fun log(line: String) {}
+    override fun start() { starts++ }
+    override fun stop() { stops++ }
+}
+
 private fun frame(world: Int?, room: Int?, seq: Long = 1) =
     ServerMsg.State("kh1.spike", TestData.state(world, room, TestData.partyRegions(), seq))
 
@@ -39,7 +53,7 @@ private class ManualDispatcher : CoroutineDispatcher() {
     fun runAll() { while (queue.isNotEmpty()) queue.removeFirst().run() }
 }
 
-private class FakeGameLink(private val onStart: FakeGameLink.() -> Unit = {}) : GameLink {
+private class FakeGameLink(private val onStart: FakeGameLink.() -> Unit = {}) : Kh1GameLink {
     val bus = MutableSharedFlow<ServerMsg>(extraBufferCapacity = 64)
     override val events: Flow<ServerMsg> = bus
     override val ui = MutableStateFlow(SpikeUi())
@@ -75,6 +89,24 @@ class ConnectionStateTest {
         assertEquals(ui, s.ui) // ui belongs to the client; the reducer leaves it alone
     }
 
+    @Test fun theFirstLiveGameHoldsTheScreenUntilItGoes() {
+        // Two games can't really run at once, but two links can both be live for a moment.
+        var s = reduceConnection(ConnectionSnapshot(), WELCOME, "kh1")
+        s = reduceConnection(s, WELCOME_TTW, "ttw")
+        assertEquals(WELCOME, s.welcome)
+        assertEquals(mapOf("kh1" to WELCOME, "ttw" to WELCOME_TTW), s.live)
+        s = reduceConnection(s, ServerMsg.Disconnected, "kh1")
+        assertEquals(WELCOME_TTW, s.welcome)
+        s = reduceConnection(s, ServerMsg.Disconnected, "ttw")
+        assertNull(s.welcome)
+        assertTrue(s.live.isEmpty())
+    }
+
+    @Test fun aDisconnectOfTheOtherGameLeavesTheLiveOneAlone() {
+        val s = reduceConnection(reduceConnection(ConnectionSnapshot(), WELCOME_TTW, "ttw"), ServerMsg.Disconnected, "kh1")
+        assertEquals(WELCOME_TTW, s.welcome)
+    }
+
     @Test fun otherFramesLeaveTheSnapshotAlone() {
         val prev = ConnectionSnapshot(SpikeUi(), null, WELCOME)
         for (m in listOf(
@@ -91,8 +123,10 @@ class ConnectionStateTest {
     private var now = 1_000L
     private var created = 0
     private var link = FakeGameLink()
+    private val ttw = FakeTtwLink()
     private val core = ConnectionCore(
         newLink = { created++; link },
+        newTtw = { ttw },
         data = TestData.data,
         scope = scope,
         seen = SeenStore(prefs),
@@ -164,6 +198,34 @@ class ConnectionStateTest {
         repeat(3) { assertSame(first, core.open()) }
         assertEquals(1, created)
         assertEquals(1, link.starts)
+    }
+
+    // --- the second link: TTW on 7960 ---
+
+    @Test fun bothLinksStartOnceAndStopTogether() {
+        core.open(); core.open()
+        assertEquals(1, ttw.starts)
+        core.close()
+        assertEquals(1, ttw.stops)
+    }
+
+    @Test fun aTtwWelcomeIsLiveAndWritesItsOwnSeenRecord() {
+        core.open(); dispatcher.runAll()
+        assertTrue(ttw.bus.tryEmit(WELCOME_TTW)); dispatcher.runAll()
+        assertEquals(WELCOME_TTW, core.state.value.welcome)
+        assertEquals(SeenRecord("0.0.1-spike", "FalloutNV 1.4.0.525 · xNVSE 6.4.9", true, 1_000L), SeenStore(prefs).get("ttw"))
+        assertNull(SeenStore(prefs).get("kh1"))
+        assertTrue(link.sent.isEmpty()) // the KH1 session never sees another game's welcome
+
+        assertTrue(ttw.bus.tryEmit(ServerMsg.Disconnected)); dispatcher.runAll()
+        assertNull(core.state.value.welcome)
+    }
+
+    @Test fun snapshotCarriesTheTtwUi() {
+        core.open(); dispatcher.runAll()
+        ttw.ui.value = TtwUi(connected = true, rttMs = 4)
+        dispatcher.runAll()
+        assertEquals(TtwUi(connected = true, rttMs = 4), core.state.value.ttw)
     }
 
     @Test fun closeStopsTheLinkAndNeverReopens() {

@@ -30,7 +30,7 @@ import coil.ImageLoader
 import com.diptych.app.kh1.ui.ConnectionLabel
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.service.ConnectionSnapshot
-import com.diptych.app.service.LINK_GAME_ID
+import com.diptych.app.service.KH1_ID
 import kotlinx.coroutines.delay
 
 /** Where the bottom screen is. */
@@ -49,15 +49,15 @@ sealed interface Route {
 /** How long the companion shows "Waiting" after the game goes away, before the shell comes back. */
 const val DISCONNECT_GRACE_MS = 10_000L
 
-/** The game a live welcome hands the screen to, or null. Only a supported build of the link's game (KH1) takes over. */
+/** The game a live welcome hands the screen to, or null. Only a supported build of a game that has a link takes over. */
 fun takeoverGame(welcome: ServerMsg.Welcome?): String? =
-    welcome?.takeIf { it.supported && it.gameId == LINK_GAME_ID }?.gameId
+    welcome?.takeIf { w -> w.supported && CATALOG.any { it.id == w.gameId && it.port != null } }?.gameId
 
 /**
  * Where to be, given the live connection. [previousShell] is the last shell screen the user was on (without
  * "Back to game"); [disconnectedForMs] is 0 while a welcome is live, else the time since it went away
  * ([Long.MAX_VALUE] when none has been live).
- * - A supported KH1 welcome takes the screen from the shell (Review Focus 3), unless the user chose the shell over it.
+ * - A supported welcome (KH1 or TTW) takes the screen from the shell (Review Focus 3), unless the user chose the shell over it.
  * - A lost game keeps the companion ("Waiting") for [DISCONNECT_GRACE_MS], then returns [previousShell]; a reconnect
  *   inside that time keeps the companion (Review Focus 4).
  * - An unsupported welcome never opens the companion: the Shelf's ribbon says UPDATE and why.
@@ -99,7 +99,7 @@ fun disconnectedFor(live: Boolean, lostAtMs: Long?, nowMs: Long): Long = when {
     else -> nowMs - lostAtMs
 }
 
-/** The KH1 companion's banner, from the live welcome (the client's own welcome outlives the socket). */
+/** A companion's banner state, from the live welcome (the client's own welcome outlives the socket). */
 fun companionLabel(snapshot: ConnectionSnapshot): ConnectionLabel {
     val w = snapshot.welcome
     return when {
@@ -148,7 +148,7 @@ fun ShellRoot(
 ) {
     var route by remember { mutableStateOf<Route>(Route.Shell()) }
     var previousShell by remember { mutableStateOf(Route.Shell()) }
-    var selectedId by remember { mutableStateOf(LINK_GAME_ID) }
+    var selectedId by remember { mutableStateOf(KH1_ID) }
     var settingsOpen by remember { mutableStateOf(false) }
     var everLive by remember { mutableStateOf(false) }
     var lostAt by remember { mutableStateOf<Long?>(null) }
@@ -205,7 +205,7 @@ fun ShellRoot(
                     ShellScreen(
                         route = r,
                         env = env,
-                        games = shelfGames(env.seen, welcome),
+                        games = shelfGames(env.seen, listOfNotNull(welcome) + snapshot.live.values),
                         selectedId = selectedId,
                         onSelect = { selectedId = it },
                         onRoute = ::go,

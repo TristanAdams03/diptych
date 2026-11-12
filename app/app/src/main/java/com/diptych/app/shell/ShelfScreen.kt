@@ -39,7 +39,11 @@ data class ShelfGame(val entry: GameEntry, val status: StatusInfo)
 
 /** The catalog with each game's status. A live welcome only counts for the game it names. */
 fun shelfGames(seen: Map<String, SeenRecord>, live: ServerMsg.Welcome?): List<ShelfGame> =
-    CATALOG.map { e -> ShelfGame(e, statusOf(e, seen[e.id], live?.takeIf { it.gameId == e.id })) }
+    shelfGames(seen, listOfNotNull(live))
+
+/** Each live welcome counts for the game it names; a game no link reports goes by its stored handshake. */
+fun shelfGames(seen: Map<String, SeenRecord>, live: Collection<ServerMsg.Welcome>): List<ShelfGame> =
+    CATALOG.map { e -> ShelfGame(e, statusOf(e, seen[e.id], live.firstOrNull { it.gameId == e.id })) }
 
 /** The info row's main button. SOON has none. */
 enum class MainAction(val label: String) { Play("Play"), SetUp("Set up"), Update("Update"), Details("Details") }

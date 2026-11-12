@@ -40,7 +40,31 @@ class ShellLogicTest {
         val games = shelfGames(emptyMap(), WELCOME).associate { it.entry.id to it.status.status }
         assertEquals(GameStatus.Ready, games["kh1"])
         assertEquals(GameStatus.Soon, games["kh2"])
-        assertEquals(GameStatus.Soon, games["ttw"])
+        assertEquals(GameStatus.SetUp, games["ttw"])
+    }
+
+    @Test fun everyLiveWelcomeCountsForItsOwnGame() {
+        val ttw = ServerMsg.Welcome("0.0.1-spike", 0, "ttw", "FalloutNV 1.4.0.525", true)
+        val games = shelfGames(emptyMap(), listOf(WELCOME, ttw)).associate { it.entry.id to it.status.status }
+        assertEquals(GameStatus.Ready, games["kh1"])
+        assertEquals(GameStatus.Ready, games["ttw"])
+        assertEquals("2 of 3 ready", readyLine(shelfGames(emptyMap(), listOf(WELCOME, ttw))))
+    }
+
+    @Test fun ttwHasItsOwnSetupSteps() {
+        val ttw = CATALOG.first { it.id == "ttw" }
+        val items = beforeYouPlay(ttw, null)
+        assertEquals(
+            listOf(
+                "Mod zip downloaded",
+                "Copy `ttw_dualscreen.dll` and `ttw_dualscreen.ini` into `Data\\NVSE\\Plugins`",
+                "Start New Vegas through xNVSE with `TaleOfTwoWastelands.esm` enabled",
+                "Start TTW once; Diptych ticks this off",
+            ),
+            items.map { it.text },
+        )
+        assertEquals(ttw.modAsset, items[0].linkUrl)
+        assertTrue(beforeYouPlay(ttw, SEEN).drop(1).all { it.done })
     }
 
     // --- Fold-out ---

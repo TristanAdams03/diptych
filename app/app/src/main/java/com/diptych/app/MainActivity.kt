@@ -46,6 +46,11 @@ import com.diptych.app.shell.ShellActions
 import com.diptych.app.shell.ShellEnv
 import com.diptych.app.shell.ShellRoot
 import com.diptych.app.shell.companionLabel
+import com.diptych.app.ttw.TTW_ID
+import com.diptych.app.ttw.TtwDiagnostics
+import com.diptych.app.ttw.TtwScreen
+import com.diptych.app.ttw.buildTtwReport
+import com.diptych.app.ttw.diagnosticsGame
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -123,6 +128,11 @@ class MainActivity : ComponentActivity() {
             // A StateFlow hands over its current value on collect, so a rebind shows the true state at once.
             val snap by (b?.state ?: UNBOUND).collectAsState()
             val log by (b?.client?.log ?: NO_LOG).collectAsState()
+            val ttwLog by (b?.ttw?.log ?: NO_LOG).collectAsState()
+            val toggleFocus = {
+                focusMode?.toggle()
+                focusOn.value = focusMode?.enabled ?: false
+            }
             ShellRoot(
                 snapshot = snap,
                 env = ShellEnv(
@@ -137,22 +147,45 @@ class MainActivity : ComponentActivity() {
                 actions = actions,
                 showDiagnostics = showDiagnostics.value,
                 diagnostics = {
-                    SpikeScreen(
-                        ui = snap.ui,
-                        log = log,
-                        focusOn = focusOn.value,
-                        onFetchModLog = { b?.client?.fetchModLog() },
-                        onTestJump = { b?.client?.testPress(0x20, 150) },
-                        onTestCast = { b?.client?.testPress(0x14, 300) },
-                        onToggleFocus = {
-                            focusMode?.toggle()
-                            focusOn.value = focusMode?.enabled ?: false
-                        },
-                        onCopyReport = { copyReport() },
-                    )
+                    // One diagnostics screen per link; the game that is (or was last) talking gets it.
+                    if (diagnosticsGame(snap) == TTW_ID) {
+                        TtwDiagnostics(
+                            ui = snap.ttw,
+                            log = ttwLog,
+                            focusOn = focusOn.value,
+                            onEquip = { b?.ttw?.equipFirstWeapon() },
+                            onDumpWorld = { b?.ttw?.dumpWorld() },
+                            onToggleFocus = toggleFocus,
+                            onCopyReport = { copyTtwReport() },
+                        )
+                    } else {
+                        SpikeScreen(
+                            ui = snap.ui,
+                            log = log,
+                            focusOn = focusOn.value,
+                            onFetchModLog = { b?.client?.fetchModLog() },
+                            onTestJump = { b?.client?.testPress(0x20, 150) },
+                            onTestCast = { b?.client?.testPress(0x14, 300) },
+                            onToggleFocus = toggleFocus,
+                            onCopyReport = { copyReport() },
+                        )
+                    }
                 },
-                // Read-only: only the diagnostics screen's Test press buttons send input.
-                companion = { MapScreen(view = snap.view, connection = companionLabel(snap), onReport = ::reportWrong) },
+                companion = { gameId ->
+                    if (gameId == TTW_ID) {
+                        // The two buttons are the only things here that act on the game; the plugin refuses both in
+                        // menus and while loading.
+                        TtwScreen(
+                            ui = snap.ttw,
+                            connection = companionLabel(snap),
+                            onEquip = { b?.ttw?.equipFirstWeapon() },
+                            onDumpWorld = { b?.ttw?.dumpWorld() },
+                        )
+                    } else {
+                        // Read-only: only the diagnostics screen's Test press buttons send input.
+                        MapScreen(view = snap.view, connection = companionLabel(snap), onReport = ::reportWrong)
+                    }
+                },
                 clock = SystemClock::elapsedRealtime, // monotonic: the 10 s grace and the idle dim
             )
         }
@@ -294,6 +327,14 @@ class MainActivity : ComponentActivity() {
             .setPrimaryClip(ClipData.newPlainText("Diptych spike report", report))
         client.log("report copied (${report.length} chars)")
         return true
+    }
+
+    private fun copyTtwReport() {
+        val client = service.value?.ttw ?: return
+        val report = buildTtwReport(client.ui.value, client.log.value, deviceLine, displayManager.snapshot())
+        getSystemService(ClipboardManager::class.java)
+            .setPrimaryClip(ClipData.newPlainText("Diptych TTW report", report))
+        client.log("report copied (${report.length} chars)")
     }
 
     private fun reportWrong() {

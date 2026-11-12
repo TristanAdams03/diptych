@@ -20,13 +20,35 @@ class StatusTest {
     @Test fun catalogOrderAndValues() {
         assertEquals(listOf("ttw", "kh1", "kh2"), CATALOG.map { it.id })
         assertEquals(7970, kh1.port)
+        assertEquals(7960, ttw.port)
         assertEquals(listOf(22370, 22380), ttw.coverAppIds)
         assertEquals("0.1", MIN_PLUGIN)
     }
 
     @Test fun portlessIsSoon() {
-        assertEquals(StatusInfo(GameStatus.Soon, "Coming later"), statusOf(ttw, null, null))
+        assertEquals(StatusInfo(GameStatus.Soon, "Coming later"), statusOf(kh2, null, null))
         assertEquals(GameStatus.Soon, statusOf(kh2, seen(), welcome()).status)
+    }
+
+    // --- TTW: its own minimum plugin and its own "unsupported" ---
+
+    private fun ttwWelcome(supported: Boolean = true) =
+        ServerMsg.Welcome("0.0.1-spike", 0, "ttw", "FalloutNV 1.4.0.525 · xNVSE 6.4.9", supported, listOf("spike"))
+
+    @Test fun ttwIsSetUpUntilItsPluginIsSeen() {
+        assertEquals(StatusInfo(GameStatus.SetUp, "Mod never seen"), statusOf(ttw, null, null))
+    }
+
+    @Test fun theSpikePluginIsNewEnoughForTtw() {
+        assertEquals(StatusInfo(GameStatus.Ready, "Mod connected"), statusOf(ttw, null, ttwWelcome()))
+        assertEquals(GameStatus.Ready, statusOf(ttw, SeenRecord("0.0.1-spike", "x", true, 0L), null).status)
+        // KH1's minimum stays 0.1: the same version string is too old there.
+        assertEquals(GameStatus.Update, statusOf(kh1, null, welcome("0.0.1-spike")).status)
+    }
+
+    @Test fun newVegasWithoutTtwIsUpdateWithItsOwnReason() {
+        val s = statusOf(ttw, null, ttwWelcome(supported = false))
+        assertEquals(StatusInfo(GameStatus.Update, "Tale of Two Wastelands isn't loaded in this New Vegas"), s)
     }
 
     @Test fun unsupportedLiveIsUpdateWithReason() {

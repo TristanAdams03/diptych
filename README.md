@@ -7,11 +7,22 @@ From the Greek *díptychos*, "folded in two".
 
 Also: a companion app for dual-screen Android handhelds that fold in two.
 
-**Status:** milestone 0, the KH1 spike (a Kingdom Hearts Final Mix mod that streams game state to the app).
+**Status:** one app for every supported game. The Shelf lists them; when a game's mod connects, its companion takes
+the bottom screen.
+
+| Game | Mod | Port | Companion |
+|------|-----|------|-----------|
+| Kingdom Hearts Final Mix | `mods/kh1` (`dinput8.dll` proxy) | 7970 | room maps, chests, party HP |
+| Tale of Two Wastelands | `mods/ttw` (`ttw_dualscreen.dll`, xNVSE plugin) | 7960 | Pip-Boy status page: HP, wasteland, cell |
+
+The app keeps one loopback WebSocket link per game and hands the screen to whichever one answers.
 
 Design doc: [docs/superpowers/specs/2026-11-03-diptych-design.md](docs/superpowers/specs/2026-11-03-diptych-design.md)
 
-Protocol: [protocol/kh1/PROTOCOL.md](protocol/kh1/PROTOCOL.md)
+Protocols: [KH1](protocol/kh1/PROTOCOL.md), [TTW](protocol/ttw/PROTOCOL.md)
+
+TTW: [setup guide for the AYN Thor](docs/guide/ttw-on-ayn-thor.md), [spike checklist](docs/spike/TTW-CHECKLIST.md)
+(written for the old ttw-dualscreen app; the plugin steps are unchanged). Mock plugin: `tools/mockserver/ttw_mock.py`.
 
 Spike checklists: [PC](docs/spike/PC-CHECKLIST.md), [Thor](docs/spike/THOR-CHECKLIST.md)
 

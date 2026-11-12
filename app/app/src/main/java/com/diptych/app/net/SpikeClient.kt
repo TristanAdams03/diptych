@@ -12,7 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import com.diptych.app.kh1.Region
-import com.diptych.app.service.GameLink
+import com.diptych.app.service.Kh1GameLink
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +53,7 @@ class SpikeClient(
         .connectTimeout(2, TimeUnit.SECONDS)
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build(),
-) : GameLink {
+) : Kh1GameLink {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val stall = StallDetector()
     private val fps = FpsMeter()

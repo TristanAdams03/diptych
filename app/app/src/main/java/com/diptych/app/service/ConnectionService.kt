@@ -16,6 +16,7 @@ import com.diptych.app.kh1.loadKh1Data
 import com.diptych.app.net.SpikeClient
 import com.diptych.app.shell.SEEN_PREFS
 import com.diptych.app.shell.SeenStore
+import com.diptych.app.ttw.TtwClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,19 +24,22 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * Owns the game link for the process: one [SpikeClient] and its KH1 session, kept in a [ConnectionCore].
- * It runs in the foreground behind a silent, low-importance notification and is sticky, so the socket keeps
- * reconnecting after Android kills the activity, and comes back (with a null intent) after Android kills the process.
- * The activity binds to read [LocalBinder.state] and to reach [LocalBinder.client] for the diagnostics screen.
+ * Owns the game links for the process: one [SpikeClient] with its KH1 session and one [TtwClient], kept in a
+ * [ConnectionCore]. It runs in the foreground behind a silent, low-importance notification and is sticky, so the
+ * sockets keep reconnecting after Android kills the activity, and come back (with a null intent) after Android kills
+ * the process. The activity binds to read [LocalBinder.state] and to reach [LocalBinder.client] and
+ * [LocalBinder.ttw] for the diagnostics screens and the TTW commands.
  */
 class ConnectionService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private lateinit var core: ConnectionCore<SpikeClient>
     private var binder: LocalBinder? = null
+    /** Created (never started) here; the core starts it with the KH1 link on the first open. */
+    private val ttwClient = TtwClient()
 
     val state: StateFlow<ConnectionSnapshot> get() = core.state
 
-    inner class LocalBinder(val client: SpikeClient) : Binder() {
+    inner class LocalBinder(val client: SpikeClient, val ttw: TtwClient) : Binder() {
         val state: StateFlow<ConnectionSnapshot> get() = this@ConnectionService.state
         val running: Boolean get() = ConnectionService.running
     }
@@ -47,6 +51,7 @@ class ConnectionService : Service() {
             data = loadKh1Data(assets),
             scope = scope,
             seen = SeenStore(getSharedPreferences(SEEN_PREFS, Context.MODE_PRIVATE)),
+            newTtw = { ttwClient },
         )
     }
 
@@ -57,7 +62,7 @@ class ConnectionService : Service() {
         return START_STICKY
     }
 
-    override fun onBind(intent: Intent): IBinder = binder ?: LocalBinder(core.open()).also { binder = it }
+    override fun onBind(intent: Intent): IBinder = binder ?: LocalBinder(core.open(), ttwClient).also { binder = it }
 
     override fun onDestroy() {
         running = false
