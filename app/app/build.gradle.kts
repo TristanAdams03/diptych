@@ -39,7 +39,8 @@ android {
     }
     testOptions {
         unitTests.all {
-            // SpikeClientSmokeTest only runs with -Pmock=1 (needs tools/mockserver/kh1_mock.py on :7970).
+            // SpikeClientSmokeTest only runs with -Pmock=1 (needs tools/mockserver/kh1_mock.py on :7970);
+            // TtwClientSmokeTest with -Pmock=ttw (tools/mockserver/ttw_mock.py on :7960).
             it.systemProperty("mock", project.findProperty("mock")?.toString() ?: "0")
             it.testLogging { events("passed", "skipped", "failed"); showStandardStreams = true }
         }
