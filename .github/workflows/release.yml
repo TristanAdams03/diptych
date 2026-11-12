@@ -45,6 +45,49 @@ jobs:
           path: Diptych-KH1-mod-${{ github.ref_name }}.zip
           if-no-files-found: error
 
+  mod-ttw:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure (Win32, New Vegas is 32-bit)
+        run: cmake -S mods/ttw -B build-ttw -A Win32
+      - name: Build
+        run: cmake --build build-ttw --config Release
+      - name: Test
+        run: ctest --test-dir build-ttw -C Release --output-on-failure
+      - name: Check ttw_dualscreen.dll (x86, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build-ttw/Release/ttw_dualscreen.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $size = (Get-Item $dll).Length
+          if ($size -le 50KB) { throw "DLL is only $size bytes (expected > 50 KB)" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x86\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          if ($out -notmatch "14C machine \(x86\)") { throw "DLL is not x86" }
+          foreach ($name in "NVSEPlugin_Query", "NVSEPlugin_Load") {
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - name: Stage
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist-ttw | Out-Null
+          Copy-Item build-ttw/Release/ttw_dualscreen.dll, mods/ttw/ttw_dualscreen.ini dist-ttw/
+      - name: Zip (ttw_dualscreen.dll and .ini, at the zip root)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist-ttw/* -DestinationPath "Diptych-TTW-mod-${{ github.ref_name }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mod-ttw-zip
+          path: Diptych-TTW-mod-${{ github.ref_name }}.zip
+          if-no-files-found: error
+
   app:
     runs-on: ubuntu-latest
     defaults:
@@ -72,7 +115,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    needs: [mod, app]
+    needs: [mod, mod-ttw, app]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -94,8 +137,9 @@ jobs:
 
           Assets:
           - `Diptych-KH1-mod-${{ github.ref_name }}.zip` holds only `dinput8.dll`.
+          - `Diptych-TTW-mod-${{ github.ref_name }}.zip` holds `ttw_dualscreen.dll` and `ttw_dualscreen.ini` (xNVSE plugin).
           - `Diptych-${{ github.ref_name }}.apk` is the Diptych app.
           NOTES
           gh release create "${{ github.ref_name }}" --prerelease --verify-tag \
             --title "${{ github.ref_name }}" --notes-file notes.md \
-            "dist/Diptych-KH1-mod-${{ github.ref_name }}.zip" "dist/Diptych-${{ github.ref_name }}.apk"
+            "dist/Diptych-KH1-mod-${{ github.ref_name }}.zip" "dist/Diptych-TTW-mod-${{ github.ref_name }}.zip" "dist/Diptych-${{ github.ref_name }}.apk"

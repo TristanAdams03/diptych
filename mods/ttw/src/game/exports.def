@@ -1,0 +1,4 @@
+; Undecorated x86 exports xNVSE looks up (nvse_plugin_example/exports.def).
+EXPORTS
+    NVSEPlugin_Query
+    NVSEPlugin_Load

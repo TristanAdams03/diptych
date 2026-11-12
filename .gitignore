@@ -13,4 +13,5 @@ tools/mockserver/.venv/
 __pycache__/
 .pytest_cache/
 .kotlin/
-mods/kh1/b/
+mods/*/b/
+mods/*/build*/

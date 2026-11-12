@@ -51,6 +51,53 @@ jobs:
           WEB: https://gitea.fantastictwo.net/${{ github.repository }}/src/tag/${{ github.ref_name }}
         run: pwsh tools/release/gitea-attach.ps1 $env:API ${{ github.ref_name }} $env:WEB "Diptych-KH1-mod-${{ github.ref_name }}.zip"
 
+  mod-ttw:
+    runs-on: windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          github-server-url: http://192.168.0.186:3001
+      - name: Configure (Win32, New Vegas is 32-bit)
+        run: cmake -S mods/ttw -B build-ttw -A Win32
+      - name: Build
+        run: cmake --build build-ttw --config Release
+      - name: Test
+        run: ctest --test-dir build-ttw -C Release --output-on-failure
+      - name: Check ttw_dualscreen.dll (x86, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build-ttw/Release/ttw_dualscreen.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $size = (Get-Item $dll).Length
+          if ($size -le 50KB) { throw "DLL is only $size bytes (expected > 50 KB)" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x86\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          if ($out -notmatch "14C machine \(x86\)") { throw "DLL is not x86" }
+          foreach ($name in "NVSEPlugin_Query", "NVSEPlugin_Load") {
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - name: Stage
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist-ttw | Out-Null
+          Copy-Item build-ttw/Release/ttw_dualscreen.dll, mods/ttw/ttw_dualscreen.ini dist-ttw/
+      - name: Zip (ttw_dualscreen.dll and .ini, at the zip root)
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist-ttw/* -DestinationPath "Diptych-TTW-mod-${{ github.ref_name }}.zip"
+      - name: Attach the TTW mod zip to the release
+        shell: pwsh
+        env:
+          TOKEN: ${{ github.token }}
+          API: http://192.168.0.186:3001/api/v1/repos/${{ github.repository }}
+          WEB: https://gitea.fantastictwo.net/${{ github.repository }}/src/tag/${{ github.ref_name }}
+        run: pwsh tools/release/gitea-attach.ps1 $env:API ${{ github.ref_name }} $env:WEB "Diptych-TTW-mod-${{ github.ref_name }}.zip"
+
   app:
     runs-on: ubuntu-latest
     container:

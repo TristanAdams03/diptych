@@ -40,9 +40,50 @@ jobs:
           path: build/Release/dinput8.dll
           if-no-files-found: error
 
+  windows-ttw:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure (Win32, New Vegas is 32-bit)
+        run: cmake -S mods/ttw -B build-ttw -A Win32
+      - name: Build
+        run: cmake --build build-ttw --config Release
+      - name: Test
+        run: ctest --test-dir build-ttw -C Release --output-on-failure
+      - name: Check ttw_dualscreen.dll (x86, exports, static CRT)
+        shell: pwsh
+        run: |
+          $dll = "build-ttw/Release/ttw_dualscreen.dll"
+          if (-not (Test-Path $dll)) { throw "$dll not built" }
+          $size = (Get-Item $dll).Length
+          if ($size -le 50KB) { throw "DLL is only $size bytes (expected > 50 KB)" }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x86\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found under $vs" }
+          $out = & $dumpbin.FullName /exports /headers $dll | Out-String
+          if ($out -notmatch "14C machine \(x86\)") { throw "DLL is not x86" }
+          foreach ($name in "NVSEPlugin_Query", "NVSEPlugin_Load") {
+            if ($out -notmatch "(?m)^\s+\d+\s+[0-9A-F]+\s+[0-9A-F]{8}\s+$name\s*$") { throw "export $name missing" }
+          }
+          $deps = & $dumpbin.FullName /dependents $dll | Out-String
+          Write-Host $deps
+          if ($deps -match "(?i)vcruntime|msvcp|ucrtbase") { throw "DLL depends on the dynamic CRT; expected /MT" }
+      - name: Stage
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist-ttw | Out-Null
+          Copy-Item build-ttw/Release/ttw_dualscreen.dll, mods/ttw/ttw_dualscreen.ini dist-ttw/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: diptych-ttw-plugin
+          path: dist-ttw/
+          if-no-files-found: error
+
   linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - name: Build and test
         run: cmake -S mods/kh1 -B b && cmake --build b && ctest --test-dir b --output-on-failure -V
+      - name: Build and test (TTW plugin core)
+        run: cmake -S mods/ttw -B b-ttw -DCMAKE_BUILD_TYPE=Release && cmake --build b-ttw && ctest --test-dir b-ttw --output-on-failure
