@@ -11,9 +11,9 @@
 
 namespace diptych::core {
 
-inline constexpr size_t kWatchMaxRegions = 8;
+inline constexpr size_t kWatchMaxRegions = 16;
 inline constexpr size_t kWatchMaxLength = 256;   // bytes per region
-inline constexpr size_t kWatchMaxTotal = 1024;   // bytes over all regions
+inline constexpr size_t kWatchMaxTotal = 2048;   // bytes over all regions
 
 struct WatchRegion {
     uintptr_t offset = 0;  // from the module base
@@ -26,7 +26,7 @@ struct WatchSet {
 
 // Validates kh1.watch args {regions:[{offset:int, length:int}]}. `regions` missing or not an array,
 // an element that is not an object, or a missing/non-integer offset or length -> Fail{"bad command"}.
-// More than 8 regions, a length outside 1..256, a total over 1024 bytes, or a region not wholly
+// More than 16 regions, a length outside 1..256, a total over 2048 bytes, or a region not wholly
 // inside [0, imageSize) -> Fail{"out of range"}. An empty array is valid (it clears the watch).
 WatchSet parse_watch(const nlohmann::json& args, size_t imageSize);
 

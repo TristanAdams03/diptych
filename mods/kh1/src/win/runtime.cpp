@@ -83,8 +83,11 @@ void Runtime::step(int64_t now) {
     serve_(now);
     if (supported_()) {
         hook_();
-        press_.tick(guarded_, now);
+        // Safety reads go through guarded_; a sequence's conditions read raw memory (app-chosen offsets
+        // must never turn off a safety-gate reader).
+        press_.tick(guarded_, now, o_.mem);
         flush_press_log_();
+        send_press_result_();
     }
     commands_(now);
     state_(now);
@@ -183,6 +186,10 @@ void Runtime::commands_(int64_t now) {
             prune_watches_();  // bounds the map even when nobody subscribes
         }
         flush_press_log_();
+        if (reply.empty()) {  // an accepted kh1.pressSequence: its result goes out when it ends
+            log_("command " + cmd.name.substr(0, 64) + " started");
+            continue;
+        }
         if (cmd.name != "kh1.log") {
             const bool ok = reply.find("\"ok\":true") != std::string::npos;
             log_("command " + cmd.name.substr(0, 64) + (ok ? " ok" : " failed: " + reply.substr(0, 160)));
@@ -246,6 +253,15 @@ void Runtime::hook_() {
 
 void Runtime::flush_press_log_() {
     for (auto& l : press_.take_log()) log_(l);
+}
+
+// A kh1.pressSequence's result, once it has ended. Like every result it goes to all clients.
+void Runtime::send_press_result_() {
+    std::optional<std::string> r = press_.take_result();
+    if (!r) return;
+    const bool ok = r->find("\"ok\":true") != std::string::npos;
+    log_(std::string("command kh1.pressSequence ") + (ok ? "ok" : "failed: " + r->substr(0, 160)));
+    if (serverUp_) server_.sendToAll(std::move(*r));
 }
 
 }  // namespace diptych::win

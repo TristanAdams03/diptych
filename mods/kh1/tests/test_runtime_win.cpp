@@ -114,7 +114,7 @@ TEST_CASE("runtime_end_to_end") {
     REQUIRE(c.handshake());
     REQUIRE(c.sendFrame(0x1, fixture("hello.json")));
     json w = next_of_type(c, "welcome");
-    CHECK(w["plugin"] == "0.1.0");
+    CHECK(w["plugin"] == "0.2.0");
     CHECK(w["gameId"] == "kh1");
     CHECK(w["gameBuild"] == "unknown");
     CHECK(w["supported"] == false);
@@ -274,6 +274,53 @@ TEST_CASE("runtime_releases_injected_buttons_when_it_goes_inert_mid_press") {
     REQUIRE(r.runReturned.load());
     CHECK(r.rt->inert());
     CHECK_FALSE(r.inject.active());  // no buttons left held for the rest of the session
+}
+
+TEST_CASE("runtime_sends_a_sequence_result_when_the_sequence_ends") {
+    RunningRuntime r;
+    r.build = core::Build::Steam1002;
+    TestClient c(r.rt->port());
+    REQUIRE(c.handshake());
+    const auto tHook = std::chrono::steady_clock::now();
+    while (r.hookInstalls.load() == 0 && std::chrono::steady_clock::now() - tHook < std::chrono::seconds(2))
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    REQUIRE(r.hookInstalls.load() == 1);
+
+    // A then up, 100 ms each with 50 ms gaps: 300 ms. The result comes when it ends, not when it starts.
+    const json steps = json::array({{{"byteIndex", 1}, {"mask", 0x40}, {"holdMs", 100}, {"gapMs", 50}},
+                                    {{"byteIndex", 0}, {"mask", 0x10}, {"holdMs", 100}, {"gapMs", 50}}});
+    const auto t0 = std::chrono::steady_clock::now();
+    REQUIRE(c.sendFrame(0x1, command("s1", "kh1.pressSequence", {{"steps", steps}})));
+    REQUIRE(c.sendFrame(0x1, command("p", "kh1.pressInput", {{"byteIndex", 1}, {"mask", 0x40}, {"durationMs", 50}})));
+    json res = next_of_type(c, "result");
+    CHECK(res["id"] == "p");  // refused at once while the sequence runs
+    CHECK(res["error"] == "busy");
+    res = next_of_type(c, "result");
+    CHECK(res == json{{"type", "result"}, {"id", "s1"}, {"ok", true}, {"error", nullptr},
+                      {"data", {{"steps", 2}, {"skipped", 0}}}});
+    CHECK(std::chrono::steady_clock::now() - t0 >= std::chrono::milliseconds(300));
+    CHECK_FALSE(r.inject.active());
+
+    // An until that never holds (the byte reads 0) ends with timeout after its 100 ms.
+    const json waitStep = {{"byteIndex", 1}, {"mask", 0x40}, {"holdMs", 50}, {"gapMs", 50},
+                           {"until", {{"offset", 0x2852790}, {"value", 1}, {"timeoutMs", 100}}}};
+    REQUIRE(c.sendFrame(0x1, command("s2", "kh1.pressSequence", {{"steps", json::array({waitStep})}})));
+    res = next_of_type(c, "result");
+    CHECK(res == json{{"type", "result"}, {"id", "s2"}, {"ok", false}, {"error", "timeout"}, {"data", nullptr}});
+
+    r.halt();
+    CHECK(r.mem.writes.empty());  // sequences never write game memory
+    CHECK_FALSE(r.inject.active());
+    CHECK(r.inject.generation() == 6);  // s1: set A, clear, set up, clear; s2: set A, clear
+    bool started = false, done = false, timedOut = false;
+    for (auto& l : r.ring.last(500)) {
+        started |= l == "command kh1.pressSequence started";
+        done |= l.find("sequence s1 end (done: 2 pressed, 0 skipped)") == 0;
+        timedOut |= l.find("sequence s2 end (timeout at step 1)") == 0;
+    }
+    CHECK(started);
+    CHECK(done);
+    CHECK(timedOut);
 }
 
 TEST_CASE("runtime_stops_classifying_after_the_window") {

@@ -1,7 +1,7 @@
 #include "core/kh1_commands.h"
 
-#include <cstdio>
 #include <limits>
+#include <utility>
 
 #include "core/command_args.h"
 #include "proto/envelope.h"
@@ -9,43 +9,6 @@
 namespace diptych::core {
 
 using nlohmann::json;
-
-// ---- PressScheduler ---------------------------------------------------------------------------
-
-void PressScheduler::start(int byteIndex, uint8_t mask, PadInject pad, int durationMs) {
-    active_ = true;
-    pad_ = pad;
-    durationMs_ = durationMs;
-    startMs_.reset();
-    char buf[64];
-    std::snprintf(buf, sizeof buf, " (xinput buttons 0x%04x lt %u rt %u)", static_cast<unsigned>(pad.buttons),
-                  static_cast<unsigned>(pad.leftTrigger), static_cast<unsigned>(pad.rightTrigger));
-    log_.push_back("press start byte " + std::to_string(byteIndex) + " mask " + std::to_string(mask) + " for " +
-                   std::to_string(durationMs) + " ms" + buf);
-}
-
-void PressScheduler::end_(const std::string& why, int64_t nowMs) {
-    if (inject_) inject_->clear();
-    active_ = false;
-    const int64_t held = startMs_ ? nowMs - *startMs_ : 0;
-    startMs_.reset();
-    log_.push_back("press end (" + why + ") after " + std::to_string(held) + " ms");
-}
-
-void PressScheduler::tick(IMemory& mem, int64_t nowMs) {
-    if (!active_) return;
-    if (!startMs_) startMs_ = nowMs;
-    if (!inject_) return end_("aborted: xinput hook not installed", nowMs);
-    if (nowMs - *startMs_ >= durationMs_) return end_("done", nowMs);
-    if (!safe_now(mem)) return end_("aborted: not safe now", nowMs);
-    inject_->set(pad_);  // a no-op after the first tick
-}
-
-std::vector<std::string> PressScheduler::take_log() {
-    std::vector<std::string> out;
-    out.swap(log_);
-    return out;
-}
 
 // ---- commands ---------------------------------------------------------------------------------
 
@@ -65,7 +28,7 @@ proto::CommandResult probe(IMemory& mem, const json& args) {
     return {true, "", json{{"offset", offset}, {"hex", to_hex(*b)}}};
 }
 
-proto::CommandResult press_input(IMemory& gate, const json& args, PressScheduler& press) {
+proto::CommandResult press_input(IMemory& gate, const json& args, SequenceScheduler& press) {
     const int64_t byteIndex = int_arg(args, "byteIndex", 0, 1);
     const int64_t mask = int_arg(args, "mask", 0, 255);
     const std::optional<PadInject> pad = ps2_to_xinput(static_cast<int>(byteIndex), static_cast<int>(mask));
@@ -75,6 +38,18 @@ proto::CommandResult press_input(IMemory& gate, const json& args, PressScheduler
     if (!press.available() || !safe_now(gate)) throw Fail{"not safe now"};
     press.start(static_cast<int>(byteIndex), static_cast<uint8_t>(mask), *pad, static_cast<int>(durationMs));
     return {true, "", nullptr};
+}
+
+// Starts the sequence; its result is sent when it ends (press.take_result()).
+void press_sequence(IMemory& mem, IMemory& gate, const std::string& id, const json& args, SequenceScheduler& press) {
+    Sequence seq = parse_sequence(args, mem.image_size());
+    if (press.active()) throw Fail{"busy"};
+    if (!press.available() || !safe_now(gate)) throw Fail{"not safe now"};
+    for (const MemCondition& c : seq.require) {
+        const std::optional<bool> met = condition_met(mem, c);
+        if (!met || !*met) throw Fail{"not safe now"};
+    }
+    press.start_sequence(id, std::move(seq));
 }
 
 proto::CommandResult log_lines(const LogRing* log) {
@@ -88,19 +63,23 @@ proto::CommandResult log_lines(const LogRing* log) {
 }  // namespace
 
 std::string run_kh1_command(IMemory& mem, bool supported, const std::string& id, const std::string& name,
-                            const json& args, PressScheduler& press, const LogRing* log, IMemory* gate,
+                            const json& args, SequenceScheduler& press, const LogRing* log, IMemory* gate,
                             std::optional<WatchSet>* watch) {
     proto::CommandResult r;
     if (watch) watch->reset();
     try {
         const bool isProbe = name == "kh1.probe", isPress = name == "kh1.pressInput", isLog = name == "kh1.log",
-                   isWatch = name == "kh1.watch";
-        if (!isProbe && !isPress && !isLog && !isWatch) throw Fail{"unknown command"};
+                   isWatch = name == "kh1.watch", isSequence = name == "kh1.pressSequence";
+        if (!isProbe && !isPress && !isLog && !isWatch && !isSequence) throw Fail{"unknown command"};
         if (!args.is_object()) throw Fail{"bad command"};
         if (isLog) {
             r = log_lines(log);
         } else {
             if (!supported) throw Fail{"unsupported build"};
+            if (isSequence) {
+                press_sequence(mem, gate ? *gate : mem, id, args, press);
+                return "";  // deferred: the runtime sends press.take_result() when the sequence ends
+            }
             if (isWatch) {
                 if (!watch) throw Fail{"internal error"};  // the caller has nowhere to keep it
                 WatchSet w = parse_watch(args, mem.image_size());

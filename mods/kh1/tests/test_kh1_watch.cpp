@@ -43,19 +43,25 @@ TEST_CASE("parse_watch accepts one battle-block region") {
 
 TEST_CASE("parse_watch accepts the limits and an empty list") {
     CHECK(parse_watch(json{{"regions", json::array()}}, kImage).regions.empty());
-    json eight = json::array();
-    for (int i = 0; i < 8; ++i) eight.push_back({{"offset", i * 256}, {"length", 128}});
-    CHECK(parse_watch(json{{"regions", eight}}, kImage).regions.size() == 8);  // 1024 bytes total
+    json sixteen = json::array();
+    for (int i = 0; i < 16; ++i) sixteen.push_back({{"offset", i * 256}, {"length", 128}});
+    CHECK(parse_watch(json{{"regions", sixteen}}, kImage).regions.size() == 16);  // 2048 bytes total
+    json fullTotal = json::array();
+    for (int i = 0; i < 8; ++i) fullTotal.push_back({{"offset", i * 256}, {"length", 256}});
+    CHECK(parse_watch(json{{"regions", fullTotal}}, kImage).regions.size() == 8);  // 2048 bytes in 8 regions
     CHECK(parse_watch(regions({{static_cast<int64_t>(kImage) - 256, 256}}), kImage).regions.size() == 1);
 }
 
 TEST_CASE("parse_watch rejects out-of-range regions") {
-    json nine = json::array();
-    for (int i = 0; i < 9; ++i) nine.push_back({{"offset", i}, {"length", 1}});
-    CHECK(watch_error(json{{"regions", nine}}) == "out of range");
+    json seventeen = json::array();
+    for (int i = 0; i < 17; ++i) seventeen.push_back({{"offset", i}, {"length", 1}});
+    CHECK(watch_error(json{{"regions", seventeen}}) == "out of range");
     CHECK(watch_error(regions({{kBattle, 0}})) == "out of range");
     CHECK(watch_error(regions({{kBattle, 257}})) == "out of range");
-    CHECK(watch_error(regions({{0, 256}, {256, 256}, {512, 256}, {768, 256}, {1024, 1}})) == "out of range");  // 1025
+    json over = json::array();
+    for (int i = 0; i < 8; ++i) over.push_back({{"offset", i * 256}, {"length", 256}});
+    over.push_back({{"offset", 2048}, {"length", 1}});
+    CHECK(watch_error(json{{"regions", over}}) == "out of range");  // 2049 bytes
     CHECK(watch_error(regions({{static_cast<int64_t>(kImage) - 15, 16}})) == "out of range");
     CHECK(watch_error(regions({{static_cast<int64_t>(kImage), 1}})) == "out of range");
     CHECK(watch_error(regions({{-1, 4}})) == "out of range");
@@ -97,7 +103,7 @@ TEST_CASE("read_watch nulls only a faulted region") {
 
 TEST_CASE("kh1.watch command") {
     FakeMemory m;
-    PressScheduler p;
+    SequenceScheduler p;
     std::optional<WatchSet> w;
     auto run = [&](bool supported, const json& args) {
         return json::parse(run_kh1_command(m, supported, "w1", "kh1.watch", args, p, nullptr, nullptr, &w));

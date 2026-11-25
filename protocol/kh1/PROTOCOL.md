@@ -7,11 +7,11 @@ Example frames for each message are in `fixtures/`. The mod listens on **127.0.0
 | Dir | Type | Fields | Fixture |
 |-----|------|--------|---------|
 | C->S | `hello` | `client:string`, `protocol:0` | hello.json |
-| S->C | `welcome` | `plugin:"0.1.0"`, `protocol:0`, `gameId:"kh1"`, `gameBuild:"steam-1.0.0.2"\|"egs-1.0.0.10"\|"unknown"`, `supported:bool`, `features:["spike","watch"]` | welcome_steam.json, welcome_unsupported.json |
+| S->C | `welcome` | `plugin:"0.2.0"`, `protocol:0`, `gameId:"kh1"`, `gameBuild:"steam-1.0.0.2"\|"egs-1.0.0.10"\|"unknown"`, `supported:bool`, `features:["spike","watch","sequence"]` | welcome_steam.json, welcome_unsupported.json |
 | C->S | `subscribe` | `topics:["kh1.spike"]`, `rateHz:int 1..10` | subscribe.json |
 | S->C | `state` | `topic:"kh1.spike"`, `data:{...}` (below) | state_spike.json, state_unsupported.json, state_watch.json |
-| C->S | `command` | `id:string`, `name:"kh1.probe"\|"kh1.pressInput"\|"kh1.log"\|"kh1.watch"`, `args:{}` | command_probe.json, command_press.json, command_log.json, command_watch.json |
-| S->C | `result` | `id:string`, `ok:bool`, `error:string\|null`, `data:object\|null` | result_probe.json, result_press_refused.json, result_log.json, result_watch.json |
+| C->S | `command` | `id:string`, `name:"kh1.probe"\|"kh1.pressInput"\|"kh1.pressSequence"\|"kh1.log"\|"kh1.watch"`, `args:{}` | command_probe.json, command_press.json, command_sequence.json, command_log.json, command_watch.json |
+| S->C | `result` | `id:string`, `ok:bool`, `error:string\|null`, `data:object\|null` | result_probe.json, result_press_refused.json, result_sequence.json, result_sequence_timeout.json, result_log.json, result_watch.json |
 | C->S | `ping` | `t:int` | ping.json |
 | S->C | `pong` | `t:int` | pong.json |
 | S->C | `error` | `message:string` | error.json |
@@ -85,12 +85,47 @@ faulting region never turns off a state reader.
   also changes `dwPacketNumber` so games that skip unchanged packets see it. The earlier path (ORing `mask` into the
   input block at `0x23407B4`) is proven not to work: on PC the bytes held the bits but the game never acted; that
   block is a derived copy.
+- `kh1.pressSequence` `args:{require?:[cond], steps:[step]}` -> ok `data:{steps:int, skipped:int}`. **The result is sent
+  when the sequence ends**, not when it is accepted; a refusal (below) is answered at once. A short list of controller-0
+  presses, injected through the same `XInputGetState` hook and PS2 mapping as `kh1.pressInput`, with one-byte memory
+  checks between them. No game memory is written.
+  - `cond` = `{offset:int, value:0..255, mask?:1..255}`: met when `(u8 at module base + offset) & mask == value`.
+    `mask` defaults to 255; `value` may not have bits outside `mask`; `offset` must be inside the module image.
+  - `step` = `{byteIndex:0..1, mask:0..255, holdMs:16..1000, gapMs:16..1000, until?:{offset, value, mask?,
+    timeoutMs:16..5000}, onlyIf?:cond}`. `byteIndex`/`mask` are mapped as in the `kh1.pressInput` table (Start is
+    refused); `mask:0` presses nothing, which makes the step a plain wait.
+  - Each step, in order: if it has `onlyIf` and that is false, the step is **skipped** (no press, no gap). Otherwise the
+    buttons are held for `holdMs` and released; with `until`, the mod then waits for that condition, ending the
+    sequence with `timeout` if it does not hold within `timeoutMs` of the release; then it stays released for
+    `gapMs`. Times are measured on the mod's ~1 kHz tick from the first tick after the previous phase.
+  - `require` conditions are checked once, when the command arrives; one that does not hold (or cannot be read) is
+    `not safe now`. The app uses them to say what its plan relied on (A/B swap, a shortcut slot, the command menu at
+    its top level), so a plan made from a state frame up to 200 ms old is refused if the game has changed since.
+  - Limits: 1..16 steps; at most 16 `require` conditions; every step's `holdMs + gapMs + until.timeoutMs` adds up to
+    at most **5000 ms**. Breaking one, or a value outside its range, is `out of range`; `steps` missing or not an
+    array, `require` not an array, a step or condition that is not an object, or a missing or non-integer field is
+    `bad command`.
+  - Refused at once: `unsupported build`; `busy` while a press or sequence runs; `not safe now` in a menu, cutscene or
+    Gummi, when a safety-gate reader is off, without the XInput hook, or when a `require` fails.
+  - Ends early: the mod checks the menu, cutscene and Gummi flags on every tick that injects or waits (as for
+    `kh1.pressInput`); the first unsafe tick ends the sequence with `not safe now`, as does a condition byte that
+    cannot be read. Every end releases all injected buttons.
+  - The conditions read the game image directly (like `kh1.probe`), so an app-chosen offset never turns off a state
+    or safety-gate reader. The mod knows no KH1 meaning for them: the app supplies every offset.
+  - If the mod goes inert during a sequence (see `kh1.log`), the buttons are released and no result is sent.
+  - `data.steps` counts the steps that were pressed, `data.skipped` those skipped by `onlyIf`. Like every `result`, it
+    goes to every connected client; match it by `id`.
+  - Example (`command_sequence.json`): cast the spell on shortcut 1 (LB+Y), wait for the target picker, confirm with A.
+    `require` checks the A/B swap byte `0x4D8632` == 0 and shortcut slot 1 `0x2DE9BA4` == 3 (Cure); `until`/`onlyIf`
+    use the command-menu byte `0x2852790` == 4. Those offsets are from community scripts (KH1-LUA-LIBRARY, KH-1FM-AP-LUA,
+    Critical Mix) and **not yet checked on the PC**; the value 4 for "target picker open" is a placeholder until then.
+    `result_sequence.json` is the result when the picker opens, `result_sequence_timeout.json` when it never does.
 - `kh1.log` `args:{}` -> ok `data:{lines:[string]}`. Recent mod log lines. Works on any build.
 - `kh1.watch` `args:{regions:[{offset:int, length:int}]}` -> ok `data:{count:int}` (the number of regions). Read-only.
   From then on, every `kh1.spike` state frame sent to **this connection** carries `regions` (above); other clients'
   frames are unchanged. A new `kh1.watch` replaces the previous one; an empty `regions` list clears it. The watch belongs
   to the connection: it is dropped when the client disconnects, so a client re-sends it after every `welcome`.
-  Limits: at most **8** regions, each `length` **1..256** bytes, **1024** bytes in total, and each region wholly inside
+  Limits: at most **16** regions, each `length` **1..256** bytes, **2048** bytes in total, and each region wholly inside
   the module image (`offset + length <= SizeOfImage`). Breaking a limit is `out of range`; `regions` missing or not an
   array, an element that is not an object, or a missing or non-integer `offset`/`length` is `bad command`; on an
   unsupported build it is `unsupported build`. A failed `kh1.watch` leaves the previous watch in place.
@@ -110,11 +145,12 @@ faulting region never turns off a state reader.
 | error | When |
 |-------|------|
 | `bad command` | `command` without a string `id` and string `name`, `args` missing/not an object/over 64 KB, or `args` invalid for the command |
-| `unknown command` | `name` is not one of the four commands |
+| `unknown command` | `name` is not one of the five commands |
 | `unsupported build` | any command except `kh1.log` on an unsupported build |
-| `out of range` | an argument is outside its range (including pressInput start, and the `kh1.watch` limits), or a probe read faulted |
-| `not safe now` | `kh1.pressInput` in a menu, cutscene or Gummi, or without the XInput hook |
-| `busy` | the command queue is full, or an input press is already running |
+| `out of range` | an argument is outside its range (including pressInput/pressSequence start, and the `kh1.watch` and `kh1.pressSequence` limits), or a probe read faulted |
+| `not safe now` | `kh1.pressInput` or `kh1.pressSequence` in a menu, cutscene or Gummi, or without the XInput hook; a `kh1.pressSequence` whose `require` fails, or that ends early because the game became unsafe or a condition byte could not be read |
+| `busy` | the command queue is full, or an input press or sequence is already running |
+| `timeout` | a `kh1.pressSequence` step's `until` did not hold within its `timeoutMs` (the sequence ends there) |
 | `internal error` | a C++ exception escaped the command, or a failure carried no error string |
 
 - A `command` with a missing or non-string `id` gets `bad command` with `id:""`.
@@ -126,6 +162,8 @@ faulting region never turns off a state reader.
 - `pong` is answered by the network thread.
 - `error` is sent for unparseable or unknown messages; the connection stays open.
 - `welcome` is the reply to `hello`.
+- A `command`'s `result` is sent as soon as it has run, except an accepted `kh1.pressSequence`, whose `result` is sent
+  when the sequence ends (up to ~5 s later). Other commands are answered meanwhile.
 - Only the `KINGDOM HEARTS FINAL MIX.exe` process runs the server; other processes get a passthrough DLL.
 
 ## Address table (Steam 1.0.0.2)

@@ -1,6 +1,7 @@
 #pragma once
 // The KH1 runtime: owns the WebSocket server and, on one thread, re-classifies the build, ticks
-// the press scheduler at ~1 kHz while a press runs (~100 Hz otherwise), runs queued commands (at most 8 per 100 ms) and sends kh1.spike
+// the press scheduler at ~1 kHz while a press or sequence runs (~100 Hz otherwise), sends a finished sequence's result,
+// runs queued commands (at most 8 per 100 ms) and sends kh1.spike
 // state at the subscribed rate (<= 10 Hz), with each watching client's kh1.watch regions in its own frames. The thread never takes the loader lock and never waits
 // on the network thread (WsServer calls only take a mutex briefly).
 #include <atomic>
@@ -18,7 +19,7 @@
 
 namespace diptych::win {
 
-inline constexpr const char* kPluginVersion = "0.1.0";
+inline constexpr const char* kPluginVersion = "0.2.0";
 
 struct RuntimeOptions {
     std::string bind = server::kDefaultBind;
@@ -38,7 +39,7 @@ struct RuntimeOptions {
     int classifyForMs = 30000;
     int serverRetryMs = 5000;  // if the port is taken, try again this often
     int tickReportMs = 60000;  // how often the measured loop rate is logged
-    // Loop sleep: activeSleepMs while a press is active (1 ms press ticks), idleSleepMs otherwise,
+    // Loop sleep: activeSleepMs while a press or sequence is active (1 ms ticks), idleSleepMs otherwise,
     // so the thread is not waking 1000 times a second all session on a battery handheld.
     int activeSleepMs = 1;
     int idleSleepMs = 10;
@@ -82,6 +83,7 @@ private:
     void log_(const std::string& s);
     void log_pinned_(const std::string& s);
     void flush_press_log_();
+    void send_press_result_();
     void hook_();
     void go_inert_() noexcept;
     bool supported_() const { return build_ == core::Build::Steam1002; }
@@ -89,7 +91,7 @@ private:
 
     RuntimeOptions o_;
     core::DisablingMemory guarded_;  // state, safe checks and press ticks
-    core::PressScheduler press_;
+    core::SequenceScheduler press_;  // kh1.pressInput and kh1.pressSequence
     core::RawWatch raw_;
     server::WsServer server_;
     // kh1.watch, per connection (Ruling B): only that client's state frames carry its regions.

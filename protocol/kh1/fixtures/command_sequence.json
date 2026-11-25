@@ -1,0 +1,1 @@
+{"type":"command","id":"c5","name":"kh1.pressSequence","args":{"require":[{"offset":5080626,"value":0},{"offset":48143268,"value":3}],"steps":[{"byteIndex":1,"mask":20,"holdMs":100,"gapMs":50,"until":{"offset":42280848,"value":4,"mask":255,"timeoutMs":500}},{"byteIndex":1,"mask":64,"holdMs":66,"gapMs":50,"onlyIf":{"offset":42280848,"value":4}}]}}

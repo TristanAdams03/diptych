@@ -1,1 +1,1 @@
-{"type":"welcome","plugin":"0.1.0","protocol":0,"gameId":"kh1","gameBuild":"egs-1.0.0.10","supported":false,"features":["spike","watch"]}
+{"type":"welcome","plugin":"0.2.0","protocol":0,"gameId":"kh1","gameBuild":"egs-1.0.0.10","supported":false,"features":["spike","watch","sequence"]}

@@ -13,7 +13,7 @@ using namespace diptych::core;
 using nlohmann::json;
 
 namespace {
-json run(FakeMemory& m, bool supported, const std::string& name, const json& args, PressScheduler& p,
+json run(FakeMemory& m, bool supported, const std::string& name, const json& args, SequenceScheduler& p,
          const LogRing* log = nullptr) {
     return json::parse(run_kh1_command(m, supported, "c1", name, args, p, log));
 }
@@ -34,7 +34,7 @@ json press_args(int byteIndex, int mask, int durationMs) {
 
 TEST_CASE("unsupported_build_blocks_all: commands") {
     FakeMemory m;
-    PressScheduler p;
+    SequenceScheduler p;
     check_err(run(m, false, "kh1.probe", {{"offset", 0}, {"length", 4}}, p), "unsupported build");
     check_err(run(m, false, "kh1.pressInput", press_args(0, 16, 100), p), "unsupported build");
     check_err(run(m, false, "kh1.nope", json::object(), p), "unknown command");
@@ -45,7 +45,7 @@ TEST_CASE("unsupported_build_blocks_all: commands") {
 
 TEST_CASE("kh1.log works on any build and returns the last 200 lines") {
     FakeMemory m;
-    PressScheduler p;
+    SequenceScheduler p;
     LogRing ring;
     for (int i = 0; i < 300; ++i) ring.add("line " + std::to_string(i));
     for (bool supported : {false, true}) {
@@ -64,7 +64,7 @@ TEST_CASE("kh1.log works on any build and returns the last 200 lines") {
 TEST_CASE("probe_bounds") {
     FakeMemory m;
     m.set32(kWorldOffset, 0x03);
-    PressScheduler p;
+    SequenceScheduler p;
     SUBCASE("valid probe returns hex") {
         const json r = run(m, true, "kh1.probe", {{"offset", 36961940}, {"length", 4}}, p);
         CHECK(r["ok"] == true);
@@ -110,7 +110,7 @@ namespace {
 // A scheduler wired to an InjectState, as the runtime does once the XInput hook is installed.
 struct Press {
     InjectState inject;
-    PressScheduler p;
+    SequenceScheduler p;
     Press() { p.attach(&inject); }
 };
 
@@ -126,7 +126,7 @@ PadInject seen(const InjectState& s, uint32_t* packet = nullptr) {
 
 TEST_CASE("press_refused_when_unsafe") {
     Press x;
-    PressScheduler& p = x.p;
+    SequenceScheduler& p = x.p;
     SUBCASE("menu") {
         FakeMemory m;
         m.set(kMenuOffset, 1);
@@ -152,7 +152,7 @@ TEST_CASE("press_refused_when_unsafe") {
     }
     SUBCASE("xinput hook not installed") {
         FakeMemory m;
-        PressScheduler bare;
+        SequenceScheduler bare;
         CHECK_FALSE(bare.available());
         check_err(run(m, true, "kh1.pressInput", press_args(1, 0x40, 100), bare), "not safe now");
         CHECK_FALSE(bare.active());
@@ -220,7 +220,7 @@ TEST_CASE("pressInput refuses once a safety-gate reader is disabled") {
     // The press ticks read through a DisablingMemory. After one transient fault the reader
     // stays off, so every later press would abort on its first tick; the command must say so.
     Press x;
-    PressScheduler& p = x.p;
+    SequenceScheduler& p = x.p;
     FakeMemory m;
     DisablingMemory g(m);
     m.faults.insert(kMenuOffset);
@@ -236,7 +236,7 @@ TEST_CASE("pressInput refuses once a safety-gate reader is disabled") {
 TEST_CASE("pressInput args") {
     FakeMemory m;
     Press x;
-    PressScheduler& p = x.p;
+    SequenceScheduler& p = x.p;
     for (int bi : {-1, 2, 3, 13, 17, 31, 32}) check_err(run(m, true, "kh1.pressInput", press_args(bi, 0x40, 100), p), "out of range");
     check_err(run(m, true, "kh1.pressInput", press_args(1, 256, 100), p), "out of range");
     check_err(run(m, true, "kh1.pressInput", press_args(1, -1, 100), p), "out of range");
@@ -276,7 +276,7 @@ TEST_CASE("press log lines") {
 
 TEST_CASE("kh1.log keeps the pinned startup lines first, then the last 200 others") {
     FakeMemory m;
-    PressScheduler p;
+    SequenceScheduler p;
     LogRing ring;
     ring.add("diptych_kh1 0.1.0 loaded", true);
     ring.add("build unknown not supported", true);
