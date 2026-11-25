@@ -27,6 +27,8 @@ Spike checklists: [PC](docs/spike/PC-CHECKLIST.md), [Thor](docs/spike/THOR-CHECK
 
 KH1 map (v0.2.1): [map checklist](docs/spike/MAP-CHECKLIST.md)
 
+KH1 actions (M3, in progress): [M3 PC check](docs/spike/M3-CHECKLIST.md)
+
 Launcher (v0.3.0): [launcher checklist](docs/spike/SHELL-CHECKLIST.md)
 
 Licence: GPL-3.0-or-later.
