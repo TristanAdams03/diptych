@@ -1,8 +1,8 @@
 # Tale of Two Wastelands on the AYN Thor: Setup Guide
 
-*Part of TTW DualScreen. Researched 2026-11-03 from the sources linked in each step. Every step is tagged with how well it is confirmed. If you already have TTW running on your Thor, skip to [Part F](#part-f-install-ttw-dualscreen).*
+*Part of Diptych, the AYN Thor second-screen companion. Researched 2026-11-03 from the sources linked in each step. Every step is tagged with how well it is confirmed. If you already have TTW running on your Thor, skip to [Part F](#part-f-install-diptych-and-the-ttw-plugin).*
 
-This guide takes you from "I own Fallout 3 and New Vegas" to "TTW boots on the Thor's top screen". The second-screen companion goes on top of that (see [Part F](#part-f-install-ttw-dualscreen)).
+This guide takes you from "I own Fallout 3 and New Vegas" to "TTW boots on the Thor's top screen". Diptych's TTW companion on the bottom screen goes on top of that (see [Part F](#part-f-install-diptych-and-the-ttw-plugin)).
 
 **How to read the confidence tags**
 
@@ -415,18 +415,20 @@ TBoT's custom INI already turns off actor shadows and full-scene water reflectio
 
 ---
 
-## Part F: Install TTW DualScreen
+## Part F: Install Diptych and the TTW plugin
 
-Right now TTW DualScreen is a **test build** (v0.0.1-spike). Its job is to confirm the plugin and the bottom-screen app work together on your Thor before the full Pip-Boy screen gets built.
+The second screen comes from **Diptych**, the same app that runs the Kingdom Hearts companion, plus a small xNVSE plugin for New Vegas. TTW support is a **test build** for now. Its job is to confirm the plugin and the bottom-screen app work together on your Thor before the full Pip-Boy screen gets built.
 
-1. On the Thor, open the [test release](https://github.com/TristanAdams03/ttw-dualscreen/releases/tag/v0.0.1-spike) and download both files: the plugin zip and the APK.
-2. Follow the [device checklist](https://github.com/TristanAdams03/ttw-dualscreen/blob/v0.0.1-spike/docs/spike/CHECKLIST.md) step by step. It covers:
-   - copying the plugin into `Data\NVSE\Plugins` in the game folder from Step 15;
-   - installing the app;
-   - the four tap tests;
+1. On the Thor, open the [Diptych releases](https://gitea.fantastictwo.net/joe/diptych/releases) and download two files from the newest release (`{TAG}` is its version, e.g. `v0.4.0`):
+   - `Diptych-TTW-mod-{TAG}.zip`, the TTW plugin: `ttw_dualscreen.dll` and `ttw_dualscreen.ini`, at the top of the zip;
+   - `Diptych-{TAG}.apk`, the Diptych app. There is no separate TTW app.
+2. Follow the [TTW device checklist](https://gitea.fantastictwo.net/joe/diptych/src/branch/main/docs/spike/TTW-CHECKLIST.md) step by step. It covers:
+   - copying both plugin files into `Data\NVSE\Plugins` in the game folder from Step 15 (the zip has no `Data` folder of its own);
+   - installing Diptych;
+   - the four touch tests;
    - sending the report back.
 
-TTW DualScreen needs xNVSE (Step 7). The plugin only loads when TTW is started through xNVSE (Step 24).
+The plugin needs xNVSE (Step 7). It only loads when TTW is started through xNVSE (Step 24).
 
 ## Known issues and fixes
 

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 const val KH1_GUIDE_URL = "https://gitea.fantastictwo.net/joe/diptych/src/branch/main/docs/spike/MAP-CHECKLIST.md"
-const val TTW_GUIDE_URL = "https://github.com/TristanAdams03/ttw-dualscreen/blob/m0-spike/docs/guide/ttw-on-ayn-thor.md"
+const val TTW_GUIDE_URL = "https://gitea.fantastictwo.net/joe/diptych/src/branch/main/docs/guide/ttw-on-ayn-thor.md"
 
 data class GuideCard(val title: String, val blurb: String, val url: String)
 

@@ -102,6 +102,18 @@ class ConnectionStateTest {
         assertTrue(s.live.isEmpty())
     }
 
+    @Test fun aSupportedGameTakesTheScreenFromAnUnsupportedLiveOne() {
+        // New Vegas at the main menu (before DeferredInit) reports ttw:false; KH1 then goes live supported.
+        val ttwNotLoaded = WELCOME_TTW.copy(supported = false)
+        var s = reduceConnection(ConnectionSnapshot(), ttwNotLoaded, "ttw")
+        assertEquals(ttwNotLoaded, s.welcome) // alone, the unsupported one still has the screen (the Shelf says why)
+        s = reduceConnection(s, WELCOME, "kh1")
+        assertEquals(WELCOME, s.welcome)
+        assertEquals(mapOf("ttw" to ttwNotLoaded, "kh1" to WELCOME), s.live)
+        s = reduceConnection(s, ServerMsg.Disconnected, "kh1")
+        assertEquals(ttwNotLoaded, s.welcome)
+    }
+
     @Test fun aDisconnectOfTheOtherGameLeavesTheLiveOneAlone() {
         val s = reduceConnection(reduceConnection(ConnectionSnapshot(), WELCOME_TTW, "ttw"), ServerMsg.Disconnected, "kh1")
         assertEquals(WELCOME_TTW, s.welcome)

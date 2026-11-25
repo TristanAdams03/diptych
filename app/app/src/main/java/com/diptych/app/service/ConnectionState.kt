@@ -33,7 +33,8 @@ const val KH1_ID = "kh1"
  * - [welcome]: the live handshake of the game that has the screen: set by a link's welcome, cleared when that socket
  *   closes. Use it, not `ui.welcome`, to decide whether a game is connected, and its `gameId` to tell which.
  * - [ttw]: the TTW client's handshake, last frame and link health.
- * - [live]: every link's live welcome by game id, in the order they went live. [welcome] is its first value.
+ * - [live]: every link's live welcome by game id, in the order they went live. [welcome] is its first supported value,
+ *   or its first value when none is supported.
  */
 data class ConnectionSnapshot(
     val ui: SpikeUi = SpikeUi(),
@@ -45,16 +46,21 @@ data class ConnectionSnapshot(
 
 /**
  * Applies one message from the events flow of [gameId]'s link, in arrival order, to the snapshot. Pure.
- * The first game to go live has the screen until its socket closes; then the next live one does (two games can't
- * really run at once, but both links may be live for a moment while one closes).
+ * The first supported game to go live has the screen until its socket closes; then the next live one does (two games
+ * can't really run at once, but both links may be live for a moment while one closes). An unsupported welcome has the
+ * screen only while no supported one is live.
  * It never sets the view: only the KH1 session can build one (it needs the world data and the watch it sent),
  * so [ConnectionCore] copies the session's view in.
  */
 fun reduceConnection(prev: ConnectionSnapshot, msg: ServerMsg, gameId: String = KH1_ID): ConnectionSnapshot = when (msg) {
-    is ServerMsg.Welcome -> (prev.live + (gameId to msg)).let { prev.copy(live = it, welcome = it.values.first()) }
-    ServerMsg.Disconnected -> (prev.live - gameId).let { prev.copy(live = it, welcome = it.values.firstOrNull()) } // the view stays
+    is ServerMsg.Welcome -> (prev.live + (gameId to msg)).let { prev.copy(live = it, welcome = screenHolder(it)) }
+    ServerMsg.Disconnected -> (prev.live - gameId).let { prev.copy(live = it, welcome = screenHolder(it)) } // the view stays
     else -> prev
 }
+
+/** The first supported live welcome, else the first live one: an unsupported link never keeps the screen from a supported one. */
+private fun screenHolder(live: Map<String, ServerMsg.Welcome>): ServerMsg.Welcome? =
+    live.values.firstOrNull { w -> w.supported } ?: live.values.firstOrNull()
 
 /**
  * Review Focus 1: must the activity call `startForegroundService`? [running] means started and in the foreground in

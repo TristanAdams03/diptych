@@ -21,8 +21,7 @@ Design doc: [docs/superpowers/specs/2026-11-03-diptych-design.md](docs/superpowe
 
 Protocols: [KH1](protocol/kh1/PROTOCOL.md), [TTW](protocol/ttw/PROTOCOL.md)
 
-TTW: [setup guide for the AYN Thor](docs/guide/ttw-on-ayn-thor.md), [spike checklist](docs/spike/TTW-CHECKLIST.md)
-(written for the old ttw-dualscreen app; the plugin steps are unchanged). Mock plugin: `tools/mockserver/ttw_mock.py`.
+TTW: [setup guide for the AYN Thor](docs/guide/ttw-on-ayn-thor.md), [spike checklist](docs/spike/TTW-CHECKLIST.md). Mock plugin: `tools/mockserver/ttw_mock.py`.
 
 Spike checklists: [PC](docs/spike/PC-CHECKLIST.md), [Thor](docs/spike/THOR-CHECKLIST.md)
 

@@ -13,8 +13,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.net.ServerSocket
+import java.net.SocketTimeoutException
 
-/** Frames are fed straight into a client that was never started: no socket. */
+/** Frames are fed straight into a client that was never started: no socket (except the stop() tests). */
 class TtwClientTest {
     private fun fx(name: String) = Fixtures.load("ttw/$name")
 
@@ -66,5 +68,46 @@ class TtwClientTest {
         assertNull(c.dumpWorld())
         assertTrue(c.log.value.last().contains("not connected"))
         c.stop()
+    }
+
+    @Test fun stopDuringTheHandshakeClosesTheConnectAndNeverConnects() {
+        // A listener that accepts TCP but never answers the HTTP upgrade: the connect sits in its handshake.
+        ServerSocket(0).use { server ->
+            server.soTimeout = 5_000
+            val c = TtwClient(url = "ws://127.0.0.1:${server.localPort}")
+            c.start()
+            server.accept().use { peer ->
+                c.stop()
+                // The cancelled call closes its socket: the peer reads EOF instead of waiting forever.
+                peer.soTimeout = 5_000
+                val input = peer.getInputStream()
+                val eof = try {
+                    while (input.read() != -1) Unit
+                    true
+                } catch (e: java.io.IOException) {
+                    e !is SocketTimeoutException // a reset also means the client let go
+                }
+                assertTrue("client kept the half-open connect after stop()", eof)
+            }
+            assertFalse(c.ui.value.connected)
+            assertNull(c.ui.value.fps)
+        }
+    }
+
+    @Test fun stopBeforeStartMeansStartNeverConnects() {
+        ServerSocket(0).use { server ->
+            server.soTimeout = 1_500
+            val c = TtwClient(url = "ws://127.0.0.1:${server.localPort}")
+            c.stop()
+            c.start()
+            val accepted = try {
+                server.accept().close()
+                true
+            } catch (e: SocketTimeoutException) {
+                false
+            }
+            assertFalse("a stopped client opened a connection", accepted)
+            assertFalse(c.ui.value.connected)
+        }
     }
 }

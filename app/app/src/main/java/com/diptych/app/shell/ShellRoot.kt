@@ -205,7 +205,7 @@ fun ShellRoot(
                     ShellScreen(
                         route = r,
                         env = env,
-                        games = shelfGames(env.seen, listOfNotNull(welcome) + snapshot.live.values),
+                        games = shelfGames(env.seen, snapshot.live.values),
                         selectedId = selectedId,
                         onSelect = { selectedId = it },
                         onRoute = ::go,

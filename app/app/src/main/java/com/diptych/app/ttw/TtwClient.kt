@@ -79,6 +79,9 @@ class TtwClient(
     override val events: Flow<ServerMsg> = _events
 
     @Volatile private var ws: WebSocket? = null
+    /** The socket of the current attempt from newWebSocket until it closes, so [stop] can cancel a handshake. */
+    @Volatile private var pending: WebSocket? = null
+    @Volatile private var stopped = false
     private var job: Job? = null
 
     override fun log(line: String) {
@@ -93,10 +96,18 @@ class TtwClient(
         scope.launch { statusLoop() }
     }
 
+    /**
+     * Closes the open socket, cancels a connect still in its handshake, and shuts down [http]'s dispatcher, so pass a
+     * client of its own. Final: [start] does nothing afterwards.
+     */
     override fun stop() {
+        stopped = true
         ws?.close(1000, "bye")
         ws = null
+        pending?.cancel()
+        pending = null
         scope.cancel()
+        http.dispatcher.executorService.shutdown()
     }
 
     /** Sends a `command` (ids c1, c2, ...). Returns the id, or null when not connected. */
@@ -126,6 +137,10 @@ class TtwClient(
             val request = Request.Builder().url(url).build()
             val socket = http.newWebSocket(request, object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
+                    if (stopped) { // stop() raced the handshake: never adopt this socket
+                        webSocket.cancel()
+                        return
+                    }
                     opened = true
                     val now = clock()
                     stall.reset(now)
@@ -157,7 +172,10 @@ class TtwClient(
                     closed.complete(Unit)
                 }
             })
+            pending = socket
+            if (stopped) socket.cancel() // stop() ran between the loop check and here
             closed.await()
+            if (pending === socket) pending = null
             if (ws === socket) ws = null
             _ui.update { it.copy(connected = false, fps = null) }
             applyLoop(LoopStatus.SocketDead)
@@ -185,7 +203,7 @@ class TtwClient(
         when (val m = parseTtw(text)) {
             is TtwMsg.Welcome -> {
                 _ui.update { it.copy(welcome = m) }
-                _events.tryEmit(m.toLink())
+                if (!_events.tryEmit(m.toLink())) log("events buffer full: welcome dropped")
                 log("welcome plugin=${m.plugin} game=${m.game} xnvse=${m.xnvse} ttw=${m.ttw}")
             }
             is TtwMsg.State -> {
@@ -216,11 +234,17 @@ class TtwClient(
 
     private val loopLock = Any()
 
-    /** Publishes the loop status; logs each transition once. Not alive -> fps reads 0. */
+    /** Publishes the loop status; logs each transition once. Stalled -> fps reads 0; socket dead -> null. */
     private fun applyLoop(status: LoopStatus) {
         val prev = synchronized(loopLock) {
             val p = _ui.value.loop
-            _ui.update { it.copy(loop = status, fps = if (status == LoopStatus.Alive) it.fps else 0.0) }
+            _ui.update {
+                it.copy(loop = status, fps = when (status) {
+                    LoopStatus.Alive -> it.fps
+                    LoopStatus.SocketDead -> null // no link, no rate: the screens show "-"
+                    LoopStatus.Stalled -> 0.0
+                })
+            }
             p
         }
         if (prev != status) log("loop ${prev.label} -> ${status.label}")

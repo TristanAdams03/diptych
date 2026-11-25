@@ -1,4 +1,4 @@
-# TTW DualScreen spike: device checklist
+# Diptych TTW spike: device checklist
 
 Run this on the AYN Thor. One action per line.
 Fill in the results template at the bottom as you go.
@@ -16,27 +16,38 @@ screen once. Note it in the results ("Anything odd").
 
 ## A. Install
 
-1. On the Thor, open https://github.com/TristanAdams03/ttw-dualscreen/releases
-2. Open the newest pre-release, `v0.0.1-spike`.
-3. Download `TTWDualScreen-Plugin-v0.0.1-spike.zip`.
-4. Download `TTWDualScreen-v0.0.1-spike.apk`.
-5. Unzip the plugin zip.
-6. With the Thor's Files app, copy the zip's `Data` folder into your TTW game folder.
-   When asked, choose merge. Do not replace anything else.
+1. On the Thor, open https://gitea.fantastictwo.net/joe/diptych/releases
+2. Open the newest release. Its version (for example `v0.4.0`) is `{TAG}` below.
+3. Download `Diptych-TTW-mod-{TAG}.zip` (the TTW plugin).
+4. Download `Diptych-{TAG}.apk` (the Diptych app). There is no separate TTW app.
+5. Unzip the plugin zip. It holds two files at its top level, with no folders:
+   `ttw_dualscreen.dll` and `ttw_dualscreen.ini`.
+6. With the Thor's Files app, copy both files into `Data\NVSE\Plugins\` in your TTW game folder.
+   There is no `Data` folder in the zip to merge: copy the two files themselves.
    - The game folder is the Fallout New Vegas / TTW folder you copied onto the Thor's storage.
    - It is the folder you picked when you added the game in GameNative with "+". GameNative shows it as `A:\`.
-   - It already has a `Data` folder; the zip's `Data` merges into it.
+   - `Data\NVSE` comes with xNVSE. If `Plugins` doesn't exist inside it yet, create it.
 7. Check that this file now exists: `Data\NVSE\Plugins\ttw_dualscreen.dll`
 8. Check that this file exists too: `Data\NVSE\Plugins\ttw_dualscreen.ini`
-9. Install the APK. Allow "install unknown apps" if Android asks.
-10. Open the app. It moves itself to the bottom screen.
+9. Install the Diptych APK (over any older Diptych). Allow "install unknown apps" if Android asks.
+10. Open Diptych. It moves itself to the bottom screen.
 11. If it did not move, drag it to the bottom screen by hand. Note this in the results.
 
 ## B. First run
 
 12. In GameNative, launch TTW as usual.
 13. Load your new test save (see Safety). Wait until you can walk around.
-14. Look at the bottom-screen app. The big banner says one of: `LOOP: ALIVE`, `LOOP: STALLED`, `LOOP: SOCKET DEAD`.
+    Diptych switches to the TTW companion (the Pip-Boy screen) by itself once TTW has loaded.
+
+The tests below use Diptych's TTW diagnostics screen (the banner, Focus mode, Equip, Dump world, Copy report).
+To open it, hold for 1 second:
+- on the TTW companion: the strip along the top of the screen;
+- on the Shelf (if the companion didn't open): the Diptych wordmark at the top left.
+
+To close it, hold the strip along the top of the diagnostics screen for 1 second.
+
+14. Open the diagnostics screen. The big banner says one of: `TTW LOOP: ALIVE`, `TTW LOOP: STALLED`,
+    `TTW LOOP: SOCKET DEAD`.
 15. If it says SOCKET DEAD, go to the troubleshooting section below.
 16. Write down: the banner, the fps, the HP shown, the world flags, and the worldspace/cell.
 17. Do the colors look right (compared with the game's Pip-Boy)? Write yes or no.
@@ -101,7 +112,7 @@ The command runs as soon as the game loop resumes. That is expected.
     - If a log is long, attach the file instead of pasting.
 37. Paste your filled-in results template too.
 
-## If the banner says SOCKET DEAD
+## If the banner says TTW LOOP: SOCKET DEAD
 
 1. Does `Data\NVSE\Plugins\ttw_dualscreen.log` exist?
    - No: the plugin did not load. Check the DLL is in `Data\NVSE\Plugins\` and that xNVSE itself is installed.
