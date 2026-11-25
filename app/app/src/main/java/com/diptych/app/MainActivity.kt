@@ -182,8 +182,14 @@ class MainActivity : ComponentActivity() {
                             onDumpWorld = { b?.ttw?.dumpWorld() },
                         )
                     } else {
-                        // Read-only: only the diagnostics screen's Test press buttons send input.
-                        MapScreen(view = snap.view, connection = companionLabel(snap), onReport = ::reportWrong)
+                        MapScreen(
+                            view = snap.view,
+                            connection = companionLabel(snap),
+                            onReport = ::reportWrong,
+                            pendingSpellBit = snap.pendingSpellBit,
+                            actionNote = snap.actionNote,
+                            onCastShortcut = { spellBit, targetIdx -> b?.castShortcut(spellBit, targetIdx) },
+                        )
                     }
                 },
                 clock = SystemClock::elapsedRealtime, // monotonic: the 10 s grace and the idle dim

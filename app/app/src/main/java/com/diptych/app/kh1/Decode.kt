@@ -77,6 +77,12 @@ data class LearnedSpell(
     val name: String,
     val mpCost: Int,
     val needsTarget: Boolean,
+    /** The spell's bit in the magic tables and its value in a shortcut slot; -1 when built without one. */
+    val bit: Int = -1,
+    /** The shortcut slot (0..2) that holds this spell, or null when none does or the shortcuts are unreadable. */
+    val shortcutSlot: Int? = null,
+    /** Why it can't be cast from the companion now, or null when it can ([planShortcutCast]). */
+    val actionReason: String? = null,
 )
 
 data class StockItem(
@@ -97,6 +103,8 @@ data class SoraStatus(
     val items: List<StockItem> = emptyList(),
     /** False when the stats block is not watched or unreadable: spells and items are unknown, not empty. */
     val known: Boolean = false,
+    /** Sora's equipped item slots in game order: the item id, or null for an empty slot. Empty when unknown. */
+    val itemSlots: List<Int?> = emptyList(),
 )
 
 private fun ByteArray.u8(at: Int): Int? = if (at in indices) this[at].toInt() and 0xFF else null
@@ -120,16 +128,18 @@ fun decodeSoraStatus(party: PartyConfig, regions: List<RegionHex>): SoraStatus {
             if (((mask shr spell.bit) and 1) == 0 || spell.tiers.isEmpty()) return@mapNotNull null
             val rawTier = levels?.u8(spell.bit) ?: 1
             val tierIdx = (rawTier - 1).coerceIn(0, spell.tiers.lastIndex)
-            LearnedSpell(spell.key, spell.tiers[tierIdx], spell.mpCost, spell.needsTarget)
+            LearnedSpell(spell.key, spell.tiers[tierIdx], spell.mpCost, spell.needsTarget, bit = spell.bit)
         }
     }.orEmpty()
 
     val equippedCounts = mutableMapOf<Int, Int>()
+    val itemSlots = mutableListOf<Int?>()
     if (stats != null) {
         val slotCount = (stats.u8(statsDef.itemCountAt) ?: 0).coerceIn(0, statsDef.itemsMax)
         for (i in 0 until slotCount) {
-            val id = stats.u8(statsDef.itemsAt + i) ?: continue
-            if (id in 1..254) equippedCounts[id] = (equippedCounts[id] ?: 0) + 1
+            val id = stats.u8(statsDef.itemsAt + i)?.takeIf { it in 1..254 }
+            itemSlots += id
+            if (id != null) equippedCounts[id] = (equippedCounts[id] ?: 0) + 1
         }
     }
 
@@ -154,5 +164,35 @@ fun decodeSoraStatus(party: PartyConfig, regions: List<RegionHex>): SoraStatus {
         spells = spells,
         items = items,
         known = stats != null,
+        itemSlots = itemSlots,
     )
+}
+
+/** The command menu's bytes (inferred layout): [type] 0 is the top level. */
+data class CommandMenuState(val type: Int, val cursor: Int?, val partyHover: Int?, val itemHover: Int?)
+
+/** What actions are planned from. Each field is null when its bytes are not watched or unreadable (unknown). */
+data class ActionState(
+    /** One entry per shortcut slot: the spell bit (0..6), or null for an empty slot. Null when unreadable. */
+    val shortcuts: List<Int?>? = null,
+    /** The A/B swap setting: 0 = A confirms, 1 = B confirms. Null when unreadable or not 0/1. */
+    val swap: Int? = null,
+    val menu: CommandMenuState? = null,
+)
+
+/** Decodes the shortcuts, the A/B swap and the command menu. */
+fun decodeActionState(party: PartyConfig, regions: List<RegionHex>): ActionState {
+    val spellCount = party.magic?.spells?.size ?: 7
+    val shortcuts = party.shortcuts?.let { def ->
+        readBytes(regions, def.offset, def.length)?.map { b ->
+            (b.toInt() and 0xFF).takeIf { it != def.empty && it in 0 until spellCount }
+        }
+    }
+    val swap = party.swap?.let { readBytes(regions, it.offset, 1)?.u8(0) }?.takeIf { it == 0 || it == 1 }
+    val menu = party.commandMenu?.let { m ->
+        val type = readBytes(regions, m.typeOffset, 1)?.u8(0) ?: return@let null
+        fun at(o: Long) = readBytes(regions, o, 1)?.u8(0)
+        CommandMenuState(type, at(m.cursorOffset), at(m.partyHoverOffset), at(m.itemHoverOffset))
+    }
+    return ActionState(shortcuts, swap, menu)
 }

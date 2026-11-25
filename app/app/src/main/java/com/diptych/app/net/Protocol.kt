@@ -108,6 +108,57 @@ fun parseServer(text: String): ServerMsg {
     }
 }
 
+/** A `kh1.pressSequence` memory check: met when `(u8 at module base + offset) & mask == value`. [mask] null = 255. */
+@Serializable
+data class MemCondition(val offset: Long, val value: Int, val mask: Int? = null)
+
+/** A step's `until`: after the release, wait up to [timeoutMs] for the condition, else the sequence ends `timeout`. */
+@Serializable
+data class SeqUntil(val offset: Long, val value: Int, val mask: Int? = null, val timeoutMs: Int)
+
+/** One `kh1.pressSequence` step. [mask] 0 presses nothing (a plain wait). Skipped (no press, no gap) unless [onlyIf] holds. */
+@Serializable
+data class SeqStep(
+    val byteIndex: Int,
+    val mask: Int,
+    val holdMs: Int,
+    val gapMs: Int,
+    val until: SeqUntil? = null,
+    val onlyIf: MemCondition? = null,
+)
+
+/** `kh1.pressSequence` args. [require] is checked once, when the command arrives (`not safe now` if one fails). */
+@Serializable
+data class PressSequenceArgs(val require: List<MemCondition> = emptyList(), val steps: List<SeqStep>) {
+    /** The args object. Absent optional fields are left out, not sent as null: the mod refuses a null field. */
+    fun toJson(): JsonObject = sequenceJson.encodeToJsonElement(serializer(), this) as JsonObject
+
+    companion object {
+        fun fromJson(args: JsonObject): PressSequenceArgs = sequenceJson.decodeFromJsonElement(serializer(), args)
+    }
+}
+
+/** An ok `kh1.pressSequence` result's data: steps pressed and steps skipped by `onlyIf`. */
+@Serializable
+data class SequenceData(val steps: Int, val skipped: Int)
+
+/** [SequenceData] of an ok result, or null for a failed one or other data. */
+fun ServerMsg.Result.sequenceData(): SequenceData? = if (!ok) null else data?.let {
+    try {
+        protocolJson.decodeFromJsonElement(SequenceData.serializer(), it)
+    } catch (e: SerializationException) {
+        null
+    } catch (e: IllegalArgumentException) {
+        null
+    }
+}
+
+private val sequenceJson = Json {
+    ignoreUnknownKeys = true
+    explicitNulls = false
+    encodeDefaults = true
+}
+
 /** Client -> server messages. */
 @OptIn(ExperimentalSerializationApi::class)
 sealed interface ClientMsg {

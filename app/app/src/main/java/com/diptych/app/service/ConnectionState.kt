@@ -1,19 +1,23 @@
 package com.diptych.app.service
 
 import com.diptych.app.SpikeUi
+import com.diptych.app.kh1.CastOutcome
 import com.diptych.app.kh1.Kh1Data
 import com.diptych.app.kh1.Kh1Link
 import com.diptych.app.kh1.Kh1Session
 import com.diptych.app.kh1.MapView
 import com.diptych.app.kh1.Region
+import com.diptych.app.net.PressSequenceArgs
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.shell.SeenRecord
 import com.diptych.app.shell.SeenStore
 import com.diptych.app.ttw.TTW_ID
 import com.diptych.app.ttw.TtwUi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +46,8 @@ data class ConnectionSnapshot(
     val welcome: ServerMsg.Welcome? = null,
     val ttw: TtwUi = TtwUi(),
     val live: Map<String, ServerMsg.Welcome> = emptyMap(),
+    val pendingSpellBit: Int? = null,
+    val actionNote: String? = null,
 )
 
 /**
@@ -54,7 +60,13 @@ data class ConnectionSnapshot(
  */
 fun reduceConnection(prev: ConnectionSnapshot, msg: ServerMsg, gameId: String = KH1_ID): ConnectionSnapshot = when (msg) {
     is ServerMsg.Welcome -> (prev.live + (gameId to msg)).let { prev.copy(live = it, welcome = screenHolder(it)) }
-    ServerMsg.Disconnected -> (prev.live - gameId).let { prev.copy(live = it, welcome = screenHolder(it)) } // the view stays
+    ServerMsg.Disconnected -> (prev.live - gameId).let {
+        prev.copy(
+            live = it,
+            welcome = screenHolder(it),
+            pendingSpellBit = if (gameId == KH1_ID) null else prev.pendingSpellBit,
+        ) // the view stays
+    }
     else -> prev
 }
 
@@ -103,6 +115,20 @@ interface TtwGameLink : GameLink {
  * so however often the service is started or bound there is only ever one socket per game.
  * [newTtw] is null where only KH1 is wanted (tests).
  */
+const val ACTION_NOTE_TIMEOUT_MS = 3_000L
+
+/** Turns raw mod/client error codes into plain companion text. */
+internal fun friendlyCastError(error: String?): String = when (error) {
+    "timeout" -> "Target picker didn't open"
+    "not safe now" -> "Game became busy"
+    "busy" -> "Wait for previous action"
+    "disconnected" -> "Lost connection to game"
+    "no result" -> "Mod didn't answer"
+    "unsupported build" -> "Unsupported game build"
+    null -> "Cast failed"
+    else -> error
+}
+
 class ConnectionCore<L : Kh1GameLink>(
     private val newLink: () -> L,
     private val data: Kh1Data,
@@ -110,12 +136,16 @@ class ConnectionCore<L : Kh1GameLink>(
     private val seen: SeenStore,
     private val clock: () -> Long = System::currentTimeMillis,
     private val newTtw: (() -> TtwGameLink)? = null,
+    private val noteDelay: suspend () -> Unit = { delay(ACTION_NOTE_TIMEOUT_MS) },
 ) {
     private val _state = MutableStateFlow(ConnectionSnapshot())
     val state: StateFlow<ConnectionSnapshot> = _state.asStateFlow()
 
     private var link: L? = null
     private var ttw: TtwGameLink? = null
+    private var session: Kh1Session? = null
+    private var casting = false
+    private var noteSeq = 0L
     private var closed = false
 
     @Synchronized
@@ -128,11 +158,12 @@ class ConnectionCore<L : Kh1GameLink>(
         // so it holds its subscription by the time launch returns. It hands each message to the KH1 session (created
         // here, before start) through an unbounded channel that keeps them until the session's coroutine first runs.
         val forSession = Channel<ServerMsg>(Channel.UNLIMITED)
-        val session = Kh1Session(RelayLink(l, forSession.receiveAsFlow()), data, scope, l::log)
+        val s = Kh1Session(RelayLink(l, forSession.receiveAsFlow()), data, scope, l::log)
+        session = s
         follow(KH1_ID, l) { forSession.trySend(it) }
         scope.launch(start = CoroutineStart.UNDISPATCHED) { l.ui.collect { u -> _state.update { it.copy(ui = u) } } }
         scope.launch(start = CoroutineStart.UNDISPATCHED) {
-            session.view.collect { v -> _state.update { it.copy(view = v) } }
+            s.view.collect { v -> _state.update { it.copy(view = v) } }
         }
         newTtw?.invoke()?.let { t ->
             ttw = t
@@ -158,6 +189,49 @@ class ConnectionCore<L : Kh1GameLink>(
         }
     }
 
+    /** Triggers a shortcut cast on the live KH1 session; ignores concurrent taps while one is running. */
+    fun castShortcut(spellBit: Int, targetIdx: Int?) {
+        val s = synchronized(this) {
+            if (closed || casting) return
+            val cur = session ?: return
+            casting = true
+            ++noteSeq
+            cur
+        }
+        val spellName = _state.value.view?.sora?.spells?.firstOrNull { it.bit == spellBit }?.name ?: "Spell"
+        _state.update { it.copy(pendingSpellBit = spellBit, actionNote = "Casting $spellName…") }
+        scope.launch {
+            val note = try {
+                when (val outcome = s.castShortcut(spellBit, targetIdx)) {
+                    is CastOutcome.Refused -> outcome.reason
+                    CastOutcome.NotSent -> {
+                        val w = _state.value.live[KH1_ID]
+                        if (w != null && "sequence" !in w.features) "Update KH1 mod to cast" else "Not connected"
+                    }
+                    is CastOutcome.Sent -> {
+                        val r = outcome.result
+                        if (r.ok) "$spellName cast" else friendlyCastError(r.error)
+                    }
+                }
+            } catch (c: CancellationException) {
+                throw c
+            } catch (_: Exception) {
+                "Cast failed"
+            } finally {
+                synchronized(this@ConnectionCore) { casting = false }
+                _state.update { it.copy(pendingSpellBit = null) }
+            }
+            val finalSeq = synchronized(this@ConnectionCore) { ++noteSeq }
+            _state.update { it.copy(pendingSpellBit = null, actionNote = note) }
+            noteDelay()
+            synchronized(this@ConnectionCore) {
+                if (noteSeq == finalSeq) {
+                    _state.update { it.copy(actionNote = null) }
+                }
+            }
+        }
+    }
+
     /** Stops the links. The core never opens another one. */
     @Synchronized
     fun close() {
@@ -167,7 +241,8 @@ class ConnectionCore<L : Kh1GameLink>(
     }
 }
 
-/** The session's view of the link: the core's relayed events, the client's watch. */
+/** The session's view of the link: the core's relayed events, the client's watch and presses. */
 private class RelayLink(private val link: Kh1Link, override val events: Flow<ServerMsg>) : Kh1Link {
     override fun watch(regions: List<Region>): String? = link.watch(regions)
+    override suspend fun pressSequence(args: PressSequenceArgs): ServerMsg.Result? = link.pressSequence(args)
 }

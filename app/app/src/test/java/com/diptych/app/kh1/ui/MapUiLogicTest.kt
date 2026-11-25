@@ -3,6 +3,7 @@ package com.diptych.app.kh1.ui
 import com.diptych.app.kh1.TestData
 import androidx.compose.ui.geometry.Offset
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -100,10 +101,45 @@ class MapUiLogicTest {
         }
     }
 
-    @Test fun statusLineShowsTheReasonOrReady() {
+    @Test fun statusLineShowsBusyReasonBeforeActionNote() {
         val base = com.diptych.app.kh1.buildMapView(TestData.data, TestData.state(15, 5, TestData.partyRegions()))
-        assertEquals(com.diptych.app.kh1.BUSY_UNKNOWN, statusLine(base))
+        // Busy reason takes priority over transient actionNote so safety locks are never hidden.
+        assertEquals(com.diptych.app.kh1.BUSY_UNKNOWN, statusLine(base, "Firaga cast"))
         assertEquals("Game ready", statusLine(base.copy(canAct = true, busyReason = null)))
-        assertEquals("Tap-to-cast is coming next", QUICK_COMING_NEXT)
+        assertEquals("Casting Cura…", statusLine(base.copy(canAct = true, busyReason = null), "Casting Cura…"))
+    }
+
+    @Test fun lowestHpTargetSkipsFullKoAndUnknownMembers() {
+        val full = listOf(
+            com.diptych.app.kh1.PartyMember("Sora", 57, 57, 5, 5),
+            com.diptych.app.kh1.PartyMember("Donald", 42, 42, 8, 8),
+        )
+        assertNull(lowestHpTargetIndex(full))
+        val hurtWithKo = listOf(
+            com.diptych.app.kh1.PartyMember("Sora", 50, 57, 5, 5),
+            com.diptych.app.kh1.PartyMember("Donald", 0, 42, 0, 8),
+            com.diptych.app.kh1.PartyMember("Goofy", 30, 63, 4, 4),
+        )
+        assertFalse(isTargetSelectable(hurtWithKo[1]))
+        assertFalse(isTargetSelectable(com.diptych.app.kh1.PartyMember("Guest", null, 40, null, 0)))
+        assertTrue(isTargetSelectable(hurtWithKo[2]))
+        assertEquals(2, lowestHpTargetIndex(hurtWithKo))
+    }
+
+    @Test fun shortcutSpellsAndSubtextFormatReasons() {
+        val regions = TestData.partyRegions() + TestData.soraStatusRegions() + TestData.actionRegions("0003ff", "00", 0)
+        val view = com.diptych.app.kh1.buildMapView(
+            TestData.data,
+            TestData.state(3, 2, regions).copy(inMenu = false, inCutscene = false, inGummi = false),
+        )
+        val slots = shortcutSpells(view)!!
+        assertEquals("Firaga", slots[0].second?.name)
+        assertEquals("Cura", slots[1].second?.name)
+        assertNull(slots[2].second)
+        val cura = view.sora.spells.first { it.key == "cure" }
+        assertEquals("1 MP · picking", spellSubtext(cura, mp = 5, picking = true))
+        assertEquals("1 MP · casting…", spellSubtext(cura, mp = 5, pending = true))
+        val blizz = view.sora.spells.first { it.key == "blizzard" }
+        assertEquals("no shortcut", spellSubtext(blizz, mp = 5))
     }
 }

@@ -42,7 +42,7 @@ MAX_SPAN = 256
 
 # Research labels -> the four confidence values the data files use.
 _CONF = {"source": "source", "derived": "derived", "guess": "guess", "live": "live",
-         "ambiguous": "guess"}
+         "inferred": "inferred", "ambiguous": "guess"}
 
 SOURCES_WORLDS = [
     "Rooms: AmirulAndalib/MultiPresence@81cf9ac2 MultiPresence/Models/KH1/Rooms.cs lines 10-286 (MIT); "
@@ -82,6 +82,15 @@ SOURCES_PARTY = [
     "gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua lines 51, 183, 191, 244 (MIT); "
     "gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 730-753, 899 (MIT); "
     "sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts lines 68-160 (MIT)",
+    "M3 shortcuts (0x2DE9BA4, 3 slots, spell index or 0xFF) and A/B swap (0x4D8632): community scripts "
+    "(gaithern/KH1-LUA-LIBRARY, gaithern/KH-1FM-AP-LUA, MIT) as cited in protocol/kh1/PROTOCOL.md; "
+    "not yet checked live on the PC",
+    "M3 command menu (type 0x2852790, cursor 0x2852794, party hover 0x28527A4, item hover 0x28527B4): "
+    "Drflash55/KH1-Critical-Mix-Additions@f705c7c0 [AGPL-3.0: cite only, no code copied]; inferred, pending a live "
+    "PC check. targetPickerType 4 is a placeholder until then",
+    "M3 buttons: PS2 masks of the kh1.pressInput table in protocol/kh1/PROTOCOL.md (L1 0x04 + triangle 0x10 / "
+    "circle 0x20 / cross 0x40 on byte 1; down 0x40 on byte 0). Shortcut i = L1 + Y/B/A is game knowledge (source); "
+    "which face button confirms under each A/B swap setting is inferred",
 ]
 
 
@@ -329,6 +338,32 @@ def build_party():
                 "102": "One-Winged Angel",
             },
         },
+        # M3 (actions). Read by planShortcutCast in the app; the mod knows no meaning for these offsets.
+        "shortcuts": {"offset": 0x2DE9BA4, "length": 3, "empty": 0xFF, "confidence": "source"},
+        "swap": {"offset": 0x4D8632, "length": 1, "confidence": "source"},
+        "commandMenu": {
+            "typeOffset": 0x2852790,
+            "cursorOffset": 0x2852794,
+            "partyHoverOffset": 0x28527A4,
+            "itemHoverOffset": 0x28527B4,
+            "length": 0x28,
+            # Command-menu type byte while the shortcut target picker is open. A placeholder (see sources).
+            "targetPickerType": 4,
+            "confidence": "inferred",
+        },
+        "buttons": {
+            "shortcutByte": 1,
+            # L1+Y, L1+B, L1+A: shortcut slots 0, 1, 2.
+            "shortcutMasks": [0x14, 0x24, 0x44],
+            "shortcutConfidence": "source",
+            # Keyed by the swap byte: 0 = A confirms, 1 = B confirms.
+            "faceByte": 1,
+            "confirm": {"0": 0x40, "1": 0x20},
+            "cancel": {"0": 0x20, "1": 0x40},
+            "dpadByte": 0,
+            "dpadDown": 0x40,
+            "confidence": "inferred",
+        },
     }
 
 
@@ -348,6 +383,12 @@ def party_regions(party):
         regions.append({"offset": slots["offset"], "length": end - slots["offset"]})
     else:
         regions.append({"offset": slots["offset"], "length": slots["length"]})
+    for key in ("shortcuts", "swap"):
+        if key in party:
+            regions.append({"offset": party[key]["offset"], "length": party[key]["length"]})
+    menu = party.get("commandMenu")
+    if menu:
+        regions.append({"offset": menu["typeOffset"], "length": menu["length"]})
     return regions
 
 

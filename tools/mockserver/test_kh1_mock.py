@@ -6,7 +6,7 @@ import pytest
 from websockets.asyncio.client import connect
 from websockets.exceptions import InvalidStatus
 
-from kh1_mock import IMAGE_SIZE, serve
+from kh1_mock import AB_SWAP, IMAGE_SIZE, MENU, PLUGIN_VERSION, SHORTCUTS, serve
 
 FIX = Path(__file__).resolve().parents[2] / "protocol" / "kh1" / "fixtures"
 
@@ -111,13 +111,14 @@ async def test_unsupported_commands():
     server, url = await start(unsupported=True)
     async with server, connect(url) as ws:
         for c in (cmd("kh1.probe", {"offset": 0, "length": 1}),
-                  cmd("kh1.pressInput", {"byteIndex": 0, "mask": 1, "durationMs": 100})):
+                  cmd("kh1.pressInput", {"byteIndex": 0, "mask": 1, "durationMs": 100}),
+                  cmd("kh1.pressSequence", fixture("command_sequence.json")["args"])):
             r = await rpc(ws, c)
             assert r == {"type": "result", "id": "c1", "ok": False,
                          "error": "unsupported build", "data": None}
         r = await rpc(ws, cmd("kh1.log", {}))
         assert r["ok"] is True
-        assert r["data"]["lines"][0] == "diptych_kh1 0.1.0 loaded"
+        assert r["data"]["lines"][0] == f"diptych_kh1 {PLUGIN_VERSION} loaded"
         assert "not supported" in r["data"]["lines"][1]
 
 
@@ -126,7 +127,11 @@ async def test_log_pinned_startup_lines_first():
     async with server, connect(url) as ws:
         r = await rpc(ws, fixture("command_log.json"))
         assert r["ok"] and r["error"] is None
-        assert r["data"]["lines"][:3] == fixture("result_log.json")["data"]["lines"]
+        ref = fixture("result_log.json")["data"]["lines"]
+        # The fixture's first line is example text from an older build; the mock reports its own version.
+        assert ref[0].startswith("diptych_kh1 ") and ref[0].endswith(" loaded")
+        assert r["data"]["lines"][0] == f"diptych_kh1 {PLUGIN_VERSION} loaded"
+        assert r["data"]["lines"][1:3] == ref[1:3]
 
 
 async def test_probe_fixture():
@@ -463,11 +468,11 @@ async def test_watch_empty_list_clears():
 
 
 @pytest.mark.parametrize("args,err", [
-    ({"regions": [{"offset": i, "length": 1} for i in range(9)]}, "out of range"),
+    ({"regions": [{"offset": i, "length": 1} for i in range(17)]}, "out of range"),
     ({"regions": [{"offset": BATTLE, "length": 0}]}, "out of range"),
     ({"regions": [{"offset": BATTLE, "length": 257}]}, "out of range"),
-    ({"regions": [{"offset": i * 256, "length": 256} for i in range(4)] + [{"offset": 1024, "length": 1}]},
-     "out of range"),
+    ({"regions": [{"offset": i * 256, "length": 256} for i in range(8)] + [{"offset": 2048, "length": 1}]},
+     "out of range"),  # 2049 bytes
     ({"regions": [{"offset": IMAGE_SIZE - 15, "length": 16}]}, "out of range"),
     ({"regions": [{"offset": -1, "length": 4}]}, "out of range"),
     ({}, "bad command"),
@@ -483,6 +488,15 @@ async def test_watch_errors(args, err):
     async with server, connect(url) as ws:
         r = await rpc(ws, cmd("kh1.watch", args))
         assert r == {"type": "result", "id": "c1", "ok": False, "error": err, "data": None}
+
+
+async def test_watch_accepts_16_regions_and_2048_bytes():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        r = await rpc(ws, watch(*[(i * 256, 128) for i in range(16)]))
+        assert r["data"] == {"count": 16}
+        r = await rpc(ws, watch(*[(i * 256, 256) for i in range(8)]))
+        assert r["data"] == {"count": 8}
 
 
 async def test_watch_failure_keeps_previous_watch():
@@ -507,3 +521,191 @@ async def test_world_and_room_flags_set_the_reported_location():
         await ws.send(json.dumps(fixture("subscribe.json")))
         d = (await collect_states(ws, 0.5))[0]["data"]
         assert d["world"] == 15 and d["worldAlt"] == 15 and d["room"] == 6
+
+
+# ---- kh1.pressSequence ---------------------------------------------------------------------------
+
+
+def step(bi, mask, hold=20, gap=20, **extra):
+    return {"byteIndex": bi, "mask": mask, "holdMs": hold, "gapMs": gap, **extra}
+
+
+def seq(*steps, require=None, id="s1"):
+    args = {"steps": list(steps)}
+    if require is not None:
+        args["require"] = require
+    return cmd("kh1.pressSequence", args, id=id)
+
+
+async def result_for(ws, cid, timeout=3):
+    """The result frame for `cid`, skipping state frames and other results."""
+    loop = asyncio.get_running_loop()
+    end = loop.time() + timeout
+    while True:
+        m = json.loads(await asyncio.wait_for(ws.recv(), max(0.01, end - loop.time())))
+        if m["type"] == "result" and m["id"] == cid:
+            return m
+
+
+async def probe_byte(ws, off):
+    return int((await rpc(ws, cmd("kh1.probe", {"offset": off, "length": 1}, id="pb")))["data"]["hex"], 16)
+
+
+async def test_sequence_defaults_in_fake_memory():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        r = await rpc(ws, cmd("kh1.probe", {"offset": SHORTCUTS, "length": 3}))
+        assert r["data"]["hex"] == "000103"  # Fire, Blizzard, Cure
+        assert await probe_byte(ws, AB_SWAP) == 0
+        r = await rpc(ws, cmd("kh1.probe", {"offset": MENU, "length": 0x28}))
+        assert r["data"]["hex"] == "00" * 0x28
+        r = await rpc(ws, cmd("kh1.probe", {"offset": 0x2D5CC4C, "length": 4}))
+        assert int.from_bytes(bytes.fromhex(r["data"]["hex"]), "little") == 55  # Sora HP > 0
+
+
+async def test_sequence_fixture_casts_cure_through_the_picker():
+    server, url = await start()
+    server.mock.mem[SHORTCUTS] = 3  # Cure on shortcut 1 (LB+Y), as the fixture requires
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps(fixture("command_sequence.json")))
+        with pytest.raises(asyncio.TimeoutError):  # deferred: nothing comes back while it runs
+            await asyncio.wait_for(ws.recv(), 0.1)
+        assert json.loads(await asyncio.wait_for(ws.recv(), 2)) == fixture("result_sequence.json")
+        assert await probe_byte(ws, MENU) == 0  # the confirm closed the picker
+        lines = (await rpc(ws, cmd("kh1.log", {})))["data"]["lines"]
+        assert "sequence c5 start: 2 steps" in lines
+        assert "mock game: shortcut 1 opened the target picker" in lines
+        assert "mock game: target picker confirmed" in lines
+        assert any(l.startswith("sequence c5 end (done: 2 pressed, 0 skipped) after ") for l in lines)
+
+
+async def test_sequence_fixture_refused_when_require_fails():
+    server, url = await start()  # default shortcut 1 is Fire, not Cure
+    async with server, connect(url) as ws:
+        r = await rpc(ws, fixture("command_sequence.json"))
+        assert r == {"type": "result", "id": "c5", "ok": False, "error": "not safe now", "data": None}
+        server.mock.mem[SHORTCUTS] = 3
+        server.mock.mem[AB_SWAP] = 1  # swapped: the plan's confirm button would be wrong
+        assert (await rpc(ws, fixture("command_sequence.json")))["error"] == "not safe now"
+
+
+async def test_sequence_until_timeout_matches_fixture():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        args = fixture("command_sequence.json")["args"]
+        del args["require"]  # shortcut 1 is Fire: no target picker, so the until never holds
+        t0 = asyncio.get_running_loop().time()
+        await ws.send(json.dumps(cmd("kh1.pressSequence", args, id="c5")))
+        assert await result_for(ws, "c5") == fixture("result_sequence_timeout.json")
+        assert asyncio.get_running_loop().time() - t0 >= 0.6  # 100 ms hold + 500 ms timeout
+        lines = (await rpc(ws, cmd("kh1.log", {})))["data"]["lines"]
+        assert any(l.startswith("sequence c5 end (timeout at step 1) after ") for l in lines)
+
+
+async def test_sequence_default_cure_on_lb_a_and_onlyif_skip():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        picker = {"offset": MENU, "value": 4}
+        # Shortcut 3 (LB+A) holds Cure: the picker opens, the until holds, A confirms.
+        await ws.send(json.dumps(seq(step(1, 0x44, until={**picker, "timeoutMs": 300}), step(1, 0x40, onlyIf=picker))))
+        assert (await result_for(ws, "s1"))["data"] == {"steps": 2, "skipped": 0}
+        # Shortcut 1 (LB+Y) holds Fire: no picker, so the confirm step is skipped.
+        await ws.send(json.dumps(seq(step(1, 0x14), step(1, 0x40, onlyIf=picker), id="s2")))
+        assert await result_for(ws, "s2") == {"type": "result", "id": "s2", "ok": True, "error": None,
+                                               "data": {"steps": 1, "skipped": 1}}
+
+
+async def test_sequence_busy_both_ways():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps(seq(step(1, 0x40, hold=200, gap=50))))
+        r = await rpc(ws, seq(step(1, 0x40), id="s2"))
+        assert r == {"type": "result", "id": "s2", "ok": False, "error": "busy", "data": None}
+        r = await rpc(ws, cmd("kh1.pressInput", {"byteIndex": 1, "mask": 0x40, "durationMs": 16}, id="p"))
+        assert r["error"] == "busy"
+        assert (await result_for(ws, "s1"))["ok"] is True
+        assert (await rpc(ws, cmd("kh1.pressInput", {"byteIndex": 1, "mask": 0x40, "durationMs": 200}, id="p")))["ok"]
+        assert (await rpc(ws, seq(step(1, 0x40), id="s3")))["error"] == "busy"
+
+
+async def test_sequence_not_safe_at_start_and_mid_run():
+    server, url = await start(unsafe=True)
+    async with server, connect(url) as ws:
+        assert (await rpc(ws, seq(step(1, 0x40))))["error"] == "not safe now"
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps(seq(step(1, 0x40, hold=500))))
+        await asyncio.sleep(0.1)
+        server.mock.unsafe = True  # the player opens the menu mid-press
+        r = await result_for(ws, "s1")
+        assert r == {"type": "result", "id": "s1", "ok": False, "error": "not safe now", "data": None}
+        assert server.mock.seq_pad is None  # buttons released
+
+
+async def test_sequence_press_shows_in_input_bytes():
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps({"type": "subscribe", "topics": ["kh1.spike"], "rateHz": 10}))
+        await ws.send(json.dumps(seq(step(1, 0x40, hold=400, gap=16))))
+        seen = set()
+        while True:
+            m = json.loads(await asyncio.wait_for(ws.recv(), 2))
+            if m["type"] == "state":
+                seen.add(m["data"]["inputBytes"])
+            elif m["type"] == "result":
+                break
+        assert "00400000" in seen
+
+
+@pytest.mark.parametrize("args,err", [
+    ({}, "bad command"),
+    ({"steps": 5}, "bad command"),
+    ({"steps": [1]}, "bad command"),
+    ({"steps": []}, "out of range"),
+    ({"steps": [step(1, 0x40, 16, 16)] * 17}, "out of range"),
+    ({"steps": [step(1, 0x40, 156, 156)] * 16}, None),  # 4992 ms
+    ({"steps": [{"byteIndex": 1, "mask": 0x40, "holdMs": 100}]}, "bad command"),
+    ({"steps": [step("1", 0x40)]}, "bad command"),
+    ({"steps": [step(0, 0x08)]}, "out of range"),  # start
+    ({"steps": [step(0, 0x18)]}, "out of range"),
+    ({"steps": [step(2, 0x40)]}, "out of range"),
+    ({"steps": [step(1, 256)]}, "out of range"),
+    ({"steps": [step(1, 0, 16, 16)]}, None),  # a plain wait
+    ({"steps": [step(1, 0x40, 15, 100)]}, "out of range"),
+    ({"steps": [step(1, 0x40, 1001, 100)]}, "out of range"),
+    ({"steps": [step(1, 0x40, 100, 15)]}, "out of range"),
+    ({"steps": [step(1, 0x40, 100, 1001)]}, "out of range"),
+    ({"steps": [step(1, 0x40, 1000, 1000)] * 3}, "out of range"),  # 6000 ms
+    ({"steps": [step(1, 0x40, 1000, 1000, until={"offset": 0, "value": 1, "timeoutMs": 3001})]}, "out of range"),
+    ({"steps": [step(1, 0x40, 100, 100, until={"offset": 0, "value": 1, "timeoutMs": 15})]}, "out of range"),
+    ({"steps": [step(1, 0x40, until={"offset": 0, "value": 1})]}, "bad command"),  # no timeoutMs
+    ({"steps": [step(1, 0x40, until=4)]}, "bad command"),
+    ({"steps": [step(1, 0x40, onlyIf=[])]}, "bad command"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": 0})]}, "bad command"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": 0, "value": 1, "mask": "ff"})]}, "bad command"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": IMAGE_SIZE, "value": 0})]}, "out of range"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": -1, "value": 0})]}, "out of range"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": 0, "value": 256})]}, "out of range"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": 0, "value": 3, "mask": 1})]}, "out of range"),
+    ({"steps": [step(1, 0x40, onlyIf={"offset": 0, "value": 0, "mask": 0})]}, "out of range"),
+    ({"require": 1, "steps": [step(1, 0x40)]}, "bad command"),
+    ({"require": [1], "steps": [step(1, 0x40)]}, "bad command"),
+    ({"require": [{"offset": i, "value": 0} for i in range(17)], "steps": [step(1, 0x40)]}, "out of range"),
+    ({"require": [{"offset": IMAGE_SIZE, "value": 0}], "steps": [step(1, 0x40)]}, "out of range"),
+])
+async def test_sequence_arg_validation(args, err):
+    server, url = await start()
+    async with server, connect(url) as ws:
+        await ws.send(json.dumps(cmd("kh1.pressSequence", args)))
+        if err is not None:
+            assert await result_for(ws, "c1") == {"type": "result", "id": "c1", "ok": False, "error": err, "data": None}
+            return
+        # Accepted: refusals answer at once, so nothing in 100 ms means it is running; a long one is ended early.
+        try:
+            r = json.loads(await asyncio.wait_for(ws.recv(), 0.1))
+        except asyncio.TimeoutError:
+            server.mock.unsafe = True
+            r = await result_for(ws, "c1")
+            assert r["error"] == "not safe now"
+        else:
+            assert r["ok"] is True

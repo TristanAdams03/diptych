@@ -1,5 +1,6 @@
 package com.diptych.app.kh1
 
+import com.diptych.app.net.PressSequenceArgs
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.net.SpikeData
 import kotlinx.coroutines.CoroutineScope
@@ -14,6 +15,12 @@ interface Kh1Link {
     /** Sends `kh1.watch`; returns the command id, or null when not connected. */
     fun watch(regions: List<Region>): String?
     val events: Flow<ServerMsg>
+
+    /**
+     * Runs `kh1.pressSequence` and returns its result once the sequence ends; null when nothing was sent (not
+     * connected, or no `sequence` feature). The default is a link that cannot press.
+     */
+    suspend fun pressSequence(args: PressSequenceArgs): ServerMsg.Result? = null
 }
 
 /**
@@ -76,6 +83,18 @@ class Kh1Session(
             hasWatch = true
         }
         publish()
+    }
+
+    /**
+     * Casts the spell with [spellBit] from its shortcut, planned from the latest view (see [planShortcutCast]); for a
+     * spell that opens the target picker, [targetIdx] is the party member (0 = Sora). Refused plans send nothing.
+     */
+    suspend fun castShortcut(spellBit: Int, targetIdx: Int?): CastOutcome {
+        val v = _view.value ?: return CastOutcome.Refused(BUSY_UNKNOWN)
+        return when (val plan = planShortcutCast(data.party, spellBit, targetIdx, v.party.size, v)) {
+            is CastPlan.Refused -> CastOutcome.Refused(plan.reason)
+            is CastPlan.Ready -> link.pressSequence(plan.args)?.let { CastOutcome.Sent(it) } ?: CastOutcome.NotSent
+        }
     }
 
     private fun publish() {

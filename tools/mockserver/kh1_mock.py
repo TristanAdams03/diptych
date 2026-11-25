@@ -15,13 +15,14 @@ IMAGE_SIZE = 0x3000000  # fake module image size for kh1.probe bounds
 MAX_DEPTH = 32
 MAX_ARGS_BYTES = 65536
 ALLOWED_HOSTS = {"127.0.0.1", "localhost"}
-STARTUP_LINES = ["diptych_kh1 0.1.0 loaded"]
+PLUGIN_VERSION = "0.2.0"
+STARTUP_LINES = [f"diptych_kh1 {PLUGIN_VERSION} loaded"]
 # Fake memory: known state addresses hold the values the mock reports; the first
 # 16 MiB (the "code" region) is a deterministic pattern; the rest reads as zero.
 BATTLE_BLOCK = 0x2D5CC4C  # Sora HP, maxHP, MP, maxMP as u32 (PROTOCOL.md address table)
 CHEST_FLAGS = 0x2DE992C   # chest-opened bit table; the mock's bytes come from --chests
 FAKE_BYTES = {0x233FE94: 3, 0x233FE8C: 2, 0x233FE84: 3}
-# Party in battle-block order (stride 0x100), as read live on the PC: Sora, Donald, Goofy.
+# Party in battle-block order (stride 0x100), as read live on the PC: Sora, Donald, Goofy. Sora's HP is 55 (> 0).
 for _m, _vals in enumerate(((55, 57, 5, 5), (42, 42, 8, 8), (63, 63, 4, 4))):
     for _i, _v in enumerate(_vals):
         FAKE_BYTES.update({BATTLE_BLOCK + 0x100 * _m + 4 * _i + k: b for k, b in enumerate(_v.to_bytes(4, "little"))})
@@ -53,7 +54,23 @@ FAKE_BYTES.update({
     0x2DE97F9 + 142: 2,       # Tent x2
     0x2DEA86E: 60,            # Hollow Bastion story progress 0x3C: Riku I beaten; next: Castle Chapel
 })
-WATCH_MAX_REGIONS, WATCH_MAX_LENGTH, WATCH_MAX_TOTAL = 8, 256, 1024
+# M3 action state, as used by kh1.pressSequence `require`/`until`/`onlyIf` (offsets from community scripts, not yet
+# checked live; docs/spike/M3-CHECKLIST.md settles them).
+SHORTCUTS = 0x2DE9BA4  # 3 x u8 spell index (0 Fire .. 6 Aero), 255 = empty
+AB_SWAP = 0x4D8632     # u8: 0 -> confirm is A (PS2 cross 0x40), 1 -> B (circle 0x20)
+MENU = 0x2852790       # command-menu bytes 0x2852790..+0x28; byte 0 in this mock: 0 top level, 4 target picker
+MENU_SPAN = 0x28
+FAKE_BYTES.update({SHORTCUTS: 0, SHORTCUTS + 1: 1, SHORTCUTS + 2: 3, AB_SWAP: 0})  # Fire, Blizzard, Cure; not swapped
+FAKE_BYTES.update({MENU + i: 0 for i in range(MENU_SPAN)})
+# The mock's model of the game's reaction to presses (assumptions until the PC check):
+LB = 0x04                                    # byte 1
+SHORTCUT_FACE = {0x10: 0, 0x20: 1, 0x40: 2}  # LB+Y / LB+B / LB+A -> shortcut slot 1 / 2 / 3
+NEEDS_TARGET = {3, 6}                        # Cure, Aero (app party.json needsTarget)
+PICKER_OPEN = 4                              # placeholder value, as in command_sequence.json
+SEQ_TICK = 0.002                             # seconds between the mock's sequence checks
+
+WATCH_MAX_REGIONS, WATCH_MAX_LENGTH, WATCH_MAX_TOTAL = 16, 256, 2048
+SEQ_MAX_STEPS, SEQ_MAX_REQUIRE, SEQ_MAX_TOTAL_MS = 16, 16, 5000
 
 
 def fake_byte(off, chests=b""):
@@ -127,6 +144,59 @@ def parse_watch(args):
     return out
 
 
+def parse_condition(c):
+    """Mirror of the mod's condition parse: (offset, value, mask), or raises Fail."""
+    if not isinstance(c, dict):
+        raise Fail("bad command")
+    off = int_arg(c, "offset", 0, 2**63 - 1)
+    value = int_arg(c, "value", 0, 255)
+    mask = int_arg(c, "mask", 1, 255) if "mask" in c else 0xFF
+    if off >= IMAGE_SIZE or value & ~mask:
+        raise Fail("out of range")
+    return off, value, mask
+
+
+def parse_sequence(args):
+    """Mirror of the mod's parse_sequence: {"require": [cond], "steps": [step]}, or raises Fail."""
+    steps = args.get("steps")
+    if not isinstance(steps, list):
+        raise Fail("bad command")
+    if not 1 <= len(steps) <= SEQ_MAX_STEPS:
+        raise Fail("out of range")
+    require = []
+    if "require" in args:
+        if not isinstance(args["require"], list):
+            raise Fail("bad command")
+        if len(args["require"]) > SEQ_MAX_REQUIRE:
+            raise Fail("out of range")
+        require = [parse_condition(c) for c in args["require"]]
+    out, total = [], 0
+    for s in steps:
+        if not isinstance(s, dict):
+            raise Fail("bad command")
+        bi = int_arg(s, "byteIndex", 0, 1)
+        mask = int_arg(s, "mask", 0, 255)
+        if bi == 0 and mask & 0x08:  # start opens the pause menu
+            raise Fail("out of range")
+        st = {"byteIndex": bi, "mask": mask, "holdMs": int_arg(s, "holdMs", 16, 1000),
+              "gapMs": int_arg(s, "gapMs", 16, 1000), "until": None, "timeoutMs": 0, "onlyIf": None}
+        total += st["holdMs"] + st["gapMs"]
+        if "until" in s:
+            st["until"] = parse_condition(s["until"])
+            st["timeoutMs"] = int_arg(s["until"], "timeoutMs", 16, 5000)
+            total += st["timeoutMs"]
+        if "onlyIf" in s:
+            st["onlyIf"] = parse_condition(s["onlyIf"])
+        out.append(st)
+    if total > SEQ_MAX_TOTAL_MS:
+        raise Fail("out of range")
+    return {"require": require, "steps": out}
+
+
+async def _no_send(_text):
+    pass
+
+
 class Mock:
     def __init__(self, unsupported, unsafe, stall_after=None, chests=b"", world=3, room=2):
         self.world, self.room = world, room
@@ -138,6 +208,9 @@ class Mock:
         self.seq = 0
         self.press = None  # (byteIndex, mask, end_time)
         self.extra_log = []
+        self.mem = {}  # bytes changed at run time (tests, the game model); over FAKE_BYTES and --chests
+        self.seq_task = None  # the running kh1.pressSequence
+        self.seq_pad = None   # (byteIndex, mask) the sequence holds right now
 
     def stalled(self):
         return self.stall_after is not None and time.monotonic() - self.t0 >= self.stall_after
@@ -149,17 +222,104 @@ class Mock:
         return "egs-1.0.0.10" if self.unsupported else "steam-1.0.0.2"
 
     def welcome(self):
-        return {"type": "welcome", "plugin": "0.1.0", "protocol": 0, "gameId": "kh1",
+        return {"type": "welcome", "plugin": PLUGIN_VERSION, "protocol": 0, "gameId": "kh1",
                 "gameBuild": self.build(), "supported": not self.unsupported,
-                "features": ["spike", "watch"]}
+                "features": ["spike", "watch", "sequence"]}
 
     def press_active(self):
         if self.press and time.monotonic() >= self.press[2]:
             self.press = None
         return self.press
 
+    def busy(self):
+        return self.press_active() is not None or self.seq_task is not None
+
+    def byte(self, off):
+        return self.mem[off] if off in self.mem else fake_byte(off, self.chests)
+
     def read(self, off, n):
-        return bytes(fake_byte(off + i, self.chests) for i in range(n))
+        return bytes(self.byte(off + i) for i in range(n))
+
+    def met(self, cond):
+        off, value, mask = cond
+        return self.byte(off) & mask == value
+
+    def react(self, bi, mask):
+        """The mock's model of the game: LB + a face button whose shortcut holds Cure or Aero opens the target
+        picker (menu byte 0 -> 4); confirm or cancel (A/B, swapped by AB_SWAP) closes it again."""
+        if bi != 1:
+            return
+        confirm = 0x20 if self.byte(AB_SWAP) == 1 else 0x40
+        if self.byte(MENU) == PICKER_OPEN:
+            if mask & (0x20 | 0x40):  # confirm casts, the other face button backs out
+                self.mem[MENU] = 0
+                self.extra_log.append("mock game: target picker " + ("confirmed" if mask & confirm else "cancelled"))
+            return
+        slot = SHORTCUT_FACE.get(mask & ~LB) if mask & LB else None
+        if slot is not None and self.byte(MENU) == 0 and self.byte(SHORTCUTS + slot) in NEEDS_TARGET:
+            self.mem[MENU] = PICKER_OPEN
+            self.extra_log.append(f"mock game: shortcut {slot + 1} opened the target picker")
+
+    async def hold_safe(self, seconds):
+        """Waits; False as soon as the game is unsafe (the mod checks every tick)."""
+        end = time.monotonic() + seconds
+        while not self.unsafe:
+            left = end - time.monotonic()
+            if left <= 0:
+                return True
+            await asyncio.sleep(min(SEQ_TICK, left))
+        return False
+
+    async def run_sequence(self, cid, seq, send):
+        """Runs an accepted kh1.pressSequence and sends its result when it ends (PROTOCOL.md)."""
+        t0 = time.monotonic()
+        pressed = skipped = 0
+        failed = None  # (error, log text)
+        try:
+            for i, st in enumerate(seq["steps"], 1):
+                if st["onlyIf"] is not None and not self.met(st["onlyIf"]):
+                    skipped += 1
+                    continue
+                if self.unsafe:
+                    failed = ("not safe now", f"aborted: not safe now at step {i}")
+                    break
+                self.seq_pad = (st["byteIndex"], st["mask"])
+                self.react(st["byteIndex"], st["mask"])
+                held = await self.hold_safe(st["holdMs"] / 1000)
+                self.seq_pad = None
+                if not held:
+                    failed = ("not safe now", f"aborted: not safe now at step {i}")
+                    break
+                if st["until"] is not None:
+                    end = time.monotonic() + st["timeoutMs"] / 1000
+                    while failed is None and not self.met(st["until"]):
+                        if self.unsafe:
+                            failed = ("not safe now", f"aborted: not safe now at step {i}")
+                        elif time.monotonic() >= end:
+                            failed = ("timeout", f"timeout at step {i}")
+                        else:
+                            await asyncio.sleep(SEQ_TICK)
+                    if failed:
+                        break
+                if not await self.hold_safe(st["gapMs"] / 1000):
+                    failed = ("not safe now", f"aborted: not safe now at step {i}")
+                    break
+                pressed += 1
+        finally:
+            self.seq_pad = None
+            self.seq_task = None
+        took = int((time.monotonic() - t0) * 1000)
+        if failed is None:
+            what = f"done: {pressed} pressed, {skipped} skipped"
+            r = {"type": "result", "id": cid, "ok": True, "error": None, "data": {"steps": pressed, "skipped": skipped}}
+        else:
+            what = failed[1]
+            r = {"type": "result", "id": cid, "ok": False, "error": failed[0], "data": None}
+        self.extra_log.append(f"sequence {cid[:32]} end ({what}) after {took} ms")
+        try:
+            await send(json.dumps(r))
+        except ConnectionClosed:
+            pass  # the mod sends to every client; here the requester has gone
 
     def state(self, watch=None):
         self.seq += 1
@@ -169,11 +329,11 @@ class Mock:
                                     "inCutscene", "inGummi", "inputBytes")))
         else:
             inp = bytearray(4)
-            p = self.press_active()
-            if p:
-                inp[p[0]] |= p[1]
-            d.update(world=self.world, room=self.room, worldAlt=self.world, soraHp=fake_byte(BATTLE_BLOCK),
-                     soraHpMax=fake_byte(BATTLE_BLOCK + 4), inMenu=self.unsafe,
+            for p in (self.press_active(), self.seq_pad):
+                if p:
+                    inp[p[0]] |= p[1]
+            d.update(world=self.world, room=self.room, worldAlt=self.world, soraHp=self.byte(BATTLE_BLOCK),
+                     soraHpMax=self.byte(BATTLE_BLOCK + 4), inMenu=self.unsafe,
                      inCutscene=False, inGummi=False, inputBytes=inp.hex())
             if watch:
                 d["regions"] = [{"offset": off, "hex": self.read(off, n).hex()} for off, n in watch]
@@ -197,7 +357,7 @@ class Mock:
                 or not isinstance(args, dict)
                 or len(json.dumps(args, separators=(",", ":"), ensure_ascii=False).encode()) > MAX_ARGS_BYTES):
             return res(False, "bad command")
-        if name not in ("kh1.probe", "kh1.pressInput", "kh1.log", "kh1.watch"):
+        if name not in ("kh1.probe", "kh1.pressInput", "kh1.pressSequence", "kh1.log", "kh1.watch"):
             return res(False, "unknown command")
         if name == "kh1.log":
             return res(True, data={"lines": self.log_lines()})
@@ -214,6 +374,8 @@ class Mock:
                 if off >= IMAGE_SIZE or n > IMAGE_SIZE - off:
                     raise Fail("out of range")
                 return res(True, data={"offset": off, "hex": self.read(off, n).hex()})
+            if name == "kh1.pressSequence":
+                return self.start_sequence(cid, parse_sequence(args), ctx.get("send", _no_send), res)
             bi = int_arg(args, "byteIndex", 0, 1)
             mask = int_arg(args, "mask", 0, 255)
             if bi == 0 and mask & 0x08:  # start opens the pause menu
@@ -221,13 +383,23 @@ class Mock:
             dur = int_arg(args, "durationMs", 16, 1000)
         except Fail as f:
             return res(False, str(f))
-        if self.press_active():  # the mod checks busy before not safe now
+        if self.busy():  # the mod checks busy before not safe now
             return res(False, "busy")
         if self.unsafe:
             return res(False, "not safe now")
         self.press = (bi, mask, time.monotonic() + dur / 1000)
         self.extra_log.append(f"press start byte {bi} mask {mask} for {dur} ms")
         return res(True)
+
+    def start_sequence(self, cid, seq, send, res):
+        """Refusals answer at once; an accepted sequence returns None and sends its result when it ends."""
+        if self.busy():
+            return res(False, "busy")
+        if self.unsafe or not all(self.met(c) for c in seq["require"]):
+            return res(False, "not safe now")
+        self.extra_log.append(f"sequence {cid[:32]} start: {len(seq['steps'])} steps")
+        self.seq_task = asyncio.create_task(self.run_sequence(cid, seq, send))
+        return None
 
     async def stream(self, ws, rate, ctx):
         try:
@@ -266,7 +438,7 @@ class Mock:
 
     async def handler(self, ws):
         task = None
-        ctx = {"rate": 5}
+        ctx = {"rate": 5, "send": ws.send}
         try:
             async for raw in ws:
                 if isinstance(raw, bytes):

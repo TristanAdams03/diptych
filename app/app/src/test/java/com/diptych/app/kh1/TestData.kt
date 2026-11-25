@@ -14,6 +14,19 @@ object TestData {
     const val SORA_STATS = 48141156L
     const val SLOTS = 48142319L
     const val HB_STORY = 48146542L
+    const val SHORTCUTS = 0x2DE9BA4L
+    const val SWAP = 0x4D8632L
+    const val COMMAND_MENU = 0x2852790L
+
+    /**
+     * The M3 action bytes: shortcut slots ([shortcuts], hex, one byte per slot, ff = empty), the A/B [swap] and the
+     * command-menu block with type byte [menuType]. Null hex makes that region unreadable.
+     */
+    fun actionRegions(shortcuts: String? = "0003ff", swap: String? = "00", menuType: Int? = 0): List<RegionHex> = listOf(
+        RegionHex(SHORTCUTS, shortcuts),
+        RegionHex(SWAP, swap),
+        RegionHex(COMMAND_MENU, menuType?.let { t -> "%02x".format(t) + "00".repeat(0x27) }),
+    )
 
     fun partyRegions(slots: String? = "0102") = listOf(
         RegionHex(PARTY_BASE, SORA), RegionHex(PARTY_BASE + 256, DONALD), RegionHex(PARTY_BASE + 512, GOOFY),

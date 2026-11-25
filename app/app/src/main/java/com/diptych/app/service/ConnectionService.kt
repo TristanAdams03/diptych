@@ -42,6 +42,7 @@ class ConnectionService : Service() {
     inner class LocalBinder(val client: SpikeClient, val ttw: TtwClient) : Binder() {
         val state: StateFlow<ConnectionSnapshot> get() = this@ConnectionService.state
         val running: Boolean get() = ConnectionService.running
+        fun castShortcut(spellBit: Int, targetIdx: Int?) = core.castShortcut(spellBit, targetIdx)
     }
 
     override fun onCreate() {

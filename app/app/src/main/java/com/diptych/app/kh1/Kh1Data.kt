@@ -107,6 +107,40 @@ data class InventoryConfig(
     val weapons: Map<String, String> = emptyMap(),
 )
 
+/** Sora's three magic shortcuts: one byte per slot, the spell's bit (0..6), or [empty]. */
+@Serializable
+data class ShortcutsDef(val offset: Long, val length: Int, val empty: Int = 0xFF)
+
+/** The game's A/B swap setting: 0 = A confirms, 1 = B confirms. */
+@Serializable
+data class SwapDef(val offset: Long, val length: Int = 1)
+
+/**
+ * The battle command menu (inferred, pending a live PC check). [typeOffset]'s byte is 0 at the top level;
+ * [targetPickerType], when known, is its value while the shortcut target picker is open.
+ */
+@Serializable
+data class CommandMenuDef(
+    val typeOffset: Long,
+    val cursorOffset: Long,
+    val partyHoverOffset: Long,
+    val itemHoverOffset: Long,
+    val length: Int,
+    val targetPickerType: Int? = null,
+)
+
+/** PS2-style masks (protocol/kh1/PROTOCOL.md pressInput table). [confirm]/[cancel] are keyed by the swap byte. */
+@Serializable
+data class ButtonsDef(
+    val shortcutByte: Int = 1,
+    val shortcutMasks: List<Int>,
+    val faceByte: Int = 1,
+    val confirm: Map<String, Int>,
+    val cancel: Map<String, Int>,
+    val dpadByte: Int = 0,
+    val dpadDown: Int,
+)
+
 @Serializable
 data class PartyConfig(
     val battleBlock: BattleBlock,
@@ -115,32 +149,53 @@ data class PartyConfig(
     val soraStats: SoraStatsDef? = null,
     val magic: MagicConfig? = null,
     val inventory: InventoryConfig? = null,
+    val shortcuts: ShortcutsDef? = null,
+    val swap: SwapDef? = null,
+    val commandMenu: CommandMenuDef? = null,
+    val buttons: ButtonsDef? = null,
 ) {
     /** Bytes read per battle member: up to the end of the last field. */
     val memberSpan: Int
         get() = battleBlock.fields.let { listOf(it.hp, it.maxHp, it.mp, it.maxMp) }.maxOf { it.at + it.width }
 
-    /** Party regions that are never dropped: one span per battle member (HP/MP) and the slots..inventory span. */
-    val essentialWatch: List<Region>
+    private val memberWatch: List<Region>
+        get() = (0 until battleBlock.members).map {
+            Region(battleBlock.offset + it.toLong() * battleBlock.stride, memberSpan)
+        }
+
+    /** The slots..inventory span, then the M3 action state: shortcuts, the A/B swap, the command menu. */
+    private val tailWatch: List<Region>
         get() {
-            val members = (0 until battleBlock.members).map {
-                Region(battleBlock.offset + it.toLong() * battleBlock.stride, memberSpan)
-            }
             val tailEnd = maxOf(
                 slots.offset + slots.length,
                 inventory?.let { it.offset + it.length } ?: 0L,
                 magic?.let { it.levelsOffset + it.spells.size } ?: 0L,
             )
-            return members + Region(slots.offset, (tailEnd - slots.offset).toInt())
+            return listOfNotNull(
+                Region(slots.offset, (tailEnd - slots.offset).toInt()),
+                shortcuts?.let { Region(it.offset, it.length) },
+                swap?.let { Region(it.offset, it.length) },
+                commandMenu?.let { Region(it.typeOffset, it.length) },
+            )
         }
+
+    /**
+     * Party regions that are never dropped: one span per battle member (HP/MP), the slots..inventory span, and the
+     * shortcut, swap and command-menu bytes that actions are planned from.
+     */
+    val essentialWatch: List<Region>
+        get() = memberWatch + tailWatch
 
     /** Info-only party regions, lowest priority first: dropped before any chest when the watch is over budget. */
     val extraWatch: List<Region>
         get() = listOfNotNull(soraStats?.let { Region(it.offset, it.length) })
 
-    /** The full party watch: battle members, the Sora stats block (Magic & Items, Party stats), slots..inventory. */
+    /** The essential watch with [kept] (some of [extraWatch]) between the battle members and the rest. */
+    internal fun watchWith(kept: List<Region>): List<Region> = memberWatch + kept + tailWatch
+
+    /** The full party watch: battle members, the Sora stats block (Magic & Items, Party stats), slots..inventory, M3 state. */
     val watch: List<Region>
-        get() = essentialWatch.let { it.dropLast(1) + extraWatch + it.last() }
+        get() = watchWith(extraWatch)
 }
 
 data class Kh1Data(val worlds: List<WorldDef>, val party: PartyConfig) {
@@ -160,16 +215,17 @@ fun loadKh1Data(open: (String) -> InputStream): Kh1Data {
 
 fun loadKh1Data(assets: AssetManager): Kh1Data = loadKh1Data { assets.open("kh1/$it") }
 
-const val MAX_WATCH_REGIONS = 8
+/** The mod's `kh1.watch` limits (mods/kh1/src/core/kh1_watch.h). */
+const val MAX_WATCH_REGIONS = 16
 const val MAX_WATCH_REGION_BYTES = 256
-const val MAX_WATCH_TOTAL_BYTES = 1024
+const val MAX_WATCH_TOTAL_BYTES = 2048
 
-/** True when [regions] fit the mod's watch limits: at most 8 regions, each 1..256 bytes, 1024 bytes in total. */
+/** True when [regions] fit the mod's watch limits: at most 16 regions, each 1..256 bytes, 2048 bytes in total. */
 fun withinWatchLimits(regions: List<Region>): Boolean =
     regions.size <= MAX_WATCH_REGIONS && regions.all { it.length in 1..MAX_WATCH_REGION_BYTES } &&
         regions.sumOf { it.length } <= MAX_WATCH_TOTAL_BYTES
 
-/** Watch regions kept free. 0: Sora's stats beat a spare slot; M3 raises the mod's region limit instead. */
+/** Watch regions kept free. 0: the mod's 16-region limit already fits every world with the full party watch. */
 const val WATCH_REGIONS_RESERVED = 0
 
 /** Two regions at most this far apart may be merged into one span. */
@@ -179,7 +235,7 @@ const val WATCH_MERGE_GAP = 64
 data class WatchPlan(val regions: List<Region>, val merged: Int = 0, val dropped: List<Region> = emptyList(), val chestsFit: Boolean = true)
 
 /**
- * Merges the closest pair of regions (gap ≤ [WATCH_MERGE_GAP], merged span ≤ 256 bytes, total ≤ 1024) until at most
+ * Merges the closest pair of regions (gap ≤ [WATCH_MERGE_GAP], merged span ≤ 256 bytes, total ≤ [MAX_WATCH_TOTAL_BYTES]) until at most
  * [target] remain or no pair can merge. Returns [regions] unchanged when already within [target], else sorted by
  * offset; and the number of merges.
  */
@@ -212,7 +268,7 @@ internal fun coalesce(regions: List<Region>, target: Int): Pair<List<Region>, In
 }
 
 /**
- * Party plus [world]'s watch in at most `8 - [reserve]` regions and 1024 bytes. Chests and the story byte are never
+ * Party plus [world]'s watch in at most `[MAX_WATCH_REGIONS] - [reserve]` regions and [MAX_WATCH_TOTAL_BYTES] bytes. Chests and the story byte are never
  * dropped: first close regions are merged, then the party's info-only extras (Sora stats: magic and items) go, lowest
  * priority first. Only when the chests alone cannot fit (no shipped world) is the world left out, with chestsFit false.
  */
@@ -222,7 +278,7 @@ fun planWatch(party: PartyConfig, world: WorldDef?, reserve: Int = WATCH_REGIONS
     val extras = party.extraWatch
     for (dropCount in 0..extras.size) {
         val kept = extras.drop(dropCount)
-        val all = party.essentialWatch.let { it.dropLast(1) + kept + it.last() } + worldWatch
+        val all = party.watchWith(kept) + worldWatch
         val (regions, merges) = coalesce(all, target)
         if (regions.size <= target && withinWatchLimits(regions)) {
             return WatchPlan(regions, merges, extras.take(dropCount))

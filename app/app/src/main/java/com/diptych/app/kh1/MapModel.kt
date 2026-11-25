@@ -33,14 +33,20 @@ data class MapView(
     val party: List<PartyMember>,
     val nextHint: String? = null,
     val sora: SoraStatus = SoraStatus(),
-    /** Status only until M3: true when every safety flag reads false and Sora's MP is known. Nothing sends presses. */
+    /** True when every safety flag reads false and Sora's MP is known. Each spell's own reason is [LearnedSpell.actionReason]. */
     val canAct: Boolean = false,
     val busyReason: String? = null,
     val worlds: List<WorldSummary> = emptyList(),
+    /** Shortcuts, A/B swap and command menu, for [planShortcutCast]. */
+    val actions: ActionState = ActionState(),
 )
 
-fun buildMapView(data: Kh1Data, state: SpikeData): MapView {
+/** The companion's view of one state frame; each learned spell carries why it can't be cast now ([withSpellActions]). */
+fun buildMapView(data: Kh1Data, state: SpikeData): MapView = withSpellActions(data.party, buildBaseView(data, state))
+
+private fun buildBaseView(data: Kh1Data, state: SpikeData): MapView {
     val regions = state.regions.orEmpty()
+    val actions = decodeActionState(data.party, regions)
     val world = data.world(state.world)
     val party = decodeParty(data.party, regions)
     val sora = decodeSoraStatus(data.party, regions)
@@ -61,6 +67,7 @@ fun buildMapView(data: Kh1Data, state: SpikeData): MapView {
             canAct = false,
             busyReason = busyReason,
             worlds = summaries,
+            actions = actions,
         )
     }
 
@@ -110,6 +117,7 @@ fun buildMapView(data: Kh1Data, state: SpikeData): MapView {
         canAct = canAct,
         busyReason = busyReason,
         worlds = summaries,
+        actions = actions,
     )
 }
 

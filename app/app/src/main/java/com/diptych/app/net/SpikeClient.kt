@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -33,6 +34,7 @@ import okhttp3.WebSocketListener
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -73,9 +75,15 @@ class SpikeClient(
 
     @Volatile private var ws: WebSocket? = null
     /** The socket of the current attempt from newWebSocket until it closes, so [stop] can cancel a handshake. */
-    @Volatile private var pending: WebSocket? = null
+    @Volatile private var dialing: WebSocket? = null
     @Volatile private var stopped = false
     private var job: Job? = null
+
+    /** The current connection's welcome; null until it arrives and after the socket closes. */
+    @Volatile private var liveWelcome: ServerMsg.Welcome? = null
+
+    /** Commands awaiting their `result`, by id. All fail with [ERR_DISCONNECTED] when the socket goes or on [stop]. */
+    private val pending = ConcurrentHashMap<String, CompletableDeferred<ServerMsg.Result>>()
 
     override fun log(line: String) {
         val stamped = "${synchronized(timeFmt) { timeFmt.format(Date(clock())) }} $line"
@@ -97,19 +105,62 @@ class SpikeClient(
         stopped = true
         ws?.close(1000, "bye")
         ws = null
-        pending?.cancel()
-        pending = null
+        dialing?.cancel()
+        dialing = null
+        liveWelcome = null
+        failPending()
         scope.cancel()
         http.dispatcher.executorService.shutdown()
     }
 
     /** Sends a `command` (ids c1, c2, ...). Returns the id, or null when not connected. */
-    fun command(name: String, args: JsonObject = JsonObject(emptyMap())): String? {
+    fun command(name: String, args: JsonObject = JsonObject(emptyMap())): String? = send(name, args, null)
+
+    /**
+     * Sends [name] and registers [waiter] (if any) under its id before the frame leaves, so even an instant result
+     * finds it. Returns the id, or null when not connected or the socket refused the frame.
+     */
+    private fun send(name: String, args: JsonObject, waiter: CompletableDeferred<ServerMsg.Result>?): String? {
         val socket = ws ?: run { log("command $name: not connected"); return null }
         val id = "c${nextId.incrementAndGet()}"
-        socket.send(encodeClient(ClientMsg.Command(id, name, args)))
+        if (waiter != null) pending[id] = waiter
+        if (!socket.send(encodeClient(ClientMsg.Command(id, name, args)))) {
+            pending.remove(id)
+            log("command $name: socket closing")
+            return null
+        }
         log("-> $id $name")
         return id
+    }
+
+    /** True when the live connection's mod takes `kh1.pressSequence` (a supported build that lists `sequence`). */
+    val canSequence: Boolean
+        get() = liveWelcome?.let { it.supported && FEATURE_SEQUENCE in it.features } == true
+
+    /**
+     * Runs `kh1.pressSequence` and waits for its result, which the mod sends when the sequence ends (up to ~5 s).
+     * Null when nothing was sent: not connected, or the live mod has no `sequence` feature. A socket that goes before
+     * the result arrives gives a failed result with [ERR_DISCONNECTED]; no result in [SEQUENCE_RESULT_TIMEOUT_MS]
+     * gives [ERR_NO_RESULT].
+     */
+    override suspend fun pressSequence(args: PressSequenceArgs): ServerMsg.Result? {
+        if (!canSequence) {
+            log("command kh1.pressSequence: the mod has no sequence feature")
+            return null
+        }
+        val waiter = CompletableDeferred<ServerMsg.Result>()
+        val id = send(CMD_SEQUENCE, args.toJson(), waiter) ?: return null
+        return withTimeoutOrNull(SEQUENCE_RESULT_TIMEOUT_MS) { waiter.await() } ?: run {
+            pending.remove(id)
+            log("<- $id no result in $SEQUENCE_RESULT_TIMEOUT_MS ms")
+            ServerMsg.Result(id, ok = false, error = ERR_NO_RESULT)
+        }
+    }
+
+    private fun failPending() {
+        for (id in pending.keys.toList()) {
+            pending.remove(id)?.complete(ServerMsg.Result(id, ok = false, error = ERR_DISCONNECTED))
+        }
     }
 
     /** `kh1.watch`: replaces the connection's watched regions (empty clears). The mod forgets it per connection. */
@@ -171,11 +222,13 @@ class SpikeClient(
                     closed.complete(Unit)
                 }
             })
-            pending = socket
+            dialing = socket
             if (stopped) socket.cancel() // stop() ran between the loop check and here
             closed.await()
-            if (pending === socket) pending = null
+            if (dialing === socket) dialing = null
             if (ws === socket) ws = null
+            liveWelcome = null
+            failPending() // their results can only come on the socket that just went
             _ui.update { it.copy(connected = false, seqRate = null) }
             applyLoop(LoopStatus.SocketDead)
             if (opened) {
@@ -199,6 +252,7 @@ class SpikeClient(
         if (!_events.tryEmit(msg)) log("events buffer full: ${msg.javaClass.simpleName} dropped")
         when (val m = msg) {
             is ServerMsg.Welcome -> {
+                liveWelcome = m
                 _ui.update { it.copy(welcome = m) }
                 log("welcome plugin=${m.plugin} game=${m.gameId} build=${m.gameBuild} supported=${m.supported}")
             }
@@ -227,6 +281,7 @@ class SpikeClient(
                 }
                 _ui.update { if (lines != null) it.copy(lastResult = line, modLog = lines) else it.copy(lastResult = line) }
                 log("<- $line")
+                if (m.id.isNotEmpty()) pending.remove(m.id)?.complete(m)
             }
             is ServerMsg.Error -> log("<- error: ${m.message}")
             is ServerMsg.Unknown -> log("<- unknown ${m.type}: ${m.raw.take(120)}")
@@ -288,5 +343,13 @@ class SpikeClient(
         const val BACKOFF_START_MS = 500L
         const val BACKOFF_CAP_MS = 3000L
         const val LOG_LINES = 50
+        const val CMD_SEQUENCE = "kh1.pressSequence"
+        const val FEATURE_SEQUENCE = "sequence"
+        /** The mod's 5 s sequence budget plus slack for the frame's round trip. */
+        const val SEQUENCE_RESULT_TIMEOUT_MS = 8_000L
+        /** Not a mod error string: the socket went (or the client stopped) before the result came. */
+        const val ERR_DISCONNECTED = "disconnected"
+        /** Not a mod error string: no result within [SEQUENCE_RESULT_TIMEOUT_MS]. */
+        const val ERR_NO_RESULT = "no result"
     }
 }

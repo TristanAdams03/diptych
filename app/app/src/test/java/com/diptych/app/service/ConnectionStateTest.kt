@@ -4,11 +4,13 @@ import com.diptych.app.SpikeUi
 import com.diptych.app.kh1.Region
 import com.diptych.app.kh1.TestData
 import com.diptych.app.kh1.buildMapView
+import com.diptych.app.net.PressSequenceArgs
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.shell.FakePrefs
 import com.diptych.app.ttw.TtwUi
 import com.diptych.app.shell.SeenRecord
 import com.diptych.app.shell.SeenStore
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -58,9 +60,15 @@ private class FakeGameLink(private val onStart: FakeGameLink.() -> Unit = {}) : 
     override val events: Flow<ServerMsg> = bus
     override val ui = MutableStateFlow(SpikeUi())
     val sent = mutableListOf<List<Region>>()
+    val sequences = mutableListOf<PressSequenceArgs>()
+    var nextPress: CompletableDeferred<ServerMsg.Result?>? = null
     var starts = 0
     var stops = 0
     override fun watch(regions: List<Region>): String? { sent += regions; return "c${sent.size}" }
+    override suspend fun pressSequence(args: PressSequenceArgs): ServerMsg.Result? {
+        sequences += args
+        return nextPress?.await()
+    }
     override fun log(line: String) {}
     override fun start() { starts++; onStart() }
     override fun stop() { stops++ }
@@ -136,6 +144,7 @@ class ConnectionStateTest {
     private var created = 0
     private var link = FakeGameLink()
     private val ttw = FakeTtwLink()
+    private var noteGate: CompletableDeferred<Unit>? = null
     private val core = ConnectionCore(
         newLink = { created++; link },
         newTtw = { ttw },
@@ -143,6 +152,7 @@ class ConnectionStateTest {
         scope = scope,
         seen = SeenStore(prefs),
         clock = { now },
+        noteDelay = { noteGate?.await() },
     )
 
     @After fun tearDown() = scope.cancel()
@@ -269,5 +279,90 @@ class ConnectionStateTest {
         assertFalse(shouldAskNotifications(sdk = 33, asked = true, granted = false))
         assertFalse(shouldAskNotifications(sdk = 34, asked = false, granted = true))
         assertFalse(shouldAskNotifications(sdk = 32, asked = false, granted = false))
+    }
+
+    @Test fun kh1DisconnectClearsPendingSpellBit() {
+        val prev = ConnectionSnapshot(live = mapOf(KH1_ID to WELCOME), welcome = WELCOME, pendingSpellBit = 3)
+        val after = reduceConnection(prev, ServerMsg.Disconnected, KH1_ID)
+        assertNull(after.pendingSpellBit)
+    }
+
+    @Test fun castShortcutRunsAndBlocksConcurrentTaps() {
+        core.open(); dispatcher.runAll()
+        emit(WELCOME)
+        val regions = TestData.partyRegions() + TestData.soraStatusRegions() + TestData.actionRegions("0003ff", "00", 0)
+        emit(
+            ServerMsg.State(
+                "kh1.spike",
+                TestData.state(3, 2, regions).copy(inMenu = false, inCutscene = false, inGummi = false),
+            ),
+        )
+        val pending = CompletableDeferred<ServerMsg.Result?>()
+        val gate = CompletableDeferred<Unit>()
+        link.nextPress = pending
+        noteGate = gate
+
+        core.castShortcut(0, null)
+        assertEquals(0, core.state.value.pendingSpellBit)
+        assertEquals("Casting Firaga…", core.state.value.actionNote)
+
+        // Second tap while the sequence is still running is ignored.
+        core.castShortcut(3, 1)
+        dispatcher.runAll()
+        assertEquals(1, link.sequences.size)
+
+        pending.complete(ServerMsg.Result("c2", true, null, JsonObject(emptyMap())))
+        dispatcher.runAll()
+        assertNull(core.state.value.pendingSpellBit)
+        assertEquals("Firaga cast", core.state.value.actionNote)
+
+        // Transient note clears once its display delay ends.
+        gate.complete(Unit)
+        dispatcher.runAll()
+        assertNull(core.state.value.actionNote)
+    }
+
+    @Test fun castShortcutMapsErrorsRefusalsNotSentAndExceptions() {
+        core.open(); dispatcher.runAll()
+        emit(WELCOME)
+        val regions = TestData.partyRegions() + TestData.soraStatusRegions() + TestData.actionRegions("0003ff", "00", 0)
+        emit(
+            ServerMsg.State(
+                "kh1.spike",
+                TestData.state(3, 2, regions).copy(inMenu = false, inCutscene = false, inGummi = false),
+            ),
+        )
+        val gate = CompletableDeferred<Unit>()
+        noteGate = gate
+
+        // Refused plan (Blizzard bit 1 is not on a shortcut)
+        core.castShortcut(1, null)
+        dispatcher.runAll()
+        assertEquals("Not on a shortcut", core.state.value.actionNote)
+
+        // Mod lacks "sequence" feature -> NotSent with upgrade message
+        link.nextPress = CompletableDeferred<ServerMsg.Result?>().apply { complete(null) }
+        core.castShortcut(0, null)
+        dispatcher.runAll()
+        assertEquals("Update KH1 mod to cast", core.state.value.actionNote)
+
+        // Raw mod timeout -> plain message
+        link.nextPress = CompletableDeferred(ServerMsg.Result("c3", false, "timeout", null))
+        core.castShortcut(0, null)
+        dispatcher.runAll()
+        assertEquals("Target picker didn't open", core.state.value.actionNote)
+
+        // Unexpected link exception is caught cleanly (never crashes scope) and unlocks casting
+        val boom = CompletableDeferred<ServerMsg.Result?>().apply {
+            completeExceptionally(IllegalStateException("socket closed mid-call"))
+        }
+        link.nextPress = boom
+        core.castShortcut(0, null)
+        dispatcher.runAll()
+        assertNull(core.state.value.pendingSpellBit)
+        assertEquals("Cast failed", core.state.value.actionNote)
+
+        gate.complete(Unit)
+        dispatcher.runAll()
     }
 }

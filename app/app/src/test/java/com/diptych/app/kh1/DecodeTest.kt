@@ -58,6 +58,32 @@ class DecodeTest {
         assertEquals(false, decodeSoraStatus(data.party, TestData.partyRegions()).known) // stats not watched
     }
 
+    @Test fun soraStatusListsEquippedItemSlotsInOrder() {
+        // Four slots: Potion, Hi-Potion, then two empty (0).
+        assertEquals(listOf(1, 2, null, null), decodeSoraStatus(data.party, TestData.soraStatusRegions()).itemSlots)
+        assertEquals(emptyList<Int?>(), decodeSoraStatus(data.party, TestData.partyRegions()).itemSlots) // unknown
+    }
+
+    @Test fun actionStateDecodesShortcutsSwapAndCommandMenu() {
+        val a = decodeActionState(data.party, TestData.actionRegions(shortcuts = "0003ff", swap = "01", menuType = 0))
+        assertEquals(listOf(0, 3, null), a.shortcuts) // Fire, Cure, empty
+        assertEquals(1, a.swap)
+        assertEquals(CommandMenuState(type = 0, cursor = 0, partyHover = 0, itemHover = 0), a.menu)
+    }
+
+    @Test fun actionStateOutOfRangeBytesAreEmptyOrUnknown() {
+        // 9 is no spell (0..6): an empty slot, not a wrong spell. A swap byte other than 0/1 is unknown.
+        val a = decodeActionState(data.party, TestData.actionRegions(shortcuts = "0609ff", swap = "02"))
+        assertEquals(listOf(6, null, null), a.shortcuts)
+        assertNull(a.swap)
+    }
+
+    @Test fun unreadableActionBytesAreUnknown() {
+        assertEquals(ActionState(), decodeActionState(data.party, emptyList()))
+        val a = decodeActionState(data.party, TestData.actionRegions(shortcuts = null, swap = null, menuType = null))
+        assertEquals(ActionState(), a)
+    }
+
     @Test fun nullHexGivesNullFields() {
         val r = TestData.partyRegions().map { if (it.offset == TestData.PARTY_BASE + 256) it.copy(hex = null) else it }
         val p = decodeParty(data.party, r)

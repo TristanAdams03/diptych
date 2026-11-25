@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +47,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.diptych.app.kh1.ACT_NOT_ON_SHORTCUT
+import com.diptych.app.kh1.LearnedSpell
 import com.diptych.app.kh1.MapView
+import com.diptych.app.kh1.PartyMember
+import com.diptych.app.kh1.actNeedsMp
 
 enum class ConnectionLabel { Connected, Waiting, Unsupported }
 
@@ -53,7 +59,7 @@ enum class Kh1Tab { Map, MagicItems, Party, Journal }
 
 /**
  * The KH1 companion screen (bottom display). Shows a centered banner while [connection] is not Connected, or before the
- * first [view] arrives. Read-only: nothing on this screen sends input to the game (tap-to-cast is M3).
+ * first [view] arrives. When [onCastShortcut] is supplied, shortcut spells and target picking cast via `kh1.pressSequence`.
  */
 @Composable
 fun MapScreen(
@@ -61,12 +67,24 @@ fun MapScreen(
     connection: ConnectionLabel,
     onReport: () -> Unit,
     initialTab: Kh1Tab = Kh1Tab.Map,
+    pendingSpellBit: Int? = null,
+    actionNote: String? = null,
+    onCastShortcut: ((spellBit: Int, targetIdx: Int?) -> Unit)? = null,
+    initialTargetPickerSpell: LearnedSpell? = null,
 ) {
     Box(Modifier.fillMaxSize().background(Kh1Colors.Ground)) {
         when {
             connection == ConnectionLabel.Unsupported -> Banner("This KH1 build isn't supported yet (needs Steam 1.0.0.2)")
             connection == ConnectionLabel.Waiting || view == null -> Banner("Waiting for Kingdom Hearts…")
-            else -> MapLayout(view, onReport, initialTab)
+            else -> MapLayout(
+                view = view,
+                onReport = onReport,
+                initialTab = initialTab,
+                pendingSpellBit = pendingSpellBit,
+                actionNote = actionNote,
+                onCastShortcut = onCastShortcut,
+                initialTargetPickerSpell = initialTargetPickerSpell,
+            )
         }
     }
 }
@@ -76,26 +94,69 @@ private fun MapLayout(
     view: MapView,
     onReport: () -> Unit,
     initialTab: Kh1Tab,
+    pendingSpellBit: Int?,
+    actionNote: String?,
+    onCastShortcut: ((spellBit: Int, targetIdx: Int?) -> Unit)?,
+    initialTargetPickerSpell: LearnedSpell?,
 ) {
     var activeTab by remember { mutableStateOf(initialTab) }
     var showSpoilers by remember { mutableStateOf(true) }
+    var pickingSpell by remember { mutableStateOf(initialTargetPickerSpell) }
 
-    Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Header(
-            view = view,
-            activeTab = activeTab,
-            showSpoilers = showSpoilers,
-            onToggleSpoilers = { showSpoilers = !showSpoilers },
-        )
-        Box(Modifier.weight(1f).fillMaxWidth()) {
-            when (activeTab) {
-                Kh1Tab.Map -> MapTabContent(view = view, showSpoilers = showSpoilers, onReport = onReport)
-                Kh1Tab.MagicItems -> MagicItemsTabContent(view = view)
-                Kh1Tab.Party -> PartyTabContent(view = view, onReport = onReport)
-                Kh1Tab.Journal -> JournalTabContent(view = view)
-            }
+    LaunchedEffect(view.canAct, pendingSpellBit) {
+        if (!view.canAct || pendingSpellBit != null) pickingSpell = null
+    }
+
+    val triggerSpell: (LearnedSpell) -> Unit = { spell ->
+        if (onCastShortcut != null && spell.actionReason == null && pendingSpellBit == null) {
+            if (spell.needsTarget) pickingSpell = spell else onCastShortcut(spell.bit, null)
         }
-        Tabs(activeTab = activeTab, onSelect = { activeTab = it })
+    }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Header(
+                view = view,
+                activeTab = activeTab,
+                showSpoilers = showSpoilers,
+                onToggleSpoilers = { showSpoilers = !showSpoilers },
+            )
+            Box(Modifier.weight(1f).fillMaxWidth()) {
+                when (activeTab) {
+                    Kh1Tab.Map -> MapTabContent(
+                        view = view,
+                        showSpoilers = showSpoilers,
+                        pendingSpellBit = pendingSpellBit,
+                        actionNote = actionNote,
+                        pickingSpell = pickingSpell,
+                        onCast = if (onCastShortcut != null) triggerSpell else null,
+                        onReport = onReport,
+                    )
+                    Kh1Tab.MagicItems -> MagicItemsTabContent(
+                        view = view,
+                        pendingSpellBit = pendingSpellBit,
+                        actionNote = actionNote,
+                        pickingSpell = pickingSpell,
+                        onCast = if (onCastShortcut != null) triggerSpell else null,
+                    )
+                    Kh1Tab.Party -> PartyTabContent(view = view, onReport = onReport)
+                    Kh1Tab.Journal -> JournalTabContent(view = view)
+                }
+            }
+            Tabs(activeTab = activeTab, onSelect = { activeTab = it })
+        }
+        val targetSpell = pickingSpell
+        if (targetSpell != null && onCastShortcut != null) {
+            TargetPickerOverlay(
+                spell = targetSpell,
+                party = view.party,
+                onPick = { idx ->
+                    pickingSpell = null
+                    onCastShortcut(targetSpell.bit, idx)
+                },
+                onDismiss = { pickingSpell = null },
+            )
+        }
     }
 }
 
@@ -103,13 +164,24 @@ private fun MapLayout(
 private fun MapTabContent(
     view: MapView,
     showSpoilers: Boolean,
+    pendingSpellBit: Int?,
+    actionNote: String?,
+    pickingSpell: LearnedSpell?,
+    onCast: ((LearnedSpell) -> Unit)?,
     onReport: () -> Unit,
 ) {
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         RoomMap(view, Modifier.weight(1f).fillMaxSize(), showSpoilers = showSpoilers)
         Column(Modifier.width(196.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             PartyPanel(view.party, Modifier.fillMaxWidth())
-            QuickMagicPanel(view, Modifier.weight(1f).fillMaxWidth())
+            QuickMagicPanel(
+                view = view,
+                pendingSpellBit = pendingSpellBit,
+                actionNote = actionNote,
+                pickingSpell = pickingSpell,
+                onCast = onCast,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+            )
             ReportButton(onReport)
         }
     }
@@ -224,17 +296,61 @@ private fun SpoilerToggleButton(showSpoilers: Boolean, onToggle: () -> Unit) {
     }
 }
 
-/** Shown where tap-to-cast will go (M3). Nothing here is clickable. */
-internal const val QUICK_COMING_NEXT = "Tap-to-cast is coming next"
-
 /** Sora's stats block is not watched in this world (watch budget) or could not be read. */
 internal const val NOT_READ_HERE = "Not shown in this world yet"
 
-/** The status line under the quick panel: the busy reason, or "Game ready" when every safety check passes. */
-internal fun statusLine(view: MapView): String? = view.busyReason ?: if (view.canAct) "Game ready" else null
+internal const val ITEMS_COMING_NEXT = "Item menu navigation coming after PC check"
+
+/** The status line under the quick panel: busy safety reason first, else transient action feedback, else "Game ready". */
+internal fun statusLine(view: MapView, actionNote: String? = null): String? =
+    view.busyReason ?: actionNote ?: if (view.canAct) "Game ready" else null
+
+/** Whether [member] can be chosen safely in the target picker (HP is known and > 0 until PC check settles KO order). */
+internal fun isTargetSelectable(member: PartyMember): Boolean = member.hp != null && member.hp > 0
+
+/** Index of the lowest-HP living damaged party member (`0 < hp < maxHp`), or null if none qualifies. */
+internal fun lowestHpTargetIndex(party: List<PartyMember>): Int? {
+    val damaged = party.indices.mapNotNull { i ->
+        if (!isTargetSelectable(party[i])) return@mapNotNull null
+        val f = barFraction(party[i].hp, party[i].maxHp) ?: return@mapNotNull null
+        if (f < 1f) i to f else null
+    }
+    return damaged.minByOrNull { it.second }?.first
+}
+
+/** Subtitle text inside a Magic tile, matching `Magic.dc.html`. */
+internal fun spellSubtext(
+    spell: LearnedSpell,
+    mp: Int?,
+    picking: Boolean = false,
+    pending: Boolean = false,
+): String = when {
+    pending -> "${spell.mpCost} MP · casting…"
+    picking -> "${spell.mpCost} MP · picking"
+    spell.actionReason == actNeedsMp(spell.mpCost) || (mp != null && mp < spell.mpCost) -> "needs ${spell.mpCost} MP"
+    spell.actionReason == ACT_NOT_ON_SHORTCUT -> "no shortcut"
+    else -> "${spell.mpCost} MP"
+}
+
+/** The 3 shortcut slots mapped to learned spells (or null if empty/unlearned); null when shortcuts are unreadable. */
+internal fun shortcutSpells(view: MapView): List<Pair<Int, LearnedSpell?>>? {
+    val slots = view.actions.shortcuts ?: return null
+    return slots.mapIndexed { idx, bit ->
+        idx to bit?.let { b -> view.sora.spells.firstOrNull { it.bit == b } }
+    }
+}
 
 @Composable
-private fun QuickMagicPanel(view: MapView, modifier: Modifier = Modifier) {
+private fun QuickMagicPanel(
+    view: MapView,
+    pendingSpellBit: Int?,
+    actionNote: String?,
+    pickingSpell: LearnedSpell?,
+    onCast: ((LearnedSpell) -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    val soraMp = view.party.firstOrNull()?.mp
+    val shortcuts = shortcutSpells(view)
     Column(
         modifier.kh1Panel().padding(horizontal = 10.dp, vertical = 7.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -244,23 +360,81 @@ private fun QuickMagicPanel(view: MapView, modifier: Modifier = Modifier) {
             color = Kh1Colors.Muted, fontFamily = Fredoka, fontWeight = FontWeight.W500, fontSize = 12.sp,
             letterSpacing = 1.5.sp,
         )
-        Box(
-            Modifier.weight(1f).fillMaxWidth()
-                .background(Kh1Colors.Room, RoundedCornerShape(10.dp))
-                .dashedBorder(1.5.dp, Kh1Colors.LockedRim, 10.dp)
-                .padding(horizontal = 8.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                QUICK_COMING_NEXT,
-                color = Kh1Colors.Dim, fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 13.sp,
-                textAlign = TextAlign.Center,
-            )
+        when {
+            shortcuts == null -> DashedPanelNote("Can't read shortcuts", Modifier.weight(1f))
+            shortcuts.all { it.second == null } -> DashedPanelNote("No shortcut spells set", Modifier.weight(1f))
+            else -> Column(Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                for ((slot, spell) in shortcuts) {
+                    if (spell == null) {
+                        val shape = RoundedCornerShape(9.dp)
+                        Row(
+                            Modifier.weight(1f).fillMaxWidth()
+                                .clip(shape)
+                                .background(Kh1Colors.Room, shape)
+                                .dashedBorder(1.dp, Kh1Colors.LockedRim, 9.dp)
+                                .padding(horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                "Slot ${slot + 1} · Empty",
+                                color = Kh1Colors.Dim, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    } else {
+                        val isPicking = pickingSpell?.bit == spell.bit
+                        val isPending = pendingSpellBit == spell.bit
+                        val enabled = onCast != null && spell.actionReason == null && pendingSpellBit == null
+                        val shape = RoundedCornerShape(9.dp)
+                        val borderColor = when {
+                            isPicking || isPending -> Kh1Colors.Gold
+                            enabled -> Kh1Colors.ActionRim
+                            else -> Kh1Colors.LockedRim
+                        }
+                        val fillColor = if (enabled || isPicking || isPending) Kh1Colors.ActionFill else Kh1Colors.Room
+                        val rowMod = Modifier.weight(1f).fillMaxWidth()
+                            .clip(shape)
+                            .background(fillColor, shape)
+                            .let { m ->
+                                if (enabled || isPicking || isPending) {
+                                    m.border(if (isPicking || isPending) 2.5.dp else 1.5.dp, borderColor, shape)
+                                } else {
+                                    m.dashedBorder(1.5.dp, borderColor, 9.dp)
+                                }
+                            }
+                            .let { m -> if (enabled) m.clickable(role = Role.Button) { onCast?.invoke(spell) } else m }
+                            .padding(horizontal = 8.dp)
+                        Row(
+                            rowMod,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                spell.name,
+                                color = if (enabled || isPicking || isPending) Color.White else Kh1Colors.Dim,
+                                fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 13.sp,
+                                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Text(
+                                spellSubtext(spell, soraMp, isPicking, isPending),
+                                color = when {
+                                    isPicking || isPending -> Kh1Colors.YouCount
+                                    enabled -> Kh1Colors.ActionSub
+                                    else -> Kh1Colors.Dim
+                                },
+                                fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 11.sp,
+                                maxLines = 1,
+                            )
+                        }
+                    }
+                }
+            }
         }
-        statusLine(view)?.let {
+        statusLine(view, actionNote)?.let { line ->
             Text(
-                it,
-                color = if (view.canAct) Kh1Colors.Muted else Kh1Colors.Gold,
+                line,
+                color = if (view.busyReason == null && actionNote == null && view.canAct) Kh1Colors.Muted else Kh1Colors.Gold,
                 fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp, lineHeight = 14.sp,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
             )
@@ -269,10 +443,33 @@ private fun QuickMagicPanel(view: MapView, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun MagicItemsTabContent(view: MapView) {
+private fun DashedPanelNote(text: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier.fillMaxWidth()
+            .background(Kh1Colors.Room, RoundedCornerShape(10.dp))
+            .dashedBorder(1.5.dp, Kh1Colors.LockedRim, 10.dp)
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text,
+            color = Kh1Colors.Dim, fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 13.sp,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun MagicItemsTabContent(
+    view: MapView,
+    pendingSpellBit: Int?,
+    actionNote: String?,
+    pickingSpell: LearnedSpell?,
+    onCast: ((LearnedSpell) -> Unit)?,
+) {
     val soraMp = view.party.firstOrNull()?.mp
     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        InfoPanel("MAGIC · MP COST", Modifier.weight(1f)) {
+        InfoPanel("MAGIC · TAP TO CAST", Modifier.weight(1f)) {
             if (!view.sora.known) {
                 EmptyNote(NOT_READ_HERE)
             } else if (view.sora.spells.isEmpty()) {
@@ -281,17 +478,28 @@ private fun MagicItemsTabContent(view: MapView) {
                 for (rowSpells in view.sora.spells.chunked(2)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (spell in rowSpells) {
-                            val sub = if (soraMp != null && soraMp < spell.mpCost) "needs ${spell.mpCost} MP" else "${spell.mpCost} MP"
-                            InfoTile(spell.name, sub, Modifier.weight(1f))
+                            val isPicking = pickingSpell?.bit == spell.bit
+                            val isPending = pendingSpellBit == spell.bit
+                            val enabled = onCast != null && spell.actionReason == null && pendingSpellBit == null
+                            ActionTile(
+                                title = spell.name,
+                                sub = spellSubtext(spell, soraMp, isPicking, isPending),
+                                enabled = enabled,
+                                highlighted = isPicking || isPending,
+                                onClick = { onCast?.invoke(spell) },
+                                modifier = Modifier.weight(1f),
+                            )
                         }
                         if (rowSpells.size == 1) Spacer(Modifier.weight(1f))
                     }
                 }
             }
             Spacer(Modifier.weight(1f))
-            EmptyNote(QUICK_COMING_NEXT)
+            actionNote?.let {
+                Text(it, color = Kh1Colors.Gold, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp)
+            }
         }
-        InfoPanel("ITEMS · EQUIPPED", Modifier.weight(1f)) {
+        InfoPanel("ITEMS · TAP TO USE", Modifier.weight(1f)) {
             if (!view.sora.known) {
                 EmptyNote(NOT_READ_HERE)
             } else if (view.sora.items.isEmpty()) {
@@ -305,6 +513,170 @@ private fun MagicItemsTabContent(view: MapView) {
                         if (rowItems.size == 1) Spacer(Modifier.weight(1f))
                     }
                 }
+            }
+            Spacer(Modifier.weight(1f))
+            EmptyNote(ITEMS_COMING_NEXT)
+        }
+    }
+}
+
+@Composable
+private fun ActionTile(
+    title: String,
+    sub: String,
+    enabled: Boolean,
+    highlighted: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(12.dp)
+    val active = enabled || highlighted
+    val mod = modifier.height(52.dp)
+        .clip(shape)
+        .background(if (active) Kh1Colors.ActionFill else Kh1Colors.Room, shape)
+        .let { m ->
+            if (highlighted) m.border(3.dp, Kh1Colors.Gold, shape)
+            else if (enabled) m.border(2.dp, Kh1Colors.ActionRim, shape)
+            else m.dashedBorder(2.dp, Kh1Colors.LockedRim, 12.dp)
+        }
+        .let { m -> if (enabled) m.clickable(role = Role.Button, onClick = onClick) else m }
+    Column(
+        mod,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            title,
+            color = if (active) Color.White else Kh1Colors.Dim,
+            fontFamily = Fredoka, fontWeight = if (highlighted) FontWeight.W700 else FontWeight.W600, fontSize = 15.sp,
+            lineHeight = 17.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            sub,
+            color = when {
+                highlighted -> Kh1Colors.YouCount
+                enabled -> Kh1Colors.ActionSub
+                else -> Kh1Colors.Dim
+            },
+            fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 11.sp,
+            lineHeight = 13.sp, maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun TargetPickerOverlay(
+    spell: LearnedSpell,
+    party: List<PartyMember>,
+    onPick: (Int) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val lowestIdx = lowestHpTargetIndex(party)
+    Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier.fillMaxSize()
+                .background(Kh1Colors.Scrim)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onDismiss,
+                ),
+        )
+        val sheetShape = RoundedCornerShape(18.dp)
+        Column(
+            Modifier.align(Alignment.BottomCenter)
+                .padding(start = 48.dp, end = 48.dp, bottom = 72.dp)
+                .fillMaxWidth()
+                .clip(sheetShape)
+                .background(Kh1Colors.Panel, sheetShape)
+                .border(3.dp, Kh1Colors.Gold, sheetShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = {},
+                )
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    "${spell.name} · who needs it?",
+                    color = Kh1Colors.Gold, fontFamily = Fredoka, fontWeight = FontWeight.W700, fontSize = 19.sp,
+                )
+                Text(
+                    "runs the game's picker on top",
+                    color = Kh1Colors.Muted, fontFamily = Nunito, fontWeight = FontWeight.W700, fontSize = 12.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                for ((idx, member) in party.withIndex()) {
+                    val selectable = isTargetSelectable(member)
+                    val isLowest = selectable && idx == lowestIdx
+                    val frac = barFraction(member.hp, member.maxHp)
+                    val btnShape = RoundedCornerShape(14.dp)
+                    val rimColor = when {
+                        !selectable -> Kh1Colors.LockedRim
+                        isLowest -> Kh1Colors.HpLow
+                        else -> Kh1Colors.ActionRim
+                    }
+                    val colMod = Modifier.weight(1f).height(64.dp)
+                        .clip(btnShape)
+                        .background(if (selectable) Kh1Colors.ActionFill else Kh1Colors.Room, btnShape)
+                        .let { m ->
+                            if (selectable) m.border(if (isLowest) 3.dp else 2.dp, rimColor, btnShape)
+                            else m.dashedBorder(2.dp, rimColor, 14.dp)
+                        }
+                        .let { m -> if (selectable) m.clickable(role = Role.Button) { onPick(idx) } else m }
+                    Column(
+                        colMod,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Text(
+                            member.name,
+                            color = if (selectable) Color.White else Kh1Colors.Dim,
+                            fontFamily = Fredoka,
+                            fontWeight = if (isLowest) FontWeight.W700 else FontWeight.W600, fontSize = 16.sp,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        )
+                        val hpLine = when {
+                            member.hp == null -> "HP unknown"
+                            member.hp <= 0 -> "KO'd"
+                            isLowest -> "${member.hp} / ${member.maxHp ?: "--"} · lowest"
+                            else -> "${member.hp} / ${member.maxHp ?: "--"}"
+                        }
+                        Text(
+                            hpLine,
+                            color = when {
+                                !selectable -> Kh1Colors.Dim
+                                isLowest -> Kh1Colors.HpLow
+                                else -> hpColor(frac)
+                            },
+                            fontFamily = Nunito, fontWeight = FontWeight.W800, fontSize = 12.sp,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+            val cancelShape = RoundedCornerShape(12.dp)
+            Box(
+                Modifier.align(Alignment.CenterHorizontally)
+                    .height(44.dp)
+                    .clip(cancelShape)
+                    .background(Kh1Colors.Ground, cancelShape)
+                    .border(2.dp, Kh1Colors.RoomRim, cancelShape)
+                    .clickable(role = Role.Button, onClick = onDismiss)
+                    .padding(horizontal = 28.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "Cancel",
+                    color = Kh1Colors.TabText, fontFamily = Fredoka, fontWeight = FontWeight.W600, fontSize = 14.sp,
+                )
             }
         }
     }

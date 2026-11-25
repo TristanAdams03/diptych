@@ -23,6 +23,36 @@
   "offset": 47565900,
   "stride": 256
  },
+ "buttons": {
+  "cancel": {
+   "0": 32,
+   "1": 64
+  },
+  "confidence": "inferred",
+  "confirm": {
+   "0": 64,
+   "1": 32
+  },
+  "dpadByte": 0,
+  "dpadDown": 64,
+  "faceByte": 1,
+  "shortcutByte": 1,
+  "shortcutConfidence": "source",
+  "shortcutMasks": [
+   20,
+   36,
+   68
+  ]
+ },
+ "commandMenu": {
+  "confidence": "inferred",
+  "cursorOffset": 42280852,
+  "itemHoverOffset": 42280884,
+  "length": 40,
+  "partyHoverOffset": 42280868,
+  "targetPickerType": 4,
+  "typeOffset": 42280848
+ },
  "inventory": {
   "confidence": "source",
   "items": [
@@ -211,6 +241,12 @@
   "8": "source",
   "9": "source"
  },
+ "shortcuts": {
+  "confidence": "source",
+  "empty": 255,
+  "length": 3,
+  "offset": 48143268
+ },
  "slots": {
   "confidence": "live",
   "empty": 255,
@@ -236,7 +272,15 @@
   "Battle block and party slots: live check on Steam 1.0.0.2, docs/research/kh1-live-check-2026-11-04.md",
   "Battle block layout: AmirulAndalib/MultiPresence@81cf9ac2 Presence/KH1.cs (MIT); Julumisan/kh-qol-manager@f35bfef6 KH_QoL/docs/FEATURE_RESEARCH.md lines 32-35 (MIT)",
   "Party slot ids (0 Sora .. 9 Beast, 0xFF empty): Denhonator/KHPCSpeedrunTools@aeb4972e SteamGlobal_1_0_0_2.lua line 237 and 1fmRandoSomeLogic.lua lines 2284-2292 (Unlicense); gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPFixWarps.lua line 266 (MIT); Xeeynamo/KingdomSaveEditor KHSave.Lib1/Types/PlayableCharacterType.cs (documented enum values only)",
-  "Sora character struct, magic unlock bitmask (0x2DE93D4), magic levels (0x2DE97F2) and inventory counts (0x2DE97F9): gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua lines 51, 183, 191, 244 (MIT); gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 730-753, 899 (MIT); sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts lines 68-160 (MIT)"
+  "Sora character struct, magic unlock bitmask (0x2DE93D4), magic levels (0x2DE97F2) and inventory counts (0x2DE97F9): gaithern/KH1-LUA-LIBRARY@e387282a SteamGlobal_1_0_0_2.lua lines 51, 183, 191, 244 (MIT); gaithern/KH-1FM-AP-LUA@4fe14a54 1fmAPConnector.lua lines 730-753, 899 (MIT); sagezaugg/kh-tracker@bb0dda01 src/games/kh1/data/constants.ts lines 68-160 (MIT)",
+  "M3 shortcuts (0x2DE9BA4, 3 slots, spell index or 0xFF) and A/B swap (0x4D8632): community scripts (gaithern/KH1-LUA-LIBRARY, gaithern/KH-1FM-AP-LUA, MIT) as cited in protocol/kh1/PROTOCOL.md; not yet checked live on the PC",
+  "M3 command menu (type 0x2852790, cursor 0x2852794, party hover 0x28527A4, item hover 0x28527B4): Drflash55/KH1-Critical-Mix-Additions@f705c7c0 [AGPL-3.0: cite only, no code copied]; inferred, pending a live PC check. targetPickerType 4 is a placeholder until then",
+  "M3 buttons: PS2 masks of the kh1.pressInput table in protocol/kh1/PROTOCOL.md (L1 0x04 + triangle 0x10 / circle 0x20 / cross 0x40 on byte 1; down 0x40 on byte 0). Shortcut i = L1 + Y/B/A is game knowledge (source); which face button confirms under each A/B swap setting is inferred"
  ],
+ "swap": {
+  "confidence": "source",
+  "length": 1,
+  "offset": 5080626
+ },
  "version": 1
 }

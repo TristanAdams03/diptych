@@ -16,9 +16,9 @@ import build_kh1_data as b
 ASSETS = Path(__file__).resolve().parents[2] / "app/app/src/main/assets/kh1"
 
 # Limits of kh1.watch (global constraints).
-MAX_REGIONS = 8
+MAX_REGIONS = 16
 MAX_SPAN = 256
-MAX_TOTAL = 1024
+MAX_TOTAL = 2048
 
 EXPECTED_WORLDS = {
     "Dive into the Heart": (0, 1),
@@ -37,7 +37,7 @@ EXPECTED_WORLDS = {
     "Hollow Bastion": (15, 39),
     "End of the World": (16, 26),
 }
-CONFIDENCE = {"live", "source", "derived", "guess"}
+CONFIDENCE = {"live", "source", "derived", "guess", "inferred"}
 
 
 def load(name):
@@ -285,7 +285,46 @@ def test_party_regions():
         {"offset": 0x2D5CE4C, "length": 16},
         {"offset": 0x2DE9364, "length": 113},
         {"offset": 0x2DE97EF, "length": 155},
+        {"offset": 0x2DE9BA4, "length": 3},
+        {"offset": 0x4D8632, "length": 1},
+        {"offset": 0x2852790, "length": 0x28},
     ]
+
+
+# --- M3 actions -------------------------------------------------------------
+
+
+def test_m3_shortcuts_and_swap():
+    assert PARTY["shortcuts"] == {"offset": 0x2DE9BA4, "length": 3, "empty": 0xFF, "confidence": "source"}
+    assert PARTY["swap"] == {"offset": 0x4D8632, "length": 1, "confidence": "source"}
+
+
+def test_m3_command_menu_is_inferred_and_covers_its_offsets():
+    m = PARTY["commandMenu"]
+    assert (m["typeOffset"], m["cursorOffset"], m["partyHoverOffset"], m["itemHoverOffset"], m["length"]) == (
+        0x2852790, 0x2852794, 0x28527A4, 0x28527B4, 0x28)
+    assert m["confidence"] == "inferred"
+    for k in ("typeOffset", "cursorOffset", "partyHoverOffset", "itemHoverOffset"):
+        assert m["typeOffset"] <= m[k] < m["typeOffset"] + m["length"], k
+    assert 0 < m["targetPickerType"] <= 255
+
+
+def test_m3_buttons():
+    btn = PARTY["buttons"]
+    assert btn["shortcutMasks"] == [0x14, 0x24, 0x44]
+    assert btn["shortcutByte"] == 1 and btn["faceByte"] == 1 and btn["dpadByte"] == 0
+    assert btn["confirm"] == {"0": 0x40, "1": 0x20}
+    assert btn["cancel"] == {"0": 0x20, "1": 0x40}
+    assert btn["dpadDown"] == 0x40
+    assert btn["shortcutConfidence"] == "source" and btn["confidence"] == "inferred"
+    # One shortcut per slot, and the confirm button is the other face button from cancel under either swap.
+    assert len(btn["shortcutMasks"]) == PARTY["shortcuts"]["length"]
+    assert all(btn["confirm"][k] != btn["cancel"][k] for k in ("0", "1"))
+
+
+def test_m3_confidences_are_known_values():
+    for key in ("shortcuts", "swap", "commandMenu", "buttons"):
+        assert PARTY[key]["confidence"] in CONFIDENCE, key
 
 
 # --- story thresholds (reviewed tables from 4fac287) ------------------------

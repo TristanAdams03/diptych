@@ -28,12 +28,12 @@ class MapScreenshotTest {
 
     private fun hex(b: ByteArray) = b.joinToString("") { "%02x".format(it) }
 
-    /** Sora full, Donald low (16 / 42, under 40%), Goofy full (the live game's party), plus Sora stats/magic/inventory. */
+    /** Sora full, Donald low (16 / 42, under 40%), Goofy full (the live game's party), plus Sora stats/magic/inventory/actions. */
     private fun party() = listOf(
         RegionHex(TestData.PARTY_BASE, TestData.SORA),
         RegionHex(TestData.PARTY_BASE + 256, "100000002a0000000300000008000000"),
         RegionHex(TestData.PARTY_BASE + 512, TestData.GOOFY),
-    ) + TestData.soraStatusRegions(slots = "0102")
+    ) + TestData.soraStatusRegions(slots = "0102") + TestData.actionRegions("0003ff", "00", 0)
 
     /** Every safety flag reads false: the status line says "Game ready". */
     private fun safe(world: Int?, room: Int?, regions: List<RegionHex>) =
@@ -53,7 +53,24 @@ class MapScreenshotTest {
     @Test fun magicAndItemsTab() {
         // Traverse Town: Sora's stats block is watched in every shipped world.
         val view = buildMapView(TestData.data, safe(3, 2, party()))
-        paparazzi.snapshot { MapScreen(view, ConnectionLabel.Connected, onReport = {}, initialTab = Kh1Tab.MagicItems) }
+        paparazzi.snapshot {
+            MapScreen(view, ConnectionLabel.Connected, onReport = {}, initialTab = Kh1Tab.MagicItems, onCastShortcut = { _, _ -> })
+        }
+    }
+
+    @Test fun magicTargetPicker() {
+        val view = buildMapView(TestData.data, safe(3, 2, party()))
+        val cura = view.sora.spells.first { it.key == "cure" }
+        paparazzi.snapshot {
+            MapScreen(
+                view = view,
+                connection = ConnectionLabel.Connected,
+                onReport = {},
+                initialTab = Kh1Tab.MagicItems,
+                onCastShortcut = { _, _ -> },
+                initialTargetPickerSpell = cura,
+            )
+        }
     }
 
     @Test fun endOfTheWorldPanned() {
@@ -77,6 +94,6 @@ class MapScreenshotTest {
     }
 
     private fun snap(view: com.diptych.app.kh1.MapView) {
-        paparazzi.snapshot { MapScreen(view, ConnectionLabel.Connected, onReport = {}) }
+        paparazzi.snapshot { MapScreen(view, ConnectionLabel.Connected, onReport = {}, onCastShortcut = { _, _ -> }) }
     }
 }

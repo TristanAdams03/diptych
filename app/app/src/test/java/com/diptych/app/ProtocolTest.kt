@@ -1,6 +1,12 @@
 package com.diptych.app
 
 import com.diptych.app.net.ClientMsg
+import com.diptych.app.net.MemCondition
+import com.diptych.app.net.PressSequenceArgs
+import com.diptych.app.net.SeqStep
+import com.diptych.app.net.SeqUntil
+import com.diptych.app.net.SequenceData
+import com.diptych.app.net.sequenceData
 import com.diptych.app.net.ServerMsg
 import com.diptych.app.net.encodeClient
 import com.diptych.app.net.parseServer
@@ -9,6 +15,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -24,12 +31,42 @@ class ProtocolTest {
         val m = parseServer(fx("welcome_steam.json"))
         assertTrue(m is ServerMsg.Welcome)
         m as ServerMsg.Welcome
-        assertEquals("0.1.0", m.plugin)
+        assertEquals("0.2.0", m.plugin)
         assertEquals(0, m.protocol)
         assertEquals("kh1", m.gameId)
         assertEquals("steam-1.0.0.2", m.gameBuild)
         assertTrue(m.supported)
-        assertEquals(listOf("spike", "watch"), m.features)
+        assertEquals(listOf("spike", "watch", "sequence"), m.features)
+    }
+
+    @Test fun commandSequenceFixtureRoundTrips() {
+        val cmd = json(fx("command_sequence.json")).jsonObject
+        val args = PressSequenceArgs.fromJson(cmd["args"]!!.jsonObject)
+        assertEquals(listOf(MemCondition(0x4D8632, 0), MemCondition(0x2DE9BA4, 3)), args.require)
+        assertEquals(2, args.steps.size)
+        val (cast, confirm) = args.steps
+        assertEquals(SeqStep(1, 0x14, 100, 50, until = SeqUntil(0x2852790, 4, 255, 500)), cast)
+        assertEquals(SeqStep(1, 0x40, 66, 50, onlyIf = MemCondition(0x2852790, 4)), confirm)
+        // Encoded as the client sends it: the same frame, and no null for an absent mask/until/onlyIf.
+        val sent = encodeClient(ClientMsg.Command("c5", "kh1.pressSequence", args.toJson()))
+        assertEquals(json(fx("command_sequence.json")), json(sent))
+        assertFalse(sent, sent.contains("null"))
+    }
+
+    @Test fun resultSequenceFixtureParses() {
+        val m = parseServer(fx("result_sequence.json")) as ServerMsg.Result
+        assertEquals("c5", m.id)
+        assertTrue(m.ok)
+        assertEquals(SequenceData(steps = 2, skipped = 0), m.sequenceData())
+    }
+
+    @Test fun resultSequenceTimeoutFixtureParses() {
+        val m = parseServer(fx("result_sequence_timeout.json")) as ServerMsg.Result
+        assertEquals("c5", m.id)
+        assertFalse(m.ok)
+        assertEquals("timeout", m.error)
+        assertNull(m.data)
+        assertNull(m.sequenceData())
     }
 
     @Test fun welcomeUnsupportedFixtureParses() {

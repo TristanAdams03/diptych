@@ -22,7 +22,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 /** A socket that never touches the network: the test plays OkHttp's reader thread through its listener. */
-private class FakeSocket(private val req: Request, val listener: WebSocketListener) : WebSocket {
+internal class FakeSocket(private val req: Request, val listener: WebSocketListener) : WebSocket {
     val sent = mutableListOf<String>()
     override fun request() = req
     override fun queueSize() = 0L
@@ -38,7 +38,7 @@ private class FakeSocket(private val req: Request, val listener: WebSocketListen
 }
 
 /** Hands each connect attempt's socket to the test instead of dialing. */
-private class FakeSocketFactory : OkHttpClient() {
+internal class FakeSocketFactory : OkHttpClient() {
     val sockets = LinkedBlockingQueue<FakeSocket>()
     override fun newWebSocket(request: Request, listener: WebSocketListener): WebSocket =
         FakeSocket(request, listener).also { sockets.put(it) }
